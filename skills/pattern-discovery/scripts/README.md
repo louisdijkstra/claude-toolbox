@@ -1,17 +1,28 @@
-# Pattern Discovery Scripts
+# Scripts
 
-This directory will contain Python helper scripts for pattern analysis and detection.
+This directory contains helper scripts for the pattern-discovery skill.
 
-## Planned Contents
+## pattern-analyzer.py
 
-- Pattern detection script
-- Anti-pattern identifier
-- Code structure analyzer
-- Recurring pattern extractor
-- Pattern report generator
+Analyzes codebase patterns using Python AST parsing.
+
+**Usage:**
+```bash
+python3 pattern-analyzer.py <pattern_type>
+```
+
+**Supported pattern types:**
+- `api` - API routes and endpoints
+- `database` - Database access patterns
+- `auth` - Authentication and authorization
+- `test` - Testing patterns
+
+**Example:**
+```bash
+cd ~/projects/myproject
+python3 ~/.claude/skills/pattern-discovery/scripts/pattern-analyzer.py api
+```
 
 ## Status
 
-⏳ To be implemented in Phase 2
-
-Scripts will automate identification of patterns and anti-patterns in the codebase.
+✅ Implemented in Phase 2

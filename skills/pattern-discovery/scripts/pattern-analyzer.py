@@ -53,7 +53,11 @@ def analyze_file(file_path):
 
 
 def find_pattern_files(pattern_type):
-    """Find files related to a pattern type."""
+    """Find files related to a pattern type.
+
+    Searches up to 10 Python files matching the pattern type.
+    Handles encoding errors and permission issues gracefully.
+    """
     patterns = {
         'api': ['router', '@app', '@api', 'FastAPI'],
         'database': ['Session', 'query', 'repository', 'SQLAlchemy'],
@@ -65,10 +69,20 @@ def find_pattern_files(pattern_type):
     matching_files = []
 
     for py_file in Path('.').rglob('*.py'):
-        if any(term.lower() in py_file.read_text().lower() for term in search_terms):
-            matching_files.append(py_file)
-            if len(matching_files) >= 10:
-                break
+        try:
+            # Read file once and cache lowercase version
+            content = py_file.read_text(encoding='utf-8', errors='ignore')
+            content_lower = content.lower()
+
+            # Check if any search term matches
+            if any(term.lower() in content_lower
+                   for term in search_terms):
+                matching_files.append(py_file)
+                if len(matching_files) >= 10:
+                    break
+        except (OSError, PermissionError, UnicodeDecodeError):
+            # Skip files we can't read (permissions, encoding issues)
+            continue
 
     return matching_files
 
@@ -101,11 +115,11 @@ def main():
             for dec in analyzer.decorators:
                 all_decorators[dec] += 1
 
-    print(f"\nCommon imports:")
+    print("\nCommon imports:")
     for imp, count in sorted(all_imports.items(), key=lambda x: -x[1])[:10]:
         print(f"  {imp} ({count} files)")
 
-    print(f"\nCommon decorators:")
+    print("\nCommon decorators:")
     for dec, count in sorted(all_decorators.items(), key=lambda x: -x[1])[:10]:
         print(f"  @{dec} ({count} files)")
 
