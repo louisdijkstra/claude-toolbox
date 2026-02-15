@@ -41,6 +41,8 @@ Example: "How should I implement background job processing for a FastAPI app on 
 
 ## Options Evaluated
 
+Add as many options as needed (typically 2-4).
+
 ### Option 1: [Name]
 
 **Description:** [Brief overview]
@@ -66,13 +68,7 @@ Example: "How should I implement background job processing for a FastAPI app on 
 
 ### Option 2: [Name]
 
-[Same structure as Option 1]
-
----
-
-### Option 3: [Name]
-
-[Same structure as Option 1]
+Repeat this structure for each option evaluated
 
 ---
 
@@ -115,22 +111,22 @@ Example: "How should I implement background job processing for a FastAPI app on 
 - [Test scenario 3]
 
 **How to test:**
-- Unit tests: [Approach]
-- Integration tests: [Approach]
-- Performance tests: [Approach]
+- Unit tests: [e.g., Test retry logic with mock failures]
+- Integration tests: [e.g., Test with actual database under load]
+- Performance tests: [e.g., Measure latency at expected scale]
 
 ---
 
 ## Monitoring & Observability
 
 **Metrics to track:**
-- [Metric 1]: [Why important]
-- [Metric 2]: [Why important]
-- [Metric 3]: [Why important]
+- [Metric 1]: [e.g., Job success rate - Why: Detect processing failures]
+- [Metric 2]: [e.g., Average latency - Why: Monitor performance degradation]
+- [Metric 3]: [e.g., Queue depth - Why: Identify bottlenecks]
 
 **Alerts to configure:**
-- [Alert 1]: [Threshold and action]
-- [Alert 2]: [Threshold and action]
+- [Alert 1]: [e.g., Success rate < 95% for 5 minutes - Action: Page on-call]
+- [Alert 2]: [e.g., P99 latency > 2s - Action: Create incident]
 
 ---
 

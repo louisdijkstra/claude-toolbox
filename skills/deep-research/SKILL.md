@@ -32,37 +32,39 @@ expecting [SCALE] with [CONSTRAINTS] while ensuring [REQUIREMENTS]?"
 
 ### Step 2: Multi-Source Search
 
-Use ALL available MCP servers:
+Use available MCP servers (examples below - check which are installed):
 
-**1. Package Registry MCP**
+**1. Package Registry MCP** (if available)
 ```
 Query: "redis python packages"
 Purpose: Find current, maintained packages
 ```
 
-**2. Context7 MCP**
+**2. Context7 MCP** (if available)
 ```
 Query: "[Library] latest documentation"
 Purpose: Get current API docs (not outdated training data)
 ```
 
-**3. Augments MCP**
+**3. Augments MCP** (if available)
 ```
 Query: "[Framework] best practices 2026"
 Purpose: Cross-reference multiple framework docs
 ```
 
-**4. MDN Lookup MCP** (for frontend)
+**4. MDN Lookup MCP** (if available, for frontend)
 ```
 Query: "[Web API] documentation"
 Purpose: Web standards and browser compatibility
 ```
 
-**5. WebSearch**
+**5. WebSearch** (always available)
 ```
 Query: "[Technology] production best practices 2026"
 Purpose: Recent blog posts, case studies
 ```
+
+**Note:** If an MCP server isn't available, use WebSearch as fallback.
 
 ### Step 3: Filter & Synthesize
 
@@ -80,7 +82,7 @@ Purpose: Recent blog posts, case studies
 
 ### Step 4: Structure Findings
 
-Use the research report template:
+Use the research report template with these 12 sections:
 
 ```markdown
 # Research: [Topic]
@@ -98,22 +100,37 @@ Use the research report template:
 2. [Standard 2]
 ...
 
-## Common Implementations
-- [Approach 1]: [Description]
-- [Approach 2]: [Description]
+## Options Evaluated
+Add as many options as needed (typically 2-4).
+
+### Option 1: [Name]
+[Description, pros, cons, scale fit, sources]
+
+### Option 2: [Name]
+[Repeat this structure for each option evaluated]
+
+## Recommended Approach
+[Detailed recommendation with rationale]
 
 ## Anti-Patterns to Avoid
 - ❌ [Anti-pattern 1]: [Why bad]
 - ❌ [Anti-pattern 2]: [Why bad]
 
-## Recommended Approach
-[Detailed recommendation]
+## Testing Strategy
+- Unit tests: [Approach and examples]
+- Integration tests: [Approach]
+- Performance tests: [Approach]
 
-**Rationale:** [Why this approach]
+## Monitoring & Observability
+- [Metric 1]: [Why important]
+- [Metric 2]: [Why important]
 
-**Trade-offs:**
+## Trade-offs Accepted
 - [Trade-off 1]: [Why acceptable]
 - [Trade-off 2]: [Why acceptable]
+
+## When to Revisit
+[Conditions that would require revisiting this decision]
 
 ## References
 - [Link 1]
@@ -122,9 +139,11 @@ Use the research report template:
 
 ### Step 5: Save Report
 
-Save to: `docs/research/YYYY-MM-DD-[topic].md`
+Save to: `docs/research/YYYY-MM-DD-[topic].md` (create docs/research/ directory if it doesn't exist)
 
 ### Step 6: Return Summary
+
+Note: Step 6 returns a SUMMARY to the user. The FULL REPORT is saved in Step 5. Users get the summary immediately, detailed report is saved for reference.
 
 Format:
 ```
