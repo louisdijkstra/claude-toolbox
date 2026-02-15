@@ -1,912 +1,607 @@
 ---
 name: integrate-stage
-description: Merge reviewed code into main branch, deploy if applicable, and close out the work session
+description: Prepare code for integration by suggesting commits, documenting changes, and verifying readiness for merge
 ---
 
 # Stage 6: Integrate
 
 ## Purpose
 
-Successfully merge reviewed code into the main branch, deploy to appropriate environments, verify integration works correctly, and properly close out the work session. The final quality gate before code reaches production.
+Prepare reviewed code for integration into the main branch. Suggest commits, document changes, verify readiness, and hand off to the user for final git operations. The quality gate before code reaches main.
 
 ## When to Use
 
 **Required for:**
 - All development work after Review stage
-- Merging feature branches to main
-- Deploying to staging/production
-- Closing out work sessions
+- Completing features or bug fixes
+- Preparing code for merge
+- Documenting work completion
 
-**Never skip** - integration is where "done" actually means done
+**Never skip** - integration preparation ensures code is merge-ready
 
 ## Time Investment
 
 **By mode:**
-- **Deep Work Mode**: 5 minutes (merge + verification)
-- **Quick Fix Mode**: 2 minutes (quick merge)
+- **Deep Work Mode**: 5 minutes (verification + documentation)
+- **Quick Fix Mode**: 2 minutes (quick check)
 - **Collaboration Mode**: 10 minutes (coordination + handoff)
-- **Debugging Mode**: 3 minutes (verify fix deployed)
+- **Debugging Mode**: 3 minutes (verify fix ready)
 
-**Time well spent**: 5 minutes of proper integration prevents hours of debugging production issues
+**Time well spent**: 5 minutes of preparation prevents hours of merge conflicts
 
 ## Objectives
 
 At the end of integrate stage, you should have:
-1. **Code merged**: Changes integrated into main branch
-2. **Deployment complete**: Code deployed to appropriate environment (if applicable)
-3. **Integration verified**: Merged code works with main branch
-4. **Session closed**: Work properly documented and handed off
-5. **Team notified**: Stakeholders informed of completion
+1. **Files identified**: Know what files should be committed
+2. **Commit message ready**: Have proper conventional commit message
+3. **Integration verified**: Code works and tests pass
+4. **Documentation ready**: Changes documented for team
+5. **User informed**: User knows exactly what to commit
 
-## Integration Process
+## Git Operations Philosophy
 
-### Step 1: Pre-Merge Verification (1 minute)
+**IMPORTANT: No Automatic Git Operations**
 
-**Final checks before merging**
+- **Never automatically commit, merge, or push** without explicit user permission
+- **Always suggest** what should be committed and why
+- **Always provide** the exact files and commit message
+- **Always ask** before any git operation that affects the repository
+- **Exception**: User explicitly authorizes automatic git operations
+
+## Integration Preparation Process
+
+### Step 1: Verify Code Readiness (1 minute)
+
+**Check code is ready for integration**
 
 **Checklist:**
 ```markdown
-## Pre-Merge Checklist
-- [ ] All tests passing on feature branch
-- [ ] Code reviewed and approved (if team review required)
-- [ ] Branch up-to-date with main
-- [ ] No merge conflicts
-- [ ] CI/CD pipeline passing
-- [ ] Documentation updated
-- [ ] Breaking changes documented (if any)
+## Pre-Integration Checklist
+- [ ] All tests passing
+- [ ] Code reviewed (self or peer)
+- [ ] No build errors
+- [ ] No linting errors
+- [ ] Documentation updated if needed
+- [ ] No TODO/FIXME comments for critical issues
 ```
 
-**Update branch with latest main:**
+**Run verification:**
 ```bash
-# Fetch latest main
-git fetch origin main
-
-# Check if branch is behind main
-git log HEAD..origin/main --oneline
-
-# If behind, rebase or merge
-git rebase origin/main  # Preferred: clean history
-# OR
-git merge origin/main   # Alternative: merge commit
-
-# If conflicts, resolve and continue
-git rebase --continue
-# OR
-git merge --continue
-
-# Verify tests still pass after update
+# Run tests
 npm test  # or pytest, cargo test, etc.
+
+# Check for build errors
+npm run build  # or equivalent
+
+# Check for linting errors
+npm run lint  # or ruff check, etc.
 ```
 
-**Red flags (don't merge):**
+**Red flags (not ready):**
 - Tests failing
-- Unresolved code review comments
-- Merge conflicts
-- CI/CD pipeline failing
-- Missing documentation updates
+- Build errors
+- Critical TODOs unresolved
+- Missing documentation for new features
 
-### Step 2: Merge to Main (varies by mode)
+### Step 2: Identify Files for Commit (1 minute)
 
-**Deep Work Mode: Full merge with verification (3 min)**
+**Determine what should be committed**
 
-**Merge strategy (choose based on project):**
-
-**Option 1: Merge commit (preserves branch history)**
 ```bash
-# Switch to main
-git checkout main
+# Check what changed
+git status
 
-# Pull latest
-git pull origin main
+# See detailed changes
+git diff
 
-# Merge feature branch
-git merge --no-ff feature/csv-export
-
-# Verify merge
-git log --oneline -5
-
-# Push to origin
-git push origin main
+# See staged changes (if any)
+git diff --cached
 ```
 
-**Option 2: Squash merge (clean linear history)**
-```bash
-# Switch to main
-git checkout main
+**Categorize changes:**
+- **Should commit**: New features, bug fixes, tests
+- **Should not commit**: Debug code, temporary files, secrets
+- **Need review**: Unintended changes, large refactors
 
-# Pull latest
-git pull origin main
+**Example analysis:**
+```markdown
+## Files Ready to Commit
 
-# Squash merge feature branch
-git merge --squash feature/csv-export
+**Feature files:**
+- src/components/ExportButton.tsx (new export button)
+- src/services/CSVService.ts (CSV generation logic)
+- src/pages/Dashboard.tsx (integrated export button)
 
-# Commit with comprehensive message
-git commit -m "$(cat <<'EOF'
-feat(export): add CSV export functionality
+**Test files:**
+- tests/CSVService.test.ts (15 new tests)
+- tests/ExportButton.test.tsx (8 new tests)
 
-Adds CSV export button to analytics dashboard.
-Users can now export analytics data as CSV file.
+**Documentation:**
+- README.md (added export feature docs)
 
-Key changes:
-- CSVService utility for CSV generation
-- ExportButton component with download trigger
-- Integration with analytics dashboard
+**Should NOT commit:**
+- src/debug-utils.ts (temporary debugging)
+- .env.local (local configuration)
+```
 
-Tests: 15 new tests, 92% coverage
-Reviewed-by: @teammate
-Closes #123
+### Step 3: Generate Commit Message (1 minute)
+
+**Create conventional commit message following guidelines**
+
+**Format:**
+```
+<type>(<scope>): <subject>
+
+[optional body]
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-EOF
-)"
-
-# Push to origin
-git push origin main
 ```
 
-**Option 3: Rebase merge (cleanest history)**
-```bash
-# On feature branch, rebase onto main
-git rebase origin/main
+**Example commit messages:**
 
-# Switch to main
-git checkout main
+**Feature:**
+```
+feat(export): add CSV export to analytics dashboard
 
-# Fast-forward merge
-git merge feature/csv-export
+Users can now export analytics data as CSV files.
 
-# Push to origin
-git push origin main
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
-**Quick Fix Mode: Fast merge (2 min)**
+**Bug fix:**
+```
+fix(forms): disable submit button during API call
 
-```bash
-# Quick merge for small fixes
-git checkout main
-git pull origin main
-git merge --squash feature/fix-button
-git commit -m "fix(forms): disable submit button during API call
+Prevents double-submission when users click submit multiple times.
 
 Closes #456
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
-git push origin main
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
-**Collaboration Mode: PR merge with team notification (5 min)**
+**Refactor:**
+```
+refactor(auth): simplify login validation logic
 
-**If using pull request:**
-```bash
-# Push branch to origin
-git push origin feature/csv-export
+No functional changes.
 
-# Create PR (using gh CLI)
-gh pr create --title "feat(export): add CSV export functionality" \
-  --body "$(cat <<'EOF'
-## Summary
-Adds CSV export button to analytics dashboard for downloading analytics data.
-
-## Changes
-- CSVService utility for CSV generation
-- ExportButton component
-- Integration with AnalyticsDashboard
-
-## Testing
-- ✅ 15 new tests passing
-- ✅ 92% coverage
-- ✅ Manual verification in Chrome/Firefox/Safari
-
-## Review Focus
-- CSV escaping logic (CSVService.ts:45-67)
-- Button placement in dashboard
-
-Closes #123
-EOF
-)"
-
-# After PR approval, merge via GitHub/GitLab UI or CLI
-gh pr merge --squash --delete-branch
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
-**Notify team:**
+**Language style:**
+- Use natural, simple language
+- "add CSV export" not "implement CSV export functionality"
+- "fix login redirect" not "resolve authentication flow redirection issue"
+- Be direct and clear
+
+### Step 4: Suggest Commit to User (REQUIRED)
+
+**Always inform the user what should be committed**
+
+**Template message to user:**
 ```markdown
-@team: CSV export feature merged to main 🚀
+## Ready to Commit
 
-What: Users can now export analytics as CSV
-Deployed: Staging (auto-deployed from main)
-Prod deploy: Scheduled for tomorrow 10am
-Docs: README updated
+I've completed [feature/fix name]. Here's what should be committed:
 
-Related: Closes #123
+**Files to add:**
+- src/components/ExportButton.tsx
+- src/services/CSVService.ts
+- src/pages/Dashboard.tsx
+- tests/CSVService.test.ts
+- tests/ExportButton.test.tsx
+- README.md
+
+**Suggested commit message:**
+```
+feat(export): add CSV export to analytics dashboard
+
+Users can now export analytics data as CSV files.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
-### Step 3: Verify Integration (varies by mode)
-
-**Deep Work Mode: Comprehensive verification (2 min)**
-
-**Verify merge succeeded:**
+**Commands to run:**
 ```bash
-# Check main branch
-git checkout main
-git log --oneline -5
+# Stage the files
+git add src/components/ExportButton.tsx \
+  src/services/CSVService.ts \
+  src/pages/Dashboard.tsx \
+  tests/CSVService.test.ts \
+  tests/ExportButton.test.tsx \
+  README.md
 
-# Verify feature present
-git show HEAD
+# Commit with message
+git commit -m "feat(export): add CSV export to analytics dashboard
 
-# Run tests on main
+Users can now export analytics data as CSV files.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
+
+**Verification commands** (to run after commit):
+```bash
+# Verify commit
+git log -1
+
+# Verify tests still pass
 npm test
 
-# Verify CI/CD passed
-# (Check GitHub Actions, GitLab CI, etc.)
+# Check status
+git status
 ```
 
-**Verify in deployed environment:**
-```markdown
-## Integration Verification
-
-### Staging Environment
-- [ ] Feature deployed to staging
-- [ ] Smoke test: Basic functionality works
-- [ ] Integration test: Works with other features
-- [ ] No console errors
-- [ ] Performance acceptable
-
-### Production (if deployed)
-- [ ] Feature deployed to production
-- [ ] Monitoring: No errors in logs
-- [ ] Metrics: Normal behavior
-- [ ] User feedback: No immediate issues
+Would you like me to help with anything else, or are you ready to commit?
 ```
 
-**Quick Fix Mode: Quick verification (1 min)**
+**NEVER run these commands automatically - always wait for user approval**
+
+### Step 5: Verify Integration Readiness (1 minute)
+
+**Before suggesting commit, ensure everything works**
 
 ```bash
-# Verify merge
-git log --oneline -2
+# Final test run
+npm test
 
-# Quick smoke test
-npm test -- <relevant-test>
+# Final build check
+npm run build
+
+# Check for uncommitted debug code
+git diff | grep -i "console.log\|debugger\|TODO"
+
+# Verify no secrets
+git diff | grep -i "api_key\|password\|secret"
 ```
 
-**Collaboration Mode: Documented verification (3 min)**
+**Integration readiness checklist:**
+```markdown
+## Integration Readiness
+
+- [ ] All tests passing
+- [ ] Build succeeds
+- [ ] No debug code in changes
+- [ ] No secrets in changes
+- [ ] Documentation updated
+- [ ] Commit message ready
+- [ ] Files identified
+```
+
+## Documentation for Handoff
+
+**Prepare documentation for the user**
+
+### Work Summary
 
 ```markdown
-## Integration Verification
+## Work Complete: [Feature/Fix Name]
 
-**Merged to**: main branch
-**Commit**: abc1234
-**Deployed to**: staging (auto), production (pending)
-**Verified**:
-- ✅ All tests passing on main
-- ✅ Feature works in staging
-- ✅ No regressions detected
+**What was done:**
+- [Brief description of changes]
 
-**Monitoring**:
-- Check logs in 1 hour
-- Check metrics in 24 hours
+**Files changed:**
+- [List of modified files with brief description]
+
+**Testing:**
+- [Number] new tests added
+- All tests passing
+- [Any manual testing done]
+
+**Next steps:**
+1. Review the changes: git diff
+2. Commit using the suggested message above
+3. [Any additional steps like updating changelog]
 ```
 
-## Deployment Process
-
-**If deployment required (staging/production)**
-
-### Staging Deployment
-
-**Automatic (CI/CD):**
-```markdown
-## Staging Deployment (Auto)
-
-**Trigger**: Merge to main
-**Pipeline**: GitHub Actions / GitLab CI
-**Status**: Check pipeline status
-**Verify**: Access staging environment
-
-URL: https://staging.example.com
-Tests: Automated smoke tests run post-deploy
-```
-
-**Manual:**
-```bash
-# Deploy to staging
-npm run deploy:staging
-# OR
-./scripts/deploy.sh staging
-
-# Verify deployment
-curl https://staging.example.com/health
-
-# Run smoke tests
-npm run test:staging
-```
-
-### Production Deployment
-
-**Scheduled deployment:**
-```markdown
-## Production Deployment Plan
-
-**When**: Tomorrow 10am PST
-**Approver**: @tech-lead
-**Rollback plan**: Revert commit abc1234
-**Monitoring**: Dashboard + alerts
-
-**Pre-deploy checklist**:
-- [ ] Staging verified (24h soak time)
-- [ ] Team notified
-- [ ] Rollback plan ready
-- [ ] Monitoring configured
-
-**Post-deploy checklist**:
-- [ ] Health check passed
-- [ ] Smoke tests passed
-- [ ] Metrics normal
-- [ ] No error spike in logs
-```
-
-**Immediate deployment (urgent fix):**
-```bash
-# Deploy to production (urgent)
-npm run deploy:prod
-
-# Monitor immediately
-tail -f /var/log/app/production.log
-
-# Watch metrics dashboard
-# Check error rates, response times, user activity
-```
-
-### Deployment Verification
+### Known Limitations
 
 ```markdown
-## Deployment Verification
+## Known Limitations / Follow-up
 
-### Health Check
-- [ ] Service responds: `curl https://api.example.com/health`
-- [ ] Database connected
-- [ ] External services reachable
+**Current limitations:**
+- [Any limitations in current implementation]
 
-### Smoke Tests
-- [ ] Critical path works (user login, core feature)
-- [ ] New feature accessible
-- [ ] No 500 errors
+**Potential follow-up work:**
+- [Future improvements or related tasks]
 
-### Metrics Check (first 15 min)
-- [ ] Error rate: Normal (<0.1%)
-- [ ] Response time: Normal (<200ms p95)
-- [ ] Traffic: Normal distribution
-- [ ] No alert notifications
-
-### User Impact
-- [ ] No support tickets about new issues
-- [ ] User feedback: Normal
-- [ ] Feature usage: As expected
-```
-
-## Session Closeout
-
-**Document work session completion**
-
-### Closeout Checklist
-
-```markdown
-## Work Session Closeout
-
-### Completion Status
-- [x] Goal achieved: [Original goal from Plan stage]
-- [x] All deliverables complete: [List from Plan stage]
-- [x] Success criteria met: [Criteria from Plan stage]
-
-### Integration Status
-- [x] Code merged to main
-- [x] Deployed to: [staging/production/both]
-- [x] Integration verified
-- [x] No regressions detected
-
-### Documentation Status
-- [x] Code documented
-- [x] README updated
-- [x] CHANGELOG updated
-- [x] Team notified
-
-### Handoff Items (if applicable)
-- [ ] Follow-up tasks: [List any follow-up work]
-- [ ] Monitoring: [What to watch for]
-- [ ] Known limitations: [Any known issues]
-
-### Session Metrics
-- Time planned: [From Plan stage]
-- Time actual: [Actual time spent]
-- Variance: [+/- minutes]
-```
-
-### Update Issue/Ticket
-
-**Close issue with summary:**
-```markdown
-## Issue #123: Add CSV Export
-
-**Status**: ✅ Completed
-
-**Summary**:
-Implemented CSV export functionality for analytics dashboard.
-Users can now download analytics data as CSV file.
-
-**Changes**:
-- Added CSVService utility
-- Added ExportButton component
-- Integrated with AnalyticsDashboard
-
-**Testing**:
-- 15 new tests (92% coverage)
-- Manual verification: Chrome, Firefox, Safari
-- Staging verification: Passed
-
-**Deployment**:
-- Merged to main: commit abc1234
-- Deployed to staging: 2024-03-15 14:30
-- Production deploy: Scheduled 2024-03-16 10:00
-
-**Related PRs**: #456
-**Documentation**: README updated
-
-Closes #123
-```
-
-### Team Notification
-
-**Notify stakeholders:**
-```markdown
-@product @team: CSV Export feature complete 🎉
-
-**What**: Users can export analytics as CSV
-**Status**: Merged to main, deployed to staging
-**Testing**: 15 tests, manual verification complete
-**Prod deploy**: Tomorrow 10am (if no staging issues)
-
-**Try it**: https://staging.example.com/analytics
-**Docs**: README updated with usage guide
-
-Questions or issues: Reply here or DM
-```
-
-## Cleanup
-
-**Clean up feature branch and local environment**
-
-### Branch Cleanup
-
-```bash
-# Delete local feature branch
-git branch -d feature/csv-export
-
-# Delete remote feature branch (if not auto-deleted)
-git push origin --delete feature/csv-export
-
-# Clean up merged branches
-git fetch --prune
-
-# List branches to verify
-git branch -a
-```
-
-### Local Environment Cleanup
-
-```bash
-# Clear build artifacts (if needed)
-npm run clean
-
-# Clear node_modules (if needed)
-rm -rf node_modules && npm install
-
-# Reset to clean state
-git checkout main
-git pull origin main
-```
-
-## Rollback Procedures
-
-**If integration causes issues**
-
-### Quick Rollback (Critical Issues)
-
-```bash
-# Revert last commit on main
-git checkout main
-git revert HEAD
-git push origin main
-
-# Immediate production deploy of revert
-npm run deploy:prod
-
-# Notify team
-# @team: Rolled back CSV export due to [issue]
-# Investigating root cause, will re-deploy after fix
-```
-
-### Comprehensive Rollback
-
-```bash
-# Identify problem commit
-git log --oneline -10
-
-# Revert specific commit
-git revert <commit-hash>
-
-# Or reset to previous state (careful!)
-git reset --hard <previous-good-commit>
-git push --force origin main  # Only if absolutely necessary
-
-# Redeploy
-npm run deploy:prod
-
-# Document incident
-# Create post-mortem issue
-```
-
-### Rollback Verification
-
-```markdown
-## Rollback Verification
-
-- [ ] Problem commit reverted
-- [ ] Previous version deployed
-- [ ] Service healthy (health check passing)
-- [ ] Metrics back to normal
-- [ ] No errors in logs
-- [ ] Users not affected
-- [ ] Team notified
-- [ ] Post-mortem scheduled
+**Dependencies:**
+- [Any dependencies that need to be updated]
 ```
 
 ## Completion Gate
 
-**Before closing work session, verify:**
-- [ ] Code merged to main branch
-- [ ] All tests passing on main
-- [ ] No merge conflicts or issues
-- [ ] Deployment complete (if applicable)
-- [ ] Integration verified (feature works in target environment)
-- [ ] No regressions detected
-- [ ] Documentation updated
-- [ ] Issue/ticket closed or updated
-- [ ] Team notified
-- [ ] Branch cleaned up
+**Before marking integration stage complete, verify:**
+- [ ] All tests passing
+- [ ] No build errors
+- [ ] Files for commit identified
+- [ ] Commit message prepared
+- [ ] User informed of what to commit
+- [ ] Documentation ready
+- [ ] No debug code or secrets
 
-**Don't close session if:**
-- Merge failed or has conflicts
-- Tests failing on main
-- Deployment failed
-- Feature not working in target environment
-- Regressions detected
-- Critical bugs found
+**Don't mark complete if:**
+- Tests failing
+- Build errors present
+- User not informed of commit details
+- Critical work incomplete
 
 ## Common Mistakes
 
-### Mistake: Merging without updating from main first
-**Problem**: Merge creates conflicts or breaks integration
-**Fix**: Always pull latest main and verify tests before merging
+### Mistake: Automatically committing without asking
+**Problem**: User loses control of git operations
+**Fix**: Always suggest, never execute git commands automatically
 
-### Mistake: Not verifying after merge
-**Problem**: Integration issues discovered later by others
-**Fix**: Always run tests on main after merging
+### Mistake: Not identifying specific files
+**Problem**: User doesn't know what to commit
+**Fix**: List specific file paths in suggestion
 
-### Mistake: Merging with failing tests
-**Problem**: Breaks main branch for entire team
-**Fix**: NEVER merge if tests are failing, fix tests first
+### Mistake: Vague commit messages
+**Problem**: Commit history unclear
+**Fix**: Provide specific, conventional commit messages
 
-### Mistake: Not cleaning up feature branches
-**Problem**: Repository cluttered with old branches
-**Fix**: Delete feature branch immediately after merge
+### Mistake: Including debug code
+**Problem**: Debug code reaches production
+**Fix**: Always check diffs for console.log, debugger, etc.
 
-### Mistake: Deploying without verification
-**Problem**: Bugs reach production
-**Fix**: Always verify in staging before production deploy
+### Mistake: Missing Co-Authored-By
+**Problem**: AI contribution not attributed
+**Fix**: Always include Co-Authored-By line
 
-### Mistake: Not notifying team
-**Problem**: Team unaware of changes, causes confusion
-**Fix**: Always notify stakeholders after significant changes
-
-### Mistake: Inadequate deployment verification
-**Problem**: Issues discovered hours later
-**Fix**: Monitor for 15+ minutes after production deploy
+### Mistake: Not verifying tests
+**Problem**: Broken code suggested for commit
+**Fix**: Always run tests before suggesting commit
 
 ## Integration Examples
 
-### Example 1: Deep Work Mode (Feature Merge)
+### Example 1: Feature Complete (Deep Work Mode)
 
 ```markdown
-## Integration: CSV Export Feature
+## Ready to Commit: CSV Export Feature
 
-### Pre-Merge Verification
-- [x] All 15 tests passing on feature branch
-- [x] Code reviewed and approved by @teammate
-- [x] Branch up-to-date with main (rebased 5 min ago)
-- [x] No merge conflicts
-- [x] CI/CD pipeline passing
+I've completed the CSV export feature for the analytics dashboard.
 
-### Merge
+**Summary:**
+Added CSV export button to analytics dashboard. Users can now download their analytics data as a CSV file.
+
+**Files to commit:**
+- src/components/ExportButton.tsx (new component)
+- src/services/CSVService.ts (CSV generation logic)
+- src/pages/Dashboard.tsx (integrated button)
+- tests/CSVService.test.ts (15 new tests)
+- tests/ExportButton.test.tsx (8 new tests)
+- README.md (documented export feature)
+
+**Testing:**
+- 23 new tests added
+- All 142 tests passing
+- Manual testing in Chrome, Firefox, Safari
+
+**Suggested commit message:**
+```
+feat(export): add CSV export to analytics dashboard
+
+Users can now export analytics data as CSV files.
+
+Changes:
+- Added ExportButton component with download trigger
+- Added CSVService for data formatting
+- Integrated into Dashboard component
+- Added 23 tests with 95% coverage
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**To commit:**
 ```bash
-git checkout main
-git pull origin main
-git merge --squash feature/csv-export
-git commit -m "feat(export): add CSV export functionality
+git add src/components/ExportButton.tsx \
+  src/services/CSVService.ts \
+  src/pages/Dashboard.tsx \
+  tests/CSVService.test.ts \
+  tests/ExportButton.test.tsx \
+  README.md
 
-Adds CSV export button to analytics dashboard.
+git commit -m "feat(export): add CSV export to analytics dashboard
 
-Key changes:
-- CSVService utility for CSV generation
-- ExportButton component with download trigger
-- Integration with analytics dashboard
+Users can now export analytics data as CSV files.
 
-Tests: 15 new tests, 92% coverage
-Reviewed-by: @teammate
-Closes #123
+Changes:
+- Added ExportButton component with download trigger
+- Added CSVService for data formatting
+- Integrated into Dashboard component
+- Added 23 tests with 95% coverage
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
-git push origin main
 ```
 
-### Verification
-- [x] Merge commit on main: abc1234
-- [x] All 142 tests passing on main
-- [x] CI/CD pipeline passed (5 min)
-- [x] Auto-deployed to staging
-- [x] Feature verified in staging
-- [x] No console errors
-- [x] CSV downloads correctly
-
-### Deployment
-- Staging: ✅ Deployed automatically (14:35)
-- Production: Scheduled for tomorrow 10am
-
-### Closeout
-- [x] Issue #123 closed with summary
-- [x] Team notified in #engineering
-- [x] Branch feature/csv-export deleted
-- [x] README updated with export docs
-- [x] Monitoring: Set alert for export errors
-
-**Session complete**: 2.5 hours (planned 2.5 hours) ✅
+Ready to commit?
 ```
 
-### Example 2: Quick Fix Mode (Bug Fix Merge)
+### Example 2: Bug Fix (Quick Fix Mode)
 
 ```markdown
-## Integration: Submit Button Fix
+## Ready to Commit: Submit Button Fix
 
-### Merge
+Fixed the double-submission bug in forms.
+
+**Files to commit:**
+- src/components/Form.tsx (added disabled state)
+- tests/Form.test.tsx (added test for disabled state)
+
+**Suggested commit message:**
+```
+fix(forms): disable submit button during API call
+
+Prevents double-submission when users click multiple times.
+
+Closes #456
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**To commit:**
 ```bash
-git checkout main
-git pull origin main
-git merge --squash feature/fix-button
+git add src/components/Form.tsx tests/Form.test.tsx
+
 git commit -m "fix(forms): disable submit button during API call
+
+Prevents double-submission when users click multiple times.
 
 Closes #456
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
-git push origin main
 ```
 
-### Verification
-- [x] Tests passing on main
-- [x] Auto-deployed to staging
-- [x] Fix verified in staging
-
-### Deployment
-- Production: Deployed immediately (urgent fix)
-- Verified: No 500 errors, metrics normal
-
-### Closeout
-- [x] Issue #456 closed
-- [x] Branch deleted
-
-**Session complete**: 30 minutes (planned 30 minutes) ✅
+Ready to commit?
 ```
 
-### Example 3: Collaboration Mode (Team Feature)
+### Example 3: Refactor (Collaboration Mode)
 
 ```markdown
-## Integration: SSO Authentication
+## Ready to Commit: Auth Logic Refactor
 
-### Pre-Merge
-- [x] PR #789 approved by @tech-lead and @security
-- [x] All tests passing
-- [x] Security review complete
-- [x] Documentation reviewed
+Refactored authentication validation logic for better readability.
 
-### Merge
-```bash
-# Merged via GitHub PR UI (squash merge)
-# PR #789: feat(auth): add SSO authentication
-# Commit: def5678
+**Files to commit:**
+- src/auth/validator.ts (simplified logic)
+- src/auth/validator.test.ts (updated tests)
+
+**Testing:**
+- All existing tests still passing
+- No functional changes
+- Same behavior, cleaner code
+
+**Suggested commit message:**
+```
+refactor(auth): simplify login validation logic
+
+No functional changes, improved code readability.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 ```
 
-### Verification
-- [x] Merged to main successfully
-- [x] All tests passing (CI/CD passed)
-- [x] Deployed to staging
-- [x] SSO login verified in staging
-- [x] Backward compatibility verified (email login still works)
+**To commit:**
+```bash
+git add src/auth/validator.ts src/auth/validator.test.ts
 
-### Deployment Plan
-**Staging**: ✅ Deployed (15:00)
-**Production**: Scheduled for 2024-03-16 10:00
-**Approver**: @tech-lead
-**Rollback plan**: Revert commit def5678
+git commit -m "refactor(auth): simplify login validation logic
 
-### Team Notification
-@product @eng: SSO authentication merged! 🎉
+No functional changes, improved code readability.
 
-Try it in staging: https://staging.example.com/login
-Prod deploy: Tomorrow 10am
-Docs: Updated in Wiki
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
 
-### Closeout
-- [x] Issue #234 closed
-- [x] Wiki documentation updated
-- [x] Migration guide written (email to SSO)
-- [x] Support team notified
-- [x] Monitoring dashboard updated
-
-**Session complete**: 4 hours (planned 4 hours) ✅
+Ready to commit?
 ```
 
 ## Integration with Other Stages
 
 **Receives from:**
-- **Review stage**: Reviewed, clean code ready for merge
+- **Review stage**: Reviewed, clean code ready for integration
 - **Test stage**: Test results confirming quality
 
-**Feeds into:**
-- **Next work session**: Clean main branch for future work
-- **Team**: Completed feature available to all
+**Provides to:**
+- **User**: Clear commit instructions and messages
+- **Next work session**: Documented completion for continuity
 
-**Informs:**
-- **Project tracking**: Updated issue/ticket status
-- **Team communication**: Completion notifications
-- **Deployment logs**: What's in production
+**Does NOT do:**
+- Automatic git commits
+- Automatic git merges
+- Automatic git pushes
+- Any git operations without user approval
 
-## Tips for Better Integration
+## Tips for Better Integration Suggestions
 
 **Do:**
-- Always update from main before merging
-- Run tests on main after merging
-- Verify integration in deployed environment
-- Clean up feature branches immediately
-- Notify team of significant changes
-- Monitor production after deployment
-- Document deployment in CHANGELOG
-- Close issues with comprehensive summary
+- Always list specific file paths
+- Provide complete commit messages
+- Include verification commands
+- Check for debug code before suggesting
+- Verify tests pass before suggesting
+- Use natural language in commit messages
+- Include Co-Authored-By line
 
 **Don't:**
-- Merge with failing tests (breaks team)
-- Skip post-merge verification
-- Leave feature branches around
-- Deploy to production without staging verification
-- Forget to notify stakeholders
-- Ignore deployment issues
-- Skip monitoring after deploy
-- Close issues without documentation
+- Run git commands automatically
+- Suggest committing debug code
+- Use vague commit messages
+- Forget to verify tests first
+- Include secrets or credentials
+- Assume user wants to commit
+- Skip informing user of what's ready
 
-## Advanced Integration Techniques
+## Advanced Integration Scenarios
 
-### Technique 1: Canary Deployment
+### Scenario 1: Multiple Logical Changes
 
-**Gradual rollout to minimize risk:**
-
-```markdown
-## Canary Deployment
-
-**Phase 1: 5% of users (30 min)**
-- Deploy to canary servers
-- Monitor error rates, latency
-- Check user feedback
-
-**Phase 2: 25% of users (1 hour)**
-- Expand if Phase 1 successful
-- Continue monitoring
-- Ready to rollback
-
-**Phase 3: 100% of users**
-- Full rollout if no issues
-- Continue monitoring for 24h
-
-**Rollback trigger**:
-- Error rate >0.5%
-- Latency >2x normal
-- User complaints
-```
-
-### Technique 2: Feature Flags
-
-**Deploy code without activating feature:**
-
-```typescript
-// Deploy with feature flag OFF
-const FEATURE_CSV_EXPORT = process.env.FEATURE_CSV_EXPORT === 'true';
-
-function Dashboard() {
-  return (
-    <div>
-      {FEATURE_CSV_EXPORT && <ExportButton />}
-    </div>
-  );
-}
-```
+If work contains multiple independent changes:
 
 ```markdown
-## Feature Flag Deployment
+## Ready to Commit: Multiple Changes
 
-**Deploy to production**: Feature flag OFF
-**Staging verification**: Enable flag in staging
-**Production rollout**:
-- Day 1: Enable for internal users
-- Day 2: Enable for beta users
-- Day 3: Enable for all users
+I've completed work on several independent changes. I recommend separate commits:
 
-**Advantage**: Deploy without risk, enable gradually
+**Commit 1: CSV Export Feature**
+Files: [list files]
+Message: "feat(export): add CSV export"
+
+**Commit 2: Fix Login Redirect**
+Files: [list files]
+Message: "fix(auth): fix login redirect"
+
+This keeps git history clean and makes review easier.
+Would you like to commit these separately?
 ```
 
-### Technique 3: Blue-Green Deployment
+### Scenario 2: Large Refactor
 
-**Zero-downtime deployment:**
+For large refactors:
 
 ```markdown
-## Blue-Green Deployment
+## Ready to Commit: Auth System Refactor
 
-**Current**: Blue environment (production traffic)
-**New**: Green environment (deploy new version)
+This is a large refactor. I recommend:
 
-**Process**:
-1. Deploy to Green environment
-2. Test Green environment (no user traffic)
-3. Switch traffic from Blue to Green
-4. Monitor Green environment
-5. Keep Blue as instant rollback option
+**Option 1: Single commit (recommended for atomic changes)**
+- All changes in one commit
+- Easier to revert if needed
+- Message: "refactor(auth): simplify authentication system"
 
-**Rollback**: Switch traffic back to Blue (instant)
+**Option 2: Multiple commits (if review requested by pieces)**
+- Split into logical chunks
+- Easier to review incrementally
+
+Which would you prefer?
 ```
 
 ## Integration Checklist Template
 
 ```markdown
-## Integration Checklist: [Feature Name]
+## Integration Checklist: [Feature/Fix Name]
 
-**Date**: [Date]
-**Branch**: [feature/branch-name]
-**Commit**: [commit-hash]
-
-### Pre-Merge
-- [ ] All tests passing on feature branch
-- [ ] Code reviewed and approved
-- [ ] Branch up-to-date with main
-- [ ] No merge conflicts
-- [ ] CI/CD pipeline passing
+### Code Readiness
+- [ ] All tests passing
+- [ ] No build errors
+- [ ] No linting errors
 - [ ] Documentation updated
 
-### Merge
-- [ ] Merged to main (strategy: [merge/squash/rebase])
-- [ ] Merge commit: [hash]
-- [ ] Branch deleted
+### Commit Preparation
+- [ ] Files identified
+- [ ] Commit message prepared
+- [ ] No debug code included
+- [ ] No secrets included
+- [ ] Co-Authored-By included
 
-### Verification
-- [ ] Tests passing on main
-- [ ] CI/CD pipeline passed
+### User Communication
+- [ ] User informed of files to commit
+- [ ] Commit message provided
+- [ ] Commands to run provided
+- [ ] Verification steps provided
+
+### Quality Checks
+- [ ] Changes align with requirements
+- [ ] Tests cover new functionality
 - [ ] No regressions detected
+- [ ] Performance acceptable
 
-### Deployment
-- [ ] Staging: [Deployed/Pending/N/A]
-- [ ] Production: [Deployed/Scheduled/N/A]
-- [ ] Deployment verified
-- [ ] Monitoring configured
-
-### Closeout
-- [ ] Issue/ticket closed
-- [ ] Team notified
-- [ ] Documentation updated
-- [ ] Session metrics recorded
-
-**Status**: [Complete/Blocked/Issues]
-**Notes**: [Any relevant notes]
-```
+**Status**: [Ready/Blocked/Needs Review]
+**Blockers**: [List any blockers]
