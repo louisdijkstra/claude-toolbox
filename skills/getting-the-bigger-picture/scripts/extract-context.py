@@ -39,6 +39,7 @@ def extract_context(docs_path):
 
 
 def main():
+    """Extract and display project context from documentation files."""
     docs_path = find_docs_directory()
 
     if not docs_path:
