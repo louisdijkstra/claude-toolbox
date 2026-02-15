@@ -24,6 +24,12 @@ When creating a checkpoint:
 2. Create git commit or stash with checkpoint name
 3. Log checkpoint to `.claude/checkpoints.log`:
 
+**Language Style for Checkpoint Messages:**
+- Use natural, simple, informal language
+- Write like you're talking to a teammate
+- Be direct and clear
+- Example: "auth working" not "authentication subsystem successfully implemented"
+
 ```bash
 echo "$(date +%Y-%m-%d-%H:%M) | $CHECKPOINT_NAME | $(git rev-parse --short HEAD)" >> .claude/checkpoints.log
 ```

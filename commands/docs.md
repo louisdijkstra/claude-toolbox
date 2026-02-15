@@ -78,6 +78,14 @@ Available templates in `~/.claude/docs/templates/`:
 - Working links and references
 - Logical organization
 
+**Language Style for Documentation:**
+- Use natural, simple, informal language
+- Write like you're explaining to a colleague
+- Be direct and clear, avoid corporate or overly formal tone
+- Use "you" and "we" naturally
+- Example: "Run this command to start" not "The command should be executed to initiate"
+- Example: "This fixes the bug where..." not "This addresses the issue whereby..."
+
 **Maintenance:**
 - Update docs with code changes
 - Review quarterly for staleness

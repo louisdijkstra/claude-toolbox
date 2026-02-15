@@ -61,6 +61,13 @@ Use `/review` when:
    - Suggested fix
 4. **Block if critical** - Don't proceed with CRITICAL issues
 
+**Language Style for Review Comments:**
+- Use natural, simple, informal language
+- Write like a helpful teammate, not a robot
+- Be direct and specific, not formal
+- Example: "This function is too long, let's split it up" not "It is recommended to refactor this function to improve maintainability"
+- Example: "Missing validation here" not "Input validation should be implemented"
+
 ## Review Report Format
 
 ```

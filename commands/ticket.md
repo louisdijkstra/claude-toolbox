@@ -64,6 +64,13 @@ Use `/ticket` when:
 - Provide summary
 - Archive artifacts
 
+**Language Style for Ticket Communication:**
+- Use natural, simple, informal language when writing ticket updates
+- Write like you're talking to a colleague or user
+- Be direct and clear, not formal or corporate
+- Example: "Fixed the CSV export bug. It works now." not "The CSV export functionality has been successfully remediated"
+- Example: "Added the feature you requested" not "Implementation of the requested functionality has been completed"
+
 ## Ticket Types
 
 **Bug Report:**
