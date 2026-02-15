@@ -32,7 +32,7 @@ cat docs/PROJECT_DESCRIPTION.md 2>/dev/null || cat docs/FULL_PROJECT_DESCRIPTION
 
 ### 2. Research Best Practices
 
-**CRITICAL**: Use the `researching-best-practices` skill to find production standards for the specific tech stack.
+**CRITICAL**: Use the `deep-research` skill to find production standards for the specific tech stack.
 
 **Search queries:**
 - Python: "Python production repository structure for [API/CLI] with Docker deployment"
@@ -265,7 +265,7 @@ CMD [dev command with hot reload]
 
 - `determining-project-goal` - Creates docs this skill reads
 - `getting-the-bigger-picture` - Similar context-gathering approach
-- `researching-best-practices` - Essential for finding standards
+- `deep-research` - Essential for finding standards
 
 ## Notes
 

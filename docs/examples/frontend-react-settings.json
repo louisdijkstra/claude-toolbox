@@ -1,0 +1,27 @@
+{
+  "_comment": "Example .claude/settings.json for React/TypeScript frontend projects",
+  "_description": "Disables backend-focused MCPs, keeps frontend tooling active",
+
+  "disabledMcpServers": [
+    "supabase",
+    "railway",
+    "firecrawl",
+    "cloudflare-docs",
+    "sentry",
+    "langfuse-docs",
+    "sequential-thinking"
+  ],
+
+  "_active_mcps": [
+    "package-registry",
+    "context7",
+    "augments",
+    "mdn-lookup",
+    "magg",
+    "github",
+    "memory",
+    "vercel"
+  ],
+
+  "_total_active": "8 MCPs"
+}

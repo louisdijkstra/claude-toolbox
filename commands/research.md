@@ -4,7 +4,7 @@ description: Research production-ready best practices for features or technical 
 
 # Research Command
 
-This command researches best practices using the **researching-best-practices** and **deep-research** skills.
+This command researches best practices using the **deep-research** and **deep-research** skills.
 
 ## What This Command Does
 
@@ -113,7 +113,7 @@ Research must be:
 
 ## Related Skills
 
-- **researching-best-practices** - Production-ready research
+- **deep-research** - Production-ready research
 - **deep-research** - 2026 standards validation
 - **getting-the-bigger-picture** - Project context
 - **pattern-discovery** - Existing codebase patterns

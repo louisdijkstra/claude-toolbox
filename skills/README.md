@@ -1,6 +1,6 @@
 # Claude Code Skills
 
-This directory contains 24 skills that provide structured approaches to common development and project management tasks. Each skill is a defined workflow with clear stages, practical patterns, and integration points.
+This directory contains 23 skills that provide structured approaches to common development and project management tasks. Each skill is a defined workflow with clear stages, practical patterns, and integration points.
 
 ## Using Skills
 
@@ -56,7 +56,7 @@ Skills can be chained together in workflows where output from one feeds into ano
 - **handle-ticket**: Execute end-to-end ticket workflow from intake to delivery. Handles support tickets, bug reports, and feature requests.
 - **context-manager**: Manage conversation context and shared state. Maintain consistent understanding across sessions and coordinate parallel workflows.
 - **docs-manager**: Create, maintain, and update project documentation. Ensure docs stay synchronized with codebase.
-- **researching-best-practices**: Research production-ready best practices for implementing features. Uses project context to find relevant solutions.
+- **deep-research**: Research production-ready best practices for implementing features. Uses project context to find relevant solutions.
 
 ### Setup & Infrastructure (4 skills)
 
@@ -72,12 +72,6 @@ Skills can be chained together in workflows where output from one feeds into ano
 **Organizing Code and Repository Structure**
 
 - **structuring-repository**: Propose production-ready repository structure. Supports both local and external deployment.
-
-### UI/UX (1 skill)
-
-**Frontend Development and Design Consistency**
-
-- **applying-look-and-feel**: Apply consistent UI by reading design docs. Detect changes, update frontend accordingly, preserve design unless requested otherwise.
 
 ### Management & Tools (1 skill)
 
@@ -133,7 +127,6 @@ Skills can be chained together in workflows where output from one feeds into ano
 
 **Documentation Phase:**
 - docs-manager
-- applying-look-and-feel
 
 ### By Team Role
 
@@ -269,7 +262,7 @@ To add a new skill:
 ## Version History
 
 **Current Version**: 1.0
-- 24 production-ready skills
+- 23 production-ready skills
 - Full lifecycle coverage (planning through deployment)
 - 6 main categories
 - Multi-tier review processes

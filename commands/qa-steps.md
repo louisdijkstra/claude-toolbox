@@ -1,18 +1,98 @@
-Look at the changes since the branch diverged from the latest branch (often dev). 
+---
+description: Generate QA testing steps for changes made in the current branch. Documents what was implemented and how to test it.
+---
 
-Write a short document. It should consists of: 
+# QA Steps Command
 
-1. A short description of the implemented feature. This should be a few lines and contain little to now code reverences.  
-2. Steps you can take to test whether the feature works in the Project UI (if applicable), the Langfuse UI (if applicable) or the Prefect UI (if applicable). If the feature cannot be properly or easily testing, say so. 
+This command analyzes branch changes and generates human-readable QA documentation.
 
-The text should be concise and should look like it was written by a human, not an AI. 
+## What This Command Does
 
-Example structure: 
+1. **Analyze Changes** - Review git diff since branch diverged from main/dev
+2. **Summarize Features** - Describe what was implemented
+3. **Generate Test Steps** - Create actionable testing instructions
+4. **Identify UI/Services** - Determine where to test (Project UI, Langfuse, Prefect, etc.)
+5. **Format Document** - Output concise, human-written style
 
-## What was implemented 
+## When to Use
 
-(description goes here)
+Use `/qa-steps` when:
+- Ready to hand off feature for testing
+- Need QA documentation for a branch
+- Want to document testing procedures
+- Preparing for code review or merge
+- Documenting feature completion
 
-## Testing 
+## How It Works
 
-(description of how to perform the tests). 
+1. **Run git diff** against base branch (usually dev or main)
+2. **Identify changed features** from code analysis
+3. **Determine applicable UIs** (Project, Langfuse, Prefect, etc.)
+4. **Write feature summary** - high-level, minimal code references
+5. **Create test steps** - specific actions to verify functionality
+6. **Note limitations** - if feature can't be easily tested, say so
+7. **Format naturally** - write like a human, not AI
+
+## Output Format
+
+```
+## What was implemented
+
+[Brief description of the feature/change in 2-4 lines.
+Focus on user-facing impact, not implementation details.]
+
+## Testing
+
+[Step-by-step testing instructions:]
+
+1. [Action to take]
+2. [Expected result]
+3. [How to verify it worked]
+
+[If applicable:]
+- Test in Project UI: [specific steps]
+- Check Langfuse: [what to look for]
+- Verify in Prefect: [expected behavior]
+
+[If not testable:]
+This change can't be easily tested through the UI because [reason].
+Verify by [alternative approach, e.g., code review, unit tests].
+```
+
+## Quality Criteria
+
+QA steps must be:
+- **Concise** - Brief feature description, focused test steps
+- **Actionable** - Clear steps anyone can follow
+- **Human-written** - Natural language, not AI-sounding
+- **Specific** - Reference actual UIs and features
+- **Honest** - Acknowledge if testing is difficult/impossible
+
+## Writing Style
+
+**DO:**
+- Write like talking to a teammate
+- Use simple, direct language
+- Be specific about what to test
+- List concrete steps
+- Reference actual UI elements
+
+**DON'T:**
+- Use AI phrases like "implemented enhancements"
+- Include excessive code references
+- Write long technical explanations
+- Use corporate/formal language
+- Make vague statements
+
+## Integration with Other Commands
+
+- Use `/qa-steps` after completing a feature
+- Use before `/mr` to document testing approach
+- Use with `/review` to validate test coverage
+- Reference in merge request descriptions
+
+## Related Skills
+
+- **docs-manager** - Documentation creation and maintenance
+- **review-system** - Code review before QA
+- **dev-flow** - Part of integration stage

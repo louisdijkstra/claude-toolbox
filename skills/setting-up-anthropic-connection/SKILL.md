@@ -414,6 +414,6 @@ async def batch_process(prompts):
 
 **Use with other skills:**
 - `getting-the-bigger-picture`: Check project constraints before choosing models/caching strategy
-- `researching-best-practices`: For complex decisions (e.g., custom tool validation)
+- `deep-research`: For complex decisions (e.g., custom tool validation)
 
 **Before implementing:** Examine existing agent code to maintain consistency with current patterns.

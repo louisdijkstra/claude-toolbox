@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "package-registry": {
+      "command": "npx",
+      "args": ["-y", "package-registry-mcp"],
+      "autoapprove": ["search", "get_package_info"]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@brave/brave-search-mcp-server"],
+      "autoapprove": ["brave_web_search"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "~/.claude"],
+      "autoapprove": ["read_file", "list_directory", "get_file_info"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "autoapprove": ["create_memory", "read_memory", "search_memories"]
+    }
+  }
+}

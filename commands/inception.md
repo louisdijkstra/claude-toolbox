@@ -184,4 +184,4 @@ Inception creates:
 - **project-inception** - Complete project launch
 - **determining-project-goal** - Interactive goal definition
 - **structuring-repository** - Repository organization
-- **researching-best-practices** - Architecture decisions
+- **deep-research** - Architecture decisions

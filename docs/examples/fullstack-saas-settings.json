@@ -1,0 +1,28 @@
+{
+  "_comment": "Example .claude/settings.json for full-stack SaaS applications",
+  "_description": "Balanced MCP set covering frontend, backend, and deployment",
+
+  "disabledMcpServers": [
+    "railway",
+    "firecrawl",
+    "cloudflare-docs",
+    "mdn-lookup"
+  ],
+
+  "_active_mcps": [
+    "sentry",
+    "langfuse-docs",
+    "package-registry",
+    "context7",
+    "augments",
+    "magg",
+    "github",
+    "memory",
+    "sequential-thinking",
+    "supabase",
+    "vercel"
+  ],
+
+  "_total_active": "11 MCPs - comprehensive tooling for SaaS",
+  "_note": "This is on the higher end (11 MCPs). Consider disabling more if context fills up."
+}

@@ -1,0 +1,154 @@
+{
+  "model": "sonnet",
+  "enabledPlugins": {
+    "superpowers@superpowers-marketplace": false
+  },
+  "skipDangerousModePermissionPrompt": true,
+
+  "env": {
+    "MAX_THINKING_TOKENS": "10000",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
+  },
+
+  "enabledMcpjsonServers": ["package-registry", "brave-search", "filesystem", "memory"],
+
+  "permissions": {
+    "autoApproveTools": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
+    "mcpAutoApprove": {
+      "package-registry": ["search", "get_package_info"],
+      "brave-search": ["brave_web_search"],
+      "filesystem": ["read_file", "list_directory", "get_file_info"],
+      "memory": ["create_memory", "read_memory", "search_memories"]
+    },
+    "bashSafePatterns": [
+      "^git (status|diff|log|show|branch|blame)($| )",
+      "^git commit($| -m)",
+      "^ls($| )",
+      "^cat (\\./|~/\\.claude/|~/\\.claude/)",
+      "^pwd$",
+      "^npm (list|view|search|outdated)($| )",
+      "^python -m (json\\.tool|py_compile|unittest)($| )",
+      "^find \\./",
+      "^grep -r .* \\./",
+      "^uv (sync|install|run|pip list)($| )"
+    ],
+    "bashDangerousPatterns": [
+      "git push --force",
+      "git reset --hard",
+      "rm -rf",
+      "dd if=",
+      "> /etc/",
+      "sudo",
+      "chmod 777",
+      "chmod -R 777",
+      "curl.*\\| *(bash|sh)",
+      "wget.*\\| *(bash|sh)",
+      "git stash drop",
+      "git branch -D"
+    ],
+    "safeGuardrails": {
+      "maxConcurrentFileEdits": 10,
+      "preventForcePush": true,
+      "protectedBranches": ["main", "master", "production"],
+      "requireBashConfirmation": true
+    }
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash && (npm run dev|pnpm dev|yarn dev|bun dev)",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/block-dev-without-tmux.js"
+        }],
+        "description": "Ensure dev servers run in tmux for log access"
+      },
+      {
+        "matcher": "Bash && git push",
+        "hooks": [{
+          "type": "command",
+          "command": "echo '[Hook] Review changes before push' >&2"
+        }],
+        "description": "Reminder to review before pushing"
+      },
+      {
+        "matcher": "Write && .md && !(README|CLAUDE)",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/block-random-md.js"
+        }],
+        "description": "Keep docs consolidated"
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/suggest-compact.js"
+        }],
+        "description": "Strategic compaction suggestions"
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Edit && (.ts|.tsx|.js|.jsx)",
+        "hooks": [{
+          "type": "command",
+          "command": "npx prettier --write \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true"
+        }],
+        "description": "Auto-format TypeScript/JavaScript"
+      },
+      {
+        "matcher": "Edit && (.ts|.tsx|.js|.jsx)",
+        "hooks": [{
+          "type": "command",
+          "command": "grep -n 'console\\.log' \"$CLAUDE_TOOL_FILE_PATH\" && echo '[Hook] ⚠️  Remove console.log before commit' >&2 || true"
+        }],
+        "description": "Warn about console.log"
+      },
+      {
+        "matcher": "Bash && gh pr create",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/log-pr-url.js"
+        }],
+        "description": "Log PR URL and review command"
+      }
+    ],
+
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/session-end.js"
+        }],
+        "description": "Save session summary and extract patterns"
+      }
+    ],
+
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/session-start.js"
+        }],
+        "description": "Load previous context and detect environment"
+      }
+    ],
+
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [{
+          "type": "command",
+          "command": "node ~/.claude/hooks/scripts/pre-compact.js"
+        }],
+        "description": "Save state before compaction"
+      }
+    ]
+  }
+}

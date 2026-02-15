@@ -30,7 +30,7 @@ Implement production-grade logging across entire stack using free services. Setu
 
 ## Standard
 
-Use researching-best-practices skill to determine the best fit
+Use deep-research skill to determine the best fit
 for the current set-up. If need be, use getting-the-bigger-picture 
 skill 
 

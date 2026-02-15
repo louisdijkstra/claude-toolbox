@@ -1,0 +1,63 @@
+# Session and History Data
+history.jsonl
+shell-snapshots/
+session-env/
+file-history/
+
+# Project Session Files
+# Ignore session transcripts, session-specific subdirectories, and memory files
+projects/*/*.jsonl
+projects/*/[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*/
+projects/*/memory/
+
+# Cache and Temporary Files
+cache/
+paste-cache/
+stats-cache.json
+
+# Debug and Telemetry
+debug/
+telemetry/
+statsig/
+
+# Tasks and Todos
+tasks/
+todos/
+plans/
+
+# IDE and Browser Data
+ide/
+chrome/
+
+# Downloads
+downloads/
+
+# Local Settings (may contain sensitive data)
+settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# OS-specific
+.DS_Store
+Thumbs.db

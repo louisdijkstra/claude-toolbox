@@ -119,7 +119,7 @@ Plan the technical approach:
 [How will this scale as usage grows?]
 ```
 
-**Use skill:** `/getting-the-bigger-picture` and `/researching-best-practices` for validation
+**Use skill:** `/getting-the-bigger-picture` and `/deep-research` for validation
 
 ### Stage 4: Repository Structure (30-45 minutes)
 
