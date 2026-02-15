@@ -1,11 +1,4 @@
-## Communication Preferences
-- Concise, technical responses
-- Use GitHub-flavored markdown for formatting
-- Reference code with file_path:line_number format
-- No emojis unless explicitly requested
-- No colon before tool calls
-
-## Development Philosophy
+## Philosophy
 - Clarity over cleverness
 - No premature abstraction or speculative features
 - Replace, don't deprecate
@@ -13,41 +6,54 @@
 - Ship working code, then iterate
 - Avoid over-engineering
 
-## Code Quality Principles (Language-Agnostic)
-- Write self-documenting code with meaningful names
-- Keep functions small and single-purpose
+## Communication
+- Concise, technical responses
+- GitHub-flavored markdown
+- Reference code with file_path:line_number
+- No emojis unless explicitly requested
+- No colon before tool calls
+
+## Code
+- Self-documenting code with meaningful names
+- Small, single-purpose functions
 - Comments explain "why", not "what"
 - Avoid unnecessary complexity
-- Follow consistent naming conventions within each project
+- Consistent naming within each project
 - Prioritize readability and maintainability
+- Imports at top of file (except lazy loading for infrequent modules)
+- Comments/docstrings describe current logic, not change history
 
-## Git Workflow
-- Use conventional commit format: type(scope): description
-- Keep commit messages to a single line
-- Make commits atomic and focused
+## Git
+- Conventional commits: type(scope): description
+- Single-line commit messages, atomic commits
 - Branch naming: feature/*, bug/*, refactor/*
-- Never mention AI assistance in commits or pull requests
+- Never mention AI assistance in commits or PRs
+- Human-sounding messages (commit, MR, Teams)
+- Don't mention tests passing in MRs (assumed)
+- Don't suggest commits (user decides)
+- Don't add TDD/best-practice comments
+- No cost estimates; careful with time estimates
 
-## Testing Philosophy
+## Testing
 - Test critical paths and edge cases
-- Prefer simple, maintainable tests over comprehensive coverage
+- Simple, maintainable tests over high coverage
 - Don't over-test trivial code
-- Tests should document expected behavior
-- Keep testing proportional to risk
+- Tests document expected behavior
+- Testing proportional to risk
 
-## Security Mindset
-- Validate input at system boundaries
-- Never commit secrets, credentials, or sensitive data
-- Consider OWASP Top 10 vulnerabilities
-- Implement proper error handling without leaking implementation details
-- Use secure defaults
+## Security
+- Validate input at boundaries
+- Never commit secrets or credentials
+- Consider OWASP Top 10
+- Error handling without leaking implementation details
+- Secure defaults
 
-## Code Review Standards
-- Review for correctness, clarity, and security first
+## Code Review
+- Correctness, clarity, security first
 - Challenge unnecessary complexity
 - Verify tests cover new functionality
-- Check for performance implications
-- Ensure changes align with project goals
+- Check performance impact
+- Align with project goals
 
-## Custom Abbreviations
+## Abbreviations
 - DCAC = "Don't change any code"
