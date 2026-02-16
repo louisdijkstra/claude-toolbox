@@ -1,19 +1,35 @@
+---
+name: setting-up-pydanticai
+description: Set up PydanticAI for production-grade AI agents with type safety, observability, error handling, and testing. Includes FastAPI integration and comprehensive testing infrastructure.
+---
+
 # Setting Up PydanticAI
 
 ## Purpose
-Set up PydanticAI for production-grade AI agent development with type safety, observability, error handling, and testing. Automatically configures integration with FastAPI, Langfuse/OpenTelemetry tracing, AWS Bedrock (or other providers), and comprehensive testing infrastructure.
+Set up PydanticAI for production-grade AI agent development with type safety, structured output validation, observability, and comprehensive testing. Automatically configures integration with FastAPI, Langfuse/Pydantic Logfire tracing, LLM providers, and testing infrastructure.
 
-## When to Invoke
+## When to Use This Skill
+
 Use this skill when:
-- Starting new AI agent development with modern best practices
-- Migrating from LangChain or LlamaIndex to PydanticAI
-- Setting up type-safe agent infrastructure
-- Need FastAPI integration for streaming agent responses
-- Require production-grade error handling and observability
+- Starting new AI agent development with type safety requirements
+- Migrating from LangChain/LlamaIndex to type-safe architecture
+- Building agents with structured, validated outputs
+- Need FastAPI integration for streaming responses
+- Require compile-time type checking for agent code
 - Building multi-agent systems with dependency injection
+- Production deployment requires validation guarantees
+
+**Do NOT use for:**
+- Simple prototypes where type safety isn't critical (use ai-framework-setup-langchain)
+- Rapid experimentation without validation needs (use ai-framework-setup-langchain)
+- Projects where dynamic typing is preferred (Python's strength, use LangChain)
+- Complex state machines with loops/branching (use ai-framework-build-langgraph instead)
+- Multi-agent coordination requiring shared state (use ai-framework-build-langgraph)
+- Projects already using LangGraph or CrewAI (use framework-specific skills)
+
+**If uncertain:** Use this skill when type safety and structured output validation are critical requirements. PydanticAI excels at single-agent or loosely-coupled multi-agent systems where each agent has clear inputs/outputs validated via Pydantic models. For complex workflows with shared state or orchestration needs, use ai-framework-build-langgraph instead. If completely uncertain about framework choice, invoke ai-framework-select first.
 
 ## Prerequisites
-Before running this skill, ensure:
 - Python 3.10+ installed (3.13+ recommended)
 - Project uses `uv` for dependency management
 - FastAPI backend exists (if integrating with API)
@@ -37,967 +53,247 @@ Read project documentation and configuration to understand:
 3. Which LLM provider(s) to support?
 4. Existing observability platform to integrate with?
 
-**Tools**: Read CLAUDE.md, pyproject.toml, directory structure
-
 ### Step 2: Install PydanticAI Dependencies
 
-Install appropriate extras based on project needs:
+Install appropriate extras based on project needs.
 
-**Base installation**:
-```bash
-cd <project-directory>
-uv add pydantic-ai
-```
+See EXAMPLES.md → "Installation" for:
+- Base installation commands
+- Provider-specific extras (bedrock, anthropic, openai, google)
+- Observability extras (logfire)
+- Testing dependencies (inline-snapshot, dirty-equals, pytest-asyncio)
+- Optional durable execution extras (temporal, dbos, prefect)
 
-**With provider-specific extras**:
-```bash
-# AWS Bedrock
-uv add "pydantic-ai-slim[bedrock]"
-
-# Anthropic
-uv add "pydantic-ai-slim[anthropic]"
-
-# OpenAI
-uv add "pydantic-ai-slim[openai]"
-
-# Google Gemini
-uv add "pydantic-ai-slim[google]"
-
-# Multiple providers
-uv add "pydantic-ai-slim[bedrock,anthropic,openai]"
-```
-
-**Observability extras**:
-```bash
-# Pydantic Logfire (recommended for new projects)
-uv add "pydantic-ai-slim[logfire]"
-
-# Or just install logfire separately for OpenTelemetry
-uv add logfire
-```
-
-**Testing dependencies**:
-```bash
-uv add --dev inline-snapshot dirty-equals pytest-asyncio
-```
-
-**Optional: Durable execution**:
-```bash
-# For long-running workflows with state persistence
-uv add "pydantic-ai-slim[temporal]"  # or [dbos] or [prefect]
-```
-
-**Tools**: Bash (for uv commands)
+**Key decision**: Use `pydantic-ai` (full) or `pydantic-ai-slim[extras]` for selective dependencies.
 
 ### Step 3: Set Up Observability Integration
 
-Configure observability based on existing platform:
+Configure observability based on existing platform.
 
-#### Option A: Langfuse (via OpenTelemetry)
+See EXAMPLES.md → "Observability Setup" for:
+- **Option A: Langfuse** (via OpenTelemetry) - Complete configuration with logfire and LangfuseSpanExporter
+- **Option B: Pydantic Logfire** - Direct integration with logfire.configure()
 
-Create observability configuration file:
+Both options include:
+- Environment variable documentation
+- Service name configuration
+- Automatic instrumentation setup
 
-**File**: `<agents-directory>/observability.py`
-
-```python
-"""Observability setup for PydanticAI with Langfuse."""
-import os
-import logfire
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from langfuse.opentelemetry import LangfuseSpanExporter
-
-def configure_observability():
-    """Configure PydanticAI to send traces to Langfuse via OpenTelemetry."""
-    # Check if Langfuse credentials are set
-    if not os.getenv("LANGFUSE_PUBLIC_KEY") or not os.getenv("LANGFUSE_SECRET_KEY"):
-        raise ValueError(
-            "Langfuse credentials not found. Set LANGFUSE_PUBLIC_KEY and "
-            "LANGFUSE_SECRET_KEY environment variables."
-        )
-
-    # Configure logfire to send to Langfuse
-    logfire.configure(
-        service_name=os.getenv("SERVICE_NAME", "pydantic-ai-agents"),
-        processors=[
-            BatchSpanProcessor(LangfuseSpanExporter())
-        ],
-    )
-
-    # Instrument PydanticAI to automatically trace agent runs
-    logfire.instrument_pydantic_ai()
-
-    print("✓ Observability configured: PydanticAI → OpenTelemetry → Langfuse")
-
-# Call at application startup
-configure_observability()
-```
-
-#### Option B: Pydantic Logfire
-
-**File**: `<agents-directory>/observability.py`
-
-```python
-"""Observability setup for PydanticAI with Pydantic Logfire."""
-import logfire
-
-def configure_observability():
-    """Configure PydanticAI to send traces to Pydantic Logfire."""
-    logfire.configure()  # Uses LOGFIRE_TOKEN from environment
-    logfire.instrument_pydantic_ai()
-
-    print("✓ Observability configured: PydanticAI → Pydantic Logfire")
-
-configure_observability()
-```
-
-**Environment variables to document**:
-- `LANGFUSE_PUBLIC_KEY` (if using Langfuse)
-- `LANGFUSE_SECRET_KEY` (if using Langfuse)
-- `LANGFUSE_HOST` (optional, defaults to https://cloud.langfuse.com)
-- `LOGFIRE_TOKEN` (if using Pydantic Logfire)
-- `SERVICE_NAME` (optional, for service identification)
-
-**Tools**: Write (create observability.py), Edit (update existing config)
+**File created**: `<agents-directory>/observability.py`
 
 ### Step 4: Create Base Agent Infrastructure
 
-Set up foundational agent structure with dependency injection:
+Set up foundational agent structure with dependency injection.
 
-**File**: `<agents-directory>/base.py`
+See EXAMPLES.md → "Base Infrastructure" for:
+- **base.py** - AgentContext dataclass and BaseAgentOutput model
+- **config.py** - Model provider configuration and selection logic
 
-```python
-"""Base agent configuration and shared dependencies."""
-from dataclasses import dataclass
-from typing import Any
-from pydantic import BaseModel
+Key concepts:
+- Dependency injection via `AgentContext`
+- Type-safe base models with Pydantic
+- Provider-agnostic model configuration
+- Environment-based model selection
 
-
-@dataclass
-class AgentContext:
-    """
-    Base dependency context for agents.
-
-    Customize this based on your application needs.
-    All agents can access these dependencies via RunContext[AgentContext].
-    """
-    # Database or data access
-    db: Any  # Replace with your database connection type
-
-    # User/session context
-    user_id: str | None = None
-    session_id: str | None = None
-
-    # Optional: add more as needed
-    # cache: Redis
-    # config: AppConfig
-    # logger: Logger
-
-
-class BaseAgentOutput(BaseModel):
-    """Base output model that all agent outputs should extend."""
-    confidence: float | None = None
-    metadata: dict[str, Any] | None = None
-```
-
-**File**: `<agents-directory>/config.py`
-
-```python
-"""Agent configuration and model settings."""
-import os
-from enum import Enum
-
-
-class ModelProvider(str, Enum):
-    """Supported LLM providers."""
-    BEDROCK = "bedrock"
-    ANTHROPIC = "anthropic"
-    OPENAI = "openai"
-    GEMINI = "google"
-
-
-def get_model_name() -> str:
-    """
-    Get the configured model name.
-
-    Customize based on your provider and preferences.
-    """
-    provider = os.getenv("LLM_PROVIDER", "bedrock")
-
-    if provider == ModelProvider.BEDROCK:
-        # AWS Bedrock model IDs
-        return os.getenv(
-            "BEDROCK_MODEL_ID",
-            "anthropic.claude-3-5-sonnet-20241022-v2:0"
-        )
-    elif provider == ModelProvider.ANTHROPIC:
-        return os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5")
-    elif provider == ModelProvider.OPENAI:
-        return os.getenv("OPENAI_MODEL", "gpt-4")
-    elif provider == ModelProvider.GEMINI:
-        return os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
-
-    return "anthropic:claude-sonnet-4-5"  # Default fallback
-
-
-# Environment variables to set
-# LLM_PROVIDER: bedrock|anthropic|openai|google
-# For Bedrock: AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-# For Anthropic: ANTHROPIC_API_KEY
-# For OpenAI: OPENAI_API_KEY
-# For Gemini: GOOGLE_API_KEY or GOOGLE_APPLICATION_CREDENTIALS
-```
-
-**Tools**: Write (create base.py and config.py)
+**Files created**: `<agents-directory>/base.py`, `<agents-directory>/config.py`
 
 ### Step 5: Create Example Agent
 
-Build a complete example agent demonstrating best practices:
+Build a complete example agent demonstrating best practices.
 
-**File**: `<agents-directory>/examples/analysis_agent.py`
+See EXAMPLES.md → "Example Agent" for:
+- Structured output with AnalysisOutput model
+- Dependency injection with AgentContext
+- Dynamic instructions using @agent.instructions
+- Tools with error handling (ModelRetry)
+- Usage examples
 
-```python
-"""Example: Analysis agent with tools, dynamic instructions, and structured output."""
-from pydantic import BaseModel, Field
-from pydantic_ai import Agent, RunContext, ModelRetry
+**File created**: `<agents-directory>/examples/analysis_agent.py`
 
-from ..base import AgentContext, BaseAgentOutput
-from ..config import get_model_name
-
-
-# Define structured output
-class AnalysisOutput(BaseAgentOutput):
-    """Structured output for analysis results."""
-    summary: str = Field(description="Brief summary of analysis")
-    insights: list[str] = Field(description="Key insights discovered")
-    recommendations: list[str] = Field(description="Actionable recommendations")
-    confidence: float = Field(description="Confidence score 0-1", ge=0, le=1)
-
-
-# Create agent with dependency injection
-analysis_agent = Agent(
-    get_model_name(),
-    deps_type=AgentContext,
-    output_type=AnalysisOutput,
-    instructions=(
-        "You are an expert data analyst. Analyze the provided data and "
-        "return structured insights with high-confidence recommendations."
-    ),
-)
-
-
-# Dynamic instructions using dependency injection
-@analysis_agent.instructions
-async def add_user_context(ctx: RunContext[AgentContext]) -> str:
-    """Add user-specific context to instructions."""
-    if ctx.deps.user_id:
-        # Could fetch user preferences from database
-        return f"User ID: {ctx.deps.user_id}. Tailor analysis to their needs."
-    return ""
-
-
-# Tool with dependency injection and error handling
-@analysis_agent.tool
-async def query_data(
-    ctx: RunContext[AgentContext],
-    query: str,
-    limit: int = 100
-) -> dict:
-    """
-    Query the database for analysis data.
-
-    Args:
-        query: SQL query or search terms
-        limit: Maximum results to return
-
-    Returns:
-        Query results as dictionary
-    """
-    try:
-        # Access database via dependency injection
-        results = await ctx.deps.db.execute(query, limit=limit)
-        return {"success": True, "data": results, "count": len(results)}
-    except Exception as e:
-        # Ask model to retry with different approach
-        raise ModelRetry(
-            f"Query failed: {str(e)}. Try a simpler query or different approach."
-        )
-
-
-@analysis_agent.tool
-async def calculate_statistics(data: list[float]) -> dict:
-    """
-    Calculate statistical measures for numerical data.
-
-    Args:
-        data: List of numerical values
-
-    Returns:
-        Dictionary with mean, median, std dev, etc.
-    """
-    if not data:
-        raise ModelRetry("No data provided. Request data first using query_data.")
-
-    import statistics
-
-    return {
-        "mean": statistics.mean(data),
-        "median": statistics.median(data),
-        "stdev": statistics.stdev(data) if len(data) > 1 else 0,
-        "min": min(data),
-        "max": max(data),
-        "count": len(data),
-    }
-
-
-# Usage example (can be removed or kept for documentation)
-async def example_usage():
-    """Example of how to use the analysis agent."""
-    from ..base import AgentContext
-
-    # Create context with dependencies
-    ctx = AgentContext(
-        db=...,  # Your database connection
-        user_id="user-123",
-        session_id="session-456",
-    )
-
-    # Run agent
-    result = await analysis_agent.run(
-        "Analyze sales trends for Q4 2025",
-        deps=ctx
-    )
-
-    # Access structured output
-    print(f"Summary: {result.output.summary}")
-    print(f"Insights: {result.output.insights}")
-    print(f"Confidence: {result.output.confidence}")
-
-    # Access usage/cost information
-    print(f"Tokens used: {result.usage()}")
-```
-
-**Tools**: Write (create example agent)
+Key patterns demonstrated:
+- Type-safe structured outputs
+- Dependency injection for database access
+- Tool error handling with ModelRetry
+- Context-aware dynamic instructions
 
 ### Step 6: Set Up Error Handling and Retries
 
-Configure robust error handling:
+Configure robust HTTP error handling for LLM API calls.
 
-**File**: `<agents-directory>/retries.py`
+See EXAMPLES.md → "Error Handling" for:
+- AsyncTenacityTransport configuration
+- Retry logic for transient failures (429, 502, 503, 504)
+- HTTP timeout configuration
+- Integration with agent initialization
 
-```python
-"""Retry configuration for HTTP requests to LLM providers."""
-import httpx
-from pydantic_ai.retries import AsyncTenacityTransport
-
-
-def create_http_client() -> httpx.AsyncClient:
-    """
-    Create HTTP client with retry logic for transient failures.
-
-    Retries on:
-    - 429 (rate limit)
-    - 502, 503, 504 (temporary server errors)
-
-    Returns:
-        Configured async HTTP client
-    """
-    transport = AsyncTenacityTransport(
-        retry_on_status={429, 502, 503, 504},
-        max_attempts=3,
-    )
-
-    return httpx.AsyncClient(
-        transport=transport,
-        timeout=60.0,  # 60 second timeout
-    )
-
-
-# Environment configuration
-# Set these for production:
-# - HTTP_TIMEOUT: Request timeout in seconds (default: 60)
-# - MAX_RETRY_ATTEMPTS: Maximum retry attempts (default: 3)
-```
-
-**Update config.py to use retry client**:
-
-```python
-# Add to config.py
-from .retries import create_http_client
-
-# Use in agent initialization if needed
-# agent = Agent(model, http_client=create_http_client())
-```
-
-**Tools**: Write (create retries.py), Edit (update config.py)
+**File created**: `<agents-directory>/retries.py`
 
 ### Step 7: FastAPI Integration (if applicable)
 
-If project has FastAPI backend, add streaming endpoint:
+If project has FastAPI backend, add streaming endpoints.
 
-**File**: `<backend-directory>/routers/agents.py`
+See EXAMPLES.md → "FastAPI Integration" for:
+- Server-Sent Events (SSE) streaming endpoint
+- UIAdapter for protocol compliance
+- Synchronous endpoint for non-streaming use
+- Dependency injection with FastAPI Depends
+- Router registration
 
-```python
-"""FastAPI endpoints for PydanticAI agents."""
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import StreamingResponse
+**File created**: `<backend-directory>/routers/agents.py`
 
-from pydantic_ai.ui import UIAdapter
-from agents.examples.analysis_agent import analysis_agent
-from agents.base import AgentContext
-
-router = APIRouter(prefix="/agents", tags=["agents"])
-
-
-async def get_agent_context(
-    # Add your auth/dependency logic here
-    user_id: str | None = None,
-) -> AgentContext:
-    """Build agent context from request."""
-    return AgentContext(
-        db=...,  # Your database connection
-        user_id=user_id,
-        session_id=...,  # Generate or get from session
-    )
-
-
-@router.post("/analysis/stream")
-async def stream_analysis(
-    request: Request,
-    ctx: AgentContext = Depends(get_agent_context),
-):
-    """
-    Stream analysis results via Server-Sent Events.
-
-    The request body should conform to the UI protocol format.
-    """
-    # Create adapter from request
-    adapter = await UIAdapter.from_request(request)
-
-    # Run agent and get event stream
-    stream = adapter.run_stream(analysis_agent, deps=ctx)
-
-    # Encode stream as SSE and return
-    return StreamingResponse(
-        adapter.encode_stream(stream),
-        media_type="text/event-stream",
-    )
-
-
-@router.post("/analysis")
-async def run_analysis(
-    prompt: str,
-    ctx: AgentContext = Depends(get_agent_context),
-):
-    """
-    Run analysis synchronously (non-streaming).
-
-    Use streaming endpoint for better UX in production.
-    """
-    result = await analysis_agent.run(prompt, deps=ctx)
-
-    return {
-        "output": result.output.model_dump(),
-        "usage": result.usage(),
-    }
-```
-
-**Register router in main FastAPI app**:
-
-```python
-# In main.py or app.py
-from .routers import agents
-
-app.include_router(agents.router)
-```
-
-**Tools**: Write (create agents router), Edit (update main app)
+Endpoints created:
+- `POST /agents/analysis/stream` - Streaming with SSE
+- `POST /agents/analysis` - Synchronous execution
 
 ### Step 8: Testing Infrastructure
 
-Set up comprehensive testing:
+Set up comprehensive testing with TestModel and pytest fixtures.
 
-**File**: `<agents-directory>/tests/conftest.py`
+See EXAMPLES.md → "Testing Infrastructure" for:
+- **conftest.py** - Pytest fixtures (test_model, mock_agent_context, prevent_real_model_calls)
+- **test_analysis_agent.py** - Complete test suite with unit and integration tests
+- **pytest.ini** - Configuration with integration test markers
 
-```python
-"""Pytest configuration and fixtures for agent testing."""
-import pytest
-from pydantic_ai.models.test import TestModel
+Testing patterns:
+- Unit tests with TestModel (no real API calls)
+- Mock dependency contexts
+- Structured output validation with inline-snapshot
+- Integration test markers for real API tests
 
-from ..base import AgentContext
-
-
-@pytest.fixture
-def test_model():
-    """Provide TestModel for unit tests."""
-    return TestModel()
-
-
-@pytest.fixture
-def mock_agent_context():
-    """Provide mock agent context for testing."""
-
-    class MockDB:
-        async def execute(self, query: str, limit: int = 100):
-            # Return mock data
-            return [{"id": 1, "value": 100}, {"id": 2, "value": 200}]
-
-    return AgentContext(
-        db=MockDB(),
-        user_id="test-user",
-        session_id="test-session",
-    )
-
-
-@pytest.fixture(autouse=True)
-def prevent_real_model_calls(monkeypatch):
-    """Prevent accidental calls to real LLM APIs in tests."""
-    monkeypatch.setenv("ALLOW_MODEL_REQUESTS", "False")
-```
-
-**File**: `<agents-directory>/tests/test_analysis_agent.py`
-
-```python
-"""Tests for analysis agent."""
-import pytest
-from inline_snapshot import snapshot
-
-from ..examples.analysis_agent import analysis_agent, AnalysisOutput
-
-
-@pytest.mark.asyncio
-async def test_analysis_agent_with_mock(test_model, mock_agent_context):
-    """Test agent with TestModel (no real LLM calls)."""
-    # Override agent's model with test model
-    with analysis_agent.override(model=test_model):
-        result = await analysis_agent.run(
-            "Analyze Q4 sales data",
-            deps=mock_agent_context
-        )
-
-        # Verify output structure
-        assert isinstance(result.output, AnalysisOutput)
-        assert result.output.confidence >= 0
-        assert result.output.confidence <= 1
-        assert len(result.output.insights) > 0
-
-
-@pytest.mark.asyncio
-async def test_agent_tools_called(test_model, mock_agent_context):
-    """Verify agent calls tools during execution."""
-    # TestModel calls all tools by default
-    with analysis_agent.override(model=test_model):
-        result = await analysis_agent.run(
-            "Get data and calculate statistics",
-            deps=mock_agent_context
-        )
-
-        # Verify tools were called by checking result
-        assert result.all_messages()  # Should include tool calls
-
-
-@pytest.mark.asyncio
-async def test_structured_output_validation(test_model, mock_agent_context):
-    """Test that output matches expected structure."""
-    custom_model = TestModel(
-        custom_result_args={
-            "summary": "Sales increased 25% in Q4",
-            "insights": ["Strong holiday season", "New product launch"],
-            "recommendations": ["Increase inventory", "Expand marketing"],
-            "confidence": 0.85,
-        }
-    )
-
-    with analysis_agent.override(model=custom_model):
-        result = await analysis_agent.run(
-            "Analyze trends",
-            deps=mock_agent_context
-        )
-
-        # Use inline_snapshot for assertion
-        assert result.output.model_dump() == snapshot({
-            "summary": "Sales increased 25% in Q4",
-            "insights": ["Strong holiday season", "New product launch"],
-            "recommendations": ["Increase inventory", "Expand marketing"],
-            "confidence": 0.85,
-            "metadata": None,
-        })
-
-
-# Integration test (requires real model - skip in CI/CD)
-@pytest.mark.integration
-@pytest.mark.asyncio
-async def test_agent_with_real_model(mock_agent_context, monkeypatch):
-    """Integration test with actual LLM (skipped by default)."""
-    monkeypatch.setenv("ALLOW_MODEL_REQUESTS", "True")
-
-    # This will make actual API calls - use sparingly
-    result = await analysis_agent.run(
-        "Provide a brief analysis of test data",
-        deps=mock_agent_context
-    )
-
-    assert isinstance(result.output, AnalysisOutput)
-    assert result.output.confidence > 0
-```
-
-**pytest.ini configuration**:
-
-**File**: `pytest.ini` (in project root)
-
-```ini
-[pytest]
-asyncio_mode = auto
-markers =
-    integration: Integration tests that call real LLM APIs (deselect with '-m "not integration"')
-
-# Don't run integration tests by default
-addopts = -m "not integration"
-```
-
-**Tools**: Write (create test files and pytest.ini)
+**Files created**: `<agents-directory>/tests/conftest.py`, `<agents-directory>/tests/test_*.py`, `pytest.ini`
 
 ### Step 9: Environment Configuration
 
-Document all required environment variables:
+Document all required environment variables.
 
-**File**: `.env.example`
+See EXAMPLES.md → "Environment Configuration" for:
+- Complete `.env.example` template
+- Provider-specific credentials (AWS, Anthropic, OpenAI, Google)
+- Observability configuration (Langfuse, Logfire)
+- HTTP client settings
+- Testing flags
 
-```bash
-# LLM Provider Configuration
-LLM_PROVIDER=bedrock  # bedrock|anthropic|openai|google
-
-# AWS Bedrock (if using)
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-BEDROCK_MODEL_ID=anthropic.claude-3-5-sonnet-20241022-v2:0
-
-# Anthropic (if using)
-ANTHROPIC_API_KEY=your-api-key
-
-# OpenAI (if using)
-OPENAI_API_KEY=your-api-key
-
-# Google Gemini (if using)
-GOOGLE_API_KEY=your-api-key
-
-# Observability: Langfuse
-LANGFUSE_PUBLIC_KEY=pk-lf-...
-LANGFUSE_SECRET_KEY=sk-lf-...
-LANGFUSE_HOST=https://cloud.langfuse.com  # or your self-hosted URL
-
-# Observability: Pydantic Logfire (alternative)
-# LOGFIRE_TOKEN=your-logfire-token
-
-# Service Configuration
-SERVICE_NAME=my-pydantic-ai-service
-
-# HTTP Client Configuration
-HTTP_TIMEOUT=60
-MAX_RETRY_ATTEMPTS=3
-
-# Testing
-ALLOW_MODEL_REQUESTS=False  # Set to True only for integration tests
-```
-
-**Update .gitignore**:
-
-```gitignore
-# Add if not already present
-.env
-.env.local
-```
-
-**Tools**: Write (create .env.example), Edit (update .gitignore)
+**File created**: `.env.example`
+**Updated**: `.gitignore` (ensure .env files excluded)
 
 ### Step 10: Documentation
 
-Create setup documentation:
+Create comprehensive setup documentation.
 
-**File**: `<agents-directory>/README.md`
+See EXAMPLES.md → "Documentation Template" for:
+- README.md with features, setup, usage examples
+- Project structure overview
+- Creating new agents guide
+- Testing examples
+- Best practices
+- Environment variables reference
 
-```markdown
-# PydanticAI Agents
-
-Production-ready AI agents built with PydanticAI.
-
-## Features
-
-- ✓ Type-safe agent development with full IDE support
-- ✓ Dependency injection via RunContext
-- ✓ Structured output validation with Pydantic models
-- ✓ OpenTelemetry observability (Langfuse integration)
-- ✓ Automatic retry logic for transient failures
-- ✓ FastAPI streaming endpoints via Server-Sent Events
-- ✓ Comprehensive testing with TestModel
-
-## Setup
-
-1. **Install dependencies**:
-   ```bash
-   uv sync
-   ```
-
-2. **Configure environment**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your credentials
-   ```
-
-3. **Run tests**:
-   ```bash
-   uv run pytest
-   ```
-
-4. **Run integration tests** (makes real API calls):
-   ```bash
-   uv run pytest -m integration
-   ```
-
-## Project Structure
-
-```
-agents/
-├── base.py                 # Base context and output models
-├── config.py              # Model configuration
-├── observability.py       # Langfuse/Logfire setup
-├── retries.py            # HTTP retry logic
-├── examples/
-│   └── analysis_agent.py # Example agent
-└── tests/
-    ├── conftest.py       # Pytest fixtures
-    └── test_*.py         # Test files
-```
-
-## Creating a New Agent
-
-```python
-from pydantic import BaseModel, Field
-from pydantic_ai import Agent, RunContext
-from .base import AgentContext, BaseAgentOutput
-from .config import get_model_name
-
-# Define output structure
-class MyOutput(BaseAgentOutput):
-    result: str = Field(description="Agent result")
-
-# Create agent
-my_agent = Agent(
-    get_model_name(),
-    deps_type=AgentContext,
-    output_type=MyOutput,
-    instructions="Your agent instructions here",
-)
-
-# Add tools
-@my_agent.tool
-async def my_tool(ctx: RunContext[AgentContext], param: str) -> str:
-    """Tool description for LLM."""
-    # Access dependencies via ctx.deps
-    return await ctx.deps.db.query(param)
-
-# Use agent
-async def main():
-    ctx = AgentContext(db=..., user_id="...")
-    result = await my_agent.run("Your prompt", deps=ctx)
-    print(result.output.result)
-```
-
-## Testing
-
-Use `TestModel` for unit tests (no real API calls):
-
-```python
-from pydantic_ai.models.test import TestModel
-
-async def test_my_agent(test_model, mock_agent_context):
-    with my_agent.override(model=test_model):
-        result = await my_agent.run("test prompt", deps=mock_agent_context)
-        assert result.output is not None
-```
-
-## Observability
-
-All agent runs are automatically traced to Langfuse/Logfire. View:
-- Individual traces per request
-- Cost tracking across sessions
-- Performance metrics (latency, token usage)
-- Error rates and validation failures
-
-Access dashboard at configured LANGFUSE_HOST or Logfire console.
-
-## Environment Variables
-
-See `.env.example` for all required configuration.
-
-## Best Practices
-
-1. **Always use type hints** - PydanticAI's power comes from type safety
-2. **Use dependency injection** - Never use global state, pass via RunContext
-3. **Test with TestModel** - Never use real LLMs in unit tests
-4. **Set ALLOW_MODEL_REQUESTS=False** - Prevent accidental API calls in tests
-5. **Stream when possible** - Better UX with FastAPI streaming endpoints
-6. **Monitor via Langfuse** - Track costs, performance, and errors
-
-## References
-
-- [PydanticAI Documentation](https://ai.pydantic.dev/)
-- [Internal Research](../../docs/research/2026-02-16-pydanticai-setup-best-practices.md)
-```
-
-**Tools**: Write (create README.md)
+**File created**: `<agents-directory>/README.md`
 
 ### Step 11: Validation
 
 Verify the setup is working correctly:
 
-1. **Run tests**:
-   ```bash
-   cd <agents-directory>
-   uv run pytest -v
-   ```
-   Expected: All tests pass, no real API calls made
+1. **Run tests**: `uv run pytest -v`
+   - All tests should pass with no real API calls
+2. **Check imports**: Verify PydanticAI and logfire installed
+3. **Verify observability**: Test configuration loads without errors
+4. **Test example agent** (optional): Run integration tests with real API
 
-2. **Check imports**:
-   ```bash
-   uv run python -c "from pydantic_ai import Agent; print('✓ PydanticAI installed')"
-   uv run python -c "import logfire; print('✓ Logfire installed')"
-   ```
-
-3. **Verify observability** (if Langfuse):
-   ```bash
-   # Set environment variables
-   export LANGFUSE_PUBLIC_KEY=pk-lf-test
-   export LANGFUSE_SECRET_KEY=sk-lf-test
-
-   # Run observability config
-   uv run python -c "from agents.observability import configure_observability; configure_observability()"
-   ```
-   Expected: "✓ Observability configured" message
-
-4. **Test example agent** (integration test):
-   ```bash
-   # Only if you want to test with real API
-   uv run pytest -m integration -v
-   ```
-
-**Tools**: Bash (run validation commands)
+See REFERENCE.md → "Validation Criteria" for complete checklist.
 
 ### Step 12: Update Project Documentation
 
-Update CLAUDE.md with PydanticAI patterns:
+Update CLAUDE.md with PydanticAI patterns and conventions.
 
-Add section to CLAUDE.md:
+Add section documenting:
+- Agent code structure and location
+- Development commands (testing, integration tests)
+- Best practices (dependency injection, type hints, TestModel)
+- Creating new agents workflow
 
-```markdown
-## PydanticAI Agents
+See EXAMPLES.md → "CLAUDE.md Update" for template.
 
-### Structure
-- Agent code: `<agents-directory>/`
-- Base infrastructure: `base.py`, `config.py`, `observability.py`
-- Example agents: `examples/`
-- Tests: `tests/`
+## Quick Reference
 
-### Development Commands
-- Run tests: `cd <agents-directory> && uv run pytest`
-- Integration tests: `uv run pytest -m integration`
+### When PydanticAI is Appropriate
+✓ Type safety and validation critical
+✓ Structured outputs with Pydantic models
+✓ Compile-time type checking needed
+✓ Payment processing or sensitive operations
+✓ IDE autocomplete and type hints important
+✓ Production deployment with validation guarantees
 
-### Best Practices
-- Use dependency injection via RunContext (never global state)
-- Always type hint agents: `Agent[DepsType, OutputType]`
-- Test with TestModel (no real LLM calls in unit tests)
-- Set ALLOW_MODEL_REQUESTS=False in test environments
-- Use FastAPI streaming endpoints for better UX
-- Monitor all runs via Langfuse/Logfire
+### When to Use Alternative Frameworks
+→ Complex state machines with loops → Use LangGraph
+→ Multi-agent coordination with shared state → Use LangGraph
+→ Rapid prototyping without type safety → Use LangChain
+→ Simple linear workflows → Use LangChain
+→ RAG systems with large document sets → Use LlamaIndex
 
-### Creating New Agents
-1. Define Pydantic model for structured output
-2. Create Agent with deps_type and output_type
-3. Add tools with @agent.tool decorator
-4. Write tests using TestModel
-5. Integrate with FastAPI if needed
+### Key Advantages
+- **Type Safety**: Full compile-time type checking with Pydantic
+- **Structured Outputs**: Validated, type-safe responses
+- **Dependency Injection**: Clean architecture via RunContext
+- **Testing**: TestModel for unit tests without API calls
+- **Observability**: Native OpenTelemetry integration
+- **IDE Support**: Full autocomplete and type hints
 
-See `<agents-directory>/README.md` for detailed examples.
-```
+## Integration with Development
 
-**Tools**: Edit (update CLAUDE.md)
+This skill coordinates with:
+- **ai-framework-select**: Use when uncertain which framework to choose; may route here for type-safe agent requirements
+- **ai-framework-build-langgraph**: Use for complex workflows with state machines; PydanticAI for type-safe single agents
+- **setup-langfuse-tracing**: Essential for observability; integrates via OpenTelemetry and logfire
+- **setup-logging**: Coordinate general logging with PydanticAI-specific observability
+- **setup-uv**: Manages Python dependencies and selective installation of PydanticAI extras
+- **project-inception**: Set up PydanticAI during Stage 5 (Initial Deliverables) for type-safe AI projects
+- **dev-workflow-flow**: Implement PydanticAI agents during Stage 2 (Implementation)
+- **dev-workflow-test-driven**: Test PydanticAI agents with TestModel to avoid API costs
+- **ai-framework-setup-anthropic**: Can integrate for direct Anthropic SDK usage alongside PydanticAI
 
-## Validation Criteria
+## Common Pitfalls to Avoid
 
-Setup is complete when:
+**Don't:**
+- Use PydanticAI for complex state machines with loops/branches (use LangGraph instead)
+- Skip type hints on agent functions and outputs (defeats main PydanticAI benefit)
+- Use dynamic typing instead of Pydantic models for outputs (bypasses validation)
+- Skip TestModel in unit tests (expensive API calls during development)
+- Forget to configure observability (Langfuse or Logfire mandatory for production)
+- Install full `pydantic-ai` package when you only need specific providers (bloated dependencies)
+- Use ModelRetry for all errors (only for retryable errors like rate limits)
+- Skip dependency injection via RunContext (leads to tight coupling)
+- Ignore structured output validation (Pydantic models are the core feature)
+- Mix PydanticAI with LangChain in same agent (framework confusion)
 
-✓ PydanticAI installed with appropriate extras
-✓ Observability configured (Langfuse or Logfire)
-✓ Base agent infrastructure created (base.py, config.py)
-✓ Example agent with tools and structured output
-✓ Error handling and retries configured
-✓ FastAPI integration (if applicable)
-✓ Testing infrastructure with pytest fixtures
-✓ All tests pass with TestModel
-✓ Environment variables documented
-✓ README.md created with examples
-✓ CLAUDE.md updated with patterns
+**Do:**
+- Always use type hints and Pydantic models for agent outputs (core PydanticAI strength)
+- Use `pydantic-ai-slim[extras]` for selective provider installation
+- Configure observability from the start (logfire or OpenTelemetry + Langfuse)
+- Test with TestModel for unit tests (no real API calls, fast feedback)
+- Use dependency injection via RunContext for clean architecture
+- Configure ModelRetry for retryable errors (429, 502, 503, 504)
+- Use AsyncTenacityTransport for robust HTTP retry logic
+- Structure outputs with Pydantic models for validation guarantees
+- Pin exact versions for production (`pydantic-ai==x.y.z`)
+- Use integration test markers to separate unit from API tests
+- Configure FastAPI streaming with UIAdapter for SSE compatibility
+- Document all required environment variables in .env.example
+- Use inline-snapshot for test validation (catches regressions automatically)
+- Check existing code patterns before suggesting changes
 
-## Common Issues & Solutions
+## Additional Resources
 
-**Issue**: Import errors for pydantic_ai
-**Solution**: Ensure `uv sync` ran successfully, check pyproject.toml has pydantic-ai
+**Skill Files:**
+- **EXAMPLES.md** - Complete code examples for all components
+- **REFERENCE.md** - Best practices, common issues, validation criteria
 
-**Issue**: ALLOW_MODEL_REQUESTS error in tests
-**Solution**: Set environment variable or use conftest.py fixture
+**External References:**
+- [PydanticAI Documentation](https://ai.pydantic.dev/)
+- [Pydantic Logfire](https://pydantic.dev/logfire)
+- [Langfuse OpenTelemetry Integration](https://langfuse.com/docs/integrations/opentelemetry)
 
-**Issue**: Langfuse connection failed
-**Solution**: Verify LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are set correctly
-
-**Issue**: Agent validation failures
-**Solution**: Check output_type Pydantic model matches LLM response structure
-
-**Issue**: Tool not being called
-**Solution**: Ensure tool has descriptive docstring (LLM uses it to decide when to call)
-
-**Issue**: Tests failing with real API calls
-**Solution**: Use TestModel override: `with agent.override(model=test_model):`
-
-## Output
-
-Provide summary of what was set up:
-
-```
-PydanticAI Setup Complete
-
-✓ Installed: pydantic-ai with [<providers>] extras
-✓ Observability: <Langfuse|Logfire> via OpenTelemetry
-✓ Base Infrastructure:
-  - base.py (AgentContext, BaseAgentOutput)
-  - config.py (model provider configuration)
-  - observability.py (<platform> integration)
-  - retries.py (HTTP retry logic)
-
-✓ Example Agent: analysis_agent.py
-  - Tools: query_data, calculate_statistics
-  - Output: AnalysisOutput (structured)
-  - Dependency injection: AgentContext
-
-✓ FastAPI Integration: <if applicable>
-  - Streaming endpoint: POST /agents/analysis/stream
-  - Sync endpoint: POST /agents/analysis
-
-✓ Testing Infrastructure:
-  - conftest.py with fixtures
-  - test_analysis_agent.py with examples
-  - TestModel for unit tests
-  - Integration test markers
-
-✓ Documentation:
-  - README.md with examples
-  - .env.example with all variables
-  - CLAUDE.md updated
-
-Next Steps:
-1. Set up environment variables (copy .env.example to .env)
-2. Run tests: uv run pytest
-3. Create your first custom agent following examples/analysis_agent.py
-4. Check Langfuse dashboard for traces
-
-Reference: docs/research/2026-02-16-pydanticai-setup-best-practices.md
-```
+**Related Skills:**
+- `ai-framework-build-langgraph` - For complex state machines
+- `ai-framework-select` - For framework selection guidance
+- `ai-framework-setup-anthropic` - For direct Anthropic SDK usage

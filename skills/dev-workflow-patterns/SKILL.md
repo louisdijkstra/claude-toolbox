@@ -1,26 +1,37 @@
 ---
 name: pattern-discovery
-description: Discovers how features are currently implemented in the codebase to maintain consistency
+description: Discovers how features are currently implemented in the codebase to maintain consistency. Use before implementing new functionality to match existing patterns and conventions.
 ---
 
 # Pattern Discovery
 
 ## Purpose
-Find how something is CURRENTLY implemented to ensure new code matches existing patterns.
 
-## When Invoked
-Before implementing:
-- New API endpoints
-- Database access
-- Authentication/authorization
-- Error handling
-- Testing
+Find how something is CURRENTLY implemented to ensure new code matches existing patterns, conventions, and architecture.
+
+## When to Use This Skill
+
+Use this skill when:
+- Implementing new API endpoints
+- Adding database access patterns
+- Implementing authentication/authorization
+- Adding error handling
+- Writing tests for new features
+- Unsure how to structure new code
+
+**Do NOT use for:**
+- Greenfield projects with no existing code
+- When explicitly told to use different pattern
+- Quick fixes where pattern is obvious
+- One-off scripts
+
+**If uncertain:** Always check existing patterns before implementing. It's faster to follow established patterns than to refactor later.
 
 ## Process
 
 ### Step 1: Identify Pattern Type
 
-What are you trying to implement?
+Determine what you're trying to implement:
 - API endpoint
 - Database access
 - Authentication
@@ -29,6 +40,8 @@ What are you trying to implement?
 - Other
 
 ### Step 2: Search Codebase
+
+Use appropriate search strategy for pattern type.
 
 **For API endpoints:**
 ```bash
@@ -48,21 +61,28 @@ find . -name "*.py" -type f -exec grep -l "Session\|query\|repository" {} \; | h
 find . -name "*.py" -type f -exec grep -l "auth\|token\|OAuth2" {} \; | head -10
 ```
 
+**For Testing:**
+```bash
+# Find test patterns
+find . -name "test_*.py" -o -name "*_test.py" | head -10
+```
+
 ### Step 3: Analyze Files
 
-For each relevant file:
-1. Read the file
-2. Extract:
+For each relevant file found:
+
+1. **Read the file** to understand structure
+2. **Extract key elements:**
    - File structure (where it lives)
    - Imports (libraries used)
    - Naming conventions
-   - Patterns (how it's structured)
+   - Code patterns (how it's structured)
    - Error handling style
    - Testing approach
 
 ### Step 4: Document Pattern
 
-Create/update `docs/patterns/[area]-pattern.md`:
+Create or update pattern documentation at `docs/patterns/[area]-pattern.md`:
 
 ```markdown
 # Pattern: [Area Name]
@@ -90,7 +110,9 @@ Create/update `docs/patterns/[area]-pattern.md`:
 
 ### Step 5: Return Recommendation
 
-Format:
+Provide clear guidance on following the discovered pattern.
+
+**Format:**
 ```
 Pattern: [Name]
 Found in: [File paths]
@@ -130,3 +152,25 @@ Files to check:
 - src/repositories/user_repository.py (data access)
 - tests/api/test_users.py (testing pattern)
 ```
+
+## Integration with Development
+
+This skill coordinates with:
+- **dev-workflow-flow**: Use during Stage 2 (Design)
+- **dev-workflow-tdd**: Apply discovered patterns in tests
+- **review-plan**: Validate approach matches existing patterns
+- **docs-manager**: Document new patterns when established
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Assume you know the pattern without checking
+- Ignore established patterns for "better" alternatives
+- Mix multiple patterns in same codebase
+- Skip documentation when deviating from pattern
+
+**Do:**
+- Always check existing code first
+- Follow established patterns consistently
+- Document deviations with clear reasoning
+- Update pattern docs when patterns evolve

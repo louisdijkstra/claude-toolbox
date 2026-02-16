@@ -23,10 +23,15 @@ Use this skill when:
 - Quick inline code comments (use code comments)
 - Commit messages (use git commit skill)
 - PR descriptions (use MR skill)
+- Generating code documentation from scratch (document alongside code)
+- Creating documentation for unstable/experimental features
+- Writing documentation without understanding the code first
 
-## How It Works
+**If uncertain:** Use this skill when documentation needs to be created, updated, or synchronized with code. Skip for inline code comments or git commit messages.
 
-### 1. Assess Current Documentation State
+## Process
+
+### Step 1: Assess Current Documentation State
 
 ```bash
 # See what documentation exists
@@ -40,7 +45,7 @@ grep -r "TODO\|FIXME\|outdated\|deprecated" docs/ 2>/dev/null
 cat docs/README.md 2>/dev/null || echo "No main README"
 ```
 
-### 2. Plan Documentation Structure
+### Step 2: Plan Documentation Structure
 
 Standard documentation structure:
 
@@ -62,7 +67,7 @@ docs/
     └── topic-slug.md
 ```
 
-### 3. Create/Update Documentation
+### Step 3: Create/Update Documentation
 
 #### Main README (docs/README.md)
 
@@ -198,7 +203,7 @@ Status: Accepted / Pending / Rejected
 - [Related guide]
 ```
 
-### 4. Keep Documentation Synchronized
+### Step 4: Keep Documentation Synchronized
 
 After code changes:
 
@@ -217,7 +222,7 @@ cat >> docs/README.md << 'EOF'
 EOF
 ```
 
-### 5. Verify Documentation Quality
+### Step 5: Verify Documentation Quality
 
 Before considering documentation complete:
 
@@ -317,11 +322,12 @@ When managing documentation:
 
 ## Integration with Development
 
-This skill pairs well with:
-- **Getting the Bigger Picture**: Read docs to understand project
-- **Brainstorm Feature**: Document feature ideas
-- **Dev Flow**: Document decisions as development happens
-- **Review Critically**: Ensure API docs match implementation
+This skill coordinates with:
+- **docs-bigger-picture**: Read project context from documentation
+- **project-brainstorm**: Document feature ideas and architectural decisions
+- **dev-workflow-flow**: Document decisions during implementation
+- **review-critical**: Verify documentation matches implementation
+- **research-deep**: Document research findings for future reference
 
 ## Common Pitfalls to Avoid
 

@@ -5,15 +5,32 @@ description: Complete TDD workflow with patterns for unit, integration, and end-
 
 # Test-Driven Development
 
-## When to Use
-- Implementing new features
+## Purpose
+
+Implement features and fix bugs using complete test-driven development workflow. Ensures code quality through test-first approach with patterns for unit, integration, and end-to-end tests.
+
+## When to Use This Skill
+
+Use this skill when:
+- Implementing new features with test coverage
 - Fixing bugs (write failing test that reproduces bug first)
-- Refactoring existing code
+- Refactoring existing code safely
 - Adding functionality to existing modules
+- Need comprehensive test patterns (unit, integration, e2e)
+- Building production code requiring quality assurance
 
-## TDD Cycle
+**Do NOT use for:**
+- Quick prototypes or experiments (add tests afterward)
+- One-off scripts or throwaway code
+- Emergency hotfixes requiring immediate fix (add tests after)
+- When explicitly told to skip tests
+- Exploratory coding where requirements are unclear
 
-### 1. Write Failing Test
+**If uncertain:** Use this skill for production code. Skip for experiments or emergencies, but add tests immediately afterward.
+
+## Process
+
+### Step 1: Write Failing Test
 ```python
 def test_calculate_revenue_growth_returns_percentage():
     # Arrange
@@ -31,21 +48,21 @@ Run test: `pytest tests/test_analytics.py::test_calculate_revenue_growth_returns
 
 Confirm it FAILS with clear error message.
 
-### 2. Write Minimal Implementation
+### Step 2: Write Minimal Implementation
 ```python
 def calculate_revenue_growth(start: float, end: float) -> float:
     return ((end - start) / start) * 100
 ```
 
-### 3. Run Tests Until Green
+### Step 3: Run Tests Until Green
 ```bash
 pytest tests/test_analytics.py::test_calculate_revenue_growth_returns_percentage
 ```
 
-### 4. Refactor if Needed
+### Step 4: Refactor if Needed
 Improve code quality while keeping tests passing.
 
-### 5. Commit
+### Step 5: Commit
 ```bash
 git add tests/test_analytics.py src/analytics.py
 git commit -m "Add revenue growth calculation with tests"
@@ -208,3 +225,30 @@ Only skip TDD if explicitly instructed, or for:
 2. Add print statements or use debugger: `pytest --pdb`
 3. Run single test: `pytest tests/test_file.py::test_specific_test`
 4. Check test setup (fixtures, mocks)
+
+## Integration with Development
+
+This skill coordinates with:
+- **dev-workflow-flow**: Use during Stage 3 (Implement)
+- **dev-workflow-tdd**: Alternative TDD approach for accelerated delivery
+- **dev-workflow-debug**: Debug failing tests systematically
+- **review-critical**: Verify test coverage before production
+- **docs-manager**: Document testing patterns and conventions
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Write implementation before tests (defeats TDD purpose)
+- Test implementation details instead of behavior
+- Create overly complex test setups
+- Skip testing edge cases and error conditions
+- Sacrifice test readability for brevity
+- Mock everything (balance real calls vs mocks)
+
+**Do:**
+- Write test first, then minimal implementation
+- Test behavior, not implementation
+- Keep tests simple and focused
+- Test happy path, edge cases, and errors
+- Write clear, maintainable tests
+- Balance cost and confidence in mocking decisions

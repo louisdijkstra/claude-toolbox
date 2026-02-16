@@ -18,13 +18,18 @@ Use this skill when:
 - Before merging to main/production branches
 
 **Do NOT use for:**
-- Early drafts or proof-of-concept code
-- Documentation-only changes
+- Early drafts or proof-of-concept code (iterate first)
+- Documentation-only changes (unless security docs)
 - When user explicitly requests quick feedback only
+- Brainstorming or planning phases (use project-brainstorm or review-plan)
+- Feature ideation (use project-brainstorm)
+- Quick syntax questions or typo fixes
 
-## How It Works
+**If uncertain:** Use this skill when code is ready for production or contains security-sensitive functionality. Skip for exploratory work, drafts, or non-security documentation.
 
-### 1. Scan for Obvious Issues
+## Process
+
+### Step 1: Scan for Obvious Issues
 ````bash
 # Quick security scan
 grep -rn "password\s*=\s*['\"]" . 2>/dev/null
@@ -33,7 +38,7 @@ grep -rn "eval\(" . 2>/dev/null
 grep -rn "exec\(" . 2>/dev/null
 ````
 
-### 2. Review Security Checklist
+### Step 2: Review Security Checklist
 
 **Critical Security Areas:**
 - Input validation (all user inputs)
@@ -56,7 +61,7 @@ grep -rn "exec\(" . 2>/dev/null
 - Logging (no sensitive data)
 - Performance at scale
 
-### 3. Generate Report
+### Step 3: Generate Report
 ````bash
 # Create review directory
 mkdir -p docs/code-review
@@ -246,6 +251,38 @@ Before completing review:
 - [ ] Report generated at docs/code-review/
 - [ ] All issues have concrete fixes
 - [ ] Severity correctly assigned
+
+## Integration with Development
+
+This skill coordinates with:
+- **review-system**: Used as Tier 1 in comprehensive multi-tier review process
+- **dev-workflow-flow**: Perform critical review before Stage 4 (Integration)
+- **dev-workflow-test-driven**: Review security after implementing tests
+- **project-handle-ticket**: Review code during Stage 4 (Implementation)
+- **docs-manager**: Document security decisions and architectural choices
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Skip security checks for "simple" changes
+- Sugar-coat critical issues or mark them lower severity
+- Provide vague fixes without concrete code examples
+- Miss checking OWASP Top 10 categories
+- Forget to generate machine-readable reports
+- Review code without understanding its context
+- Mark as approved when critical issues exist
+- Ignore dependency vulnerabilities
+
+**Do:**
+- Flag all security issues without exception
+- Assign correct severity levels (critical blocks deployment)
+- Provide exact code fixes with line numbers
+- Check all OWASP Top 10 categories systematically
+- Generate reports in docs/code-review/ directory
+- Understand the code's purpose before reviewing
+- Block deployment for critical/high severity issues
+- Verify dependencies are current and secure
+- Make reports actionable for automated remediation
 
 ## Notes
 

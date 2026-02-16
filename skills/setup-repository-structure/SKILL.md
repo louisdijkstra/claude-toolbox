@@ -8,15 +8,29 @@ description: Reads project documentation and researches best practices to propos
 ## Purpose
 Propose a sensible, production-ready repository structure based on project requirements, tech stack, and deployment needs. Supports both local development and external deployment.
 
-## When to Use
+## When to Use This Skill
+
+Use this skill when:
 - Starting a new project
 - Restructuring existing code
 - Preparing for production deployment
-- Project structure feels chaotic
+- Project structure feels chaotic or unclear
+- Need to support both local and external deployment
+- Organizing monorepo or microservices architecture
+
+**Do NOT use for:**
+- Adding single files to existing structure (use Write or Edit directly)
+- Simple scripts or one-off utilities (no structure needed)
+- Well-organized projects with clear patterns (follow existing structure)
+- Minor reorganization within a directory (direct file operations)
+- Documentation-only projects (simpler structure sufficient)
+- Quick prototypes or experiments (structure can come later)
+
+**If uncertain:** Use this skill when starting from scratch or when the project lacks clear organization and deployment support. Skip for minor file additions or when working within an established structure.
 
 ## Process
 
-### 1. Read Project Documentation
+### Step 1: Read Project Documentation
 
 ```bash
 # Read project overview
@@ -30,7 +44,7 @@ cat docs/PROJECT_DESCRIPTION.md 2>/dev/null || cat docs/FULL_PROJECT_DESCRIPTION
 - Testing approach (unit, integration, E2E)
 - CI/CD requirements
 
-### 2. Research Best Practices
+### Step 2: Research Best Practices
 
 **CRITICAL**: Use the `deep-research` skill to find production standards for the specific tech stack.
 
@@ -46,7 +60,7 @@ cat docs/PROJECT_DESCRIPTION.md 2>/dev/null || cat docs/FULL_PROJECT_DESCRIPTION
 - Testing organization
 - CI/CD integration
 
-### 3. Design Structure
+### Step 3: Design Structure
 
 **Core principles:**
 - Separate source from infrastructure
@@ -88,7 +102,7 @@ project-root/
 └── docs/
 ```
 
-### 4. Present to User
+### Step 4: Present to User
 
 **IMPORTANT**: Always present the proposed structure and wait for approval before creating anything.
 
@@ -140,7 +154,7 @@ Will create:
 **Does this structure work for you? Any changes needed?**
 ```
 
-### 5. Create Structure (After Approval)
+### Step 5: Create Structure (After Approval)
 
 Only after user confirms, create:
 
@@ -261,11 +275,36 @@ CMD [dev command with hot reload]
 **Orchestration**: Add k8s/ or terraform/ to infra/ as needed
 **CI/CD**: Add .github/workflows/ or .gitlab-ci.yml based on platform
 
-## Integration with Other Skills
+## Integration with Development
 
-- `determining-project-goal` - Creates docs this skill reads
-- `getting-the-bigger-picture` - Similar context-gathering approach
-- `deep-research` - Essential for finding standards
+This skill coordinates with:
+- **project-determine-goal**: Creates project documentation that this skill reads (Step 1)
+- **project-inception**: Use during Stage 4 (Repository Structure) of project launch
+- **docs-bigger-picture**: Similar context-gathering approach for understanding project needs
+- **research-deep**: Essential for finding production standards and best practices (Step 2)
+- **docs-manager**: Document structure decisions and rationale
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Create structure without researching tech stack standards
+- Copy generic templates without adapting to project needs
+- Skip user approval before creating directories
+- Over-complicate structure for simple projects
+- Ignore deployment requirements (local vs external)
+- Forget to create essential files (README, Makefile, docker-compose)
+- Mix concerns (put tests in src/, config in code directories)
+- Use outdated patterns from old tutorials
+
+**Do:**
+- Research current best practices for the specific tech stack
+- Present structure and get approval before creating anything
+- Keep structure simple and focused on actual project needs
+- Support both local development and production deployment from day one
+- Follow ecosystem conventions discovered in research
+- Create essential supporting files (Makefile, README, .gitignore)
+- Separate source, tests, infrastructure, and configuration
+- Document structure decisions and their rationale
 
 ## Notes
 

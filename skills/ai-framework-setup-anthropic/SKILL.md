@@ -8,7 +8,7 @@ description: Set up and use Anthropic's Python SDK for Claude API integration. C
 ## Purpose
 Guide for implementing Claude API using Anthropic's official Python SDK. Use when building agents, chat interfaces, or integrating Claude into applications. Covers streaming decisions, prompt caching, tool use, and production patterns.
 
-## When to Use This Skill
+## When to Use
 
 Use when:
 - Initializing new Claude API integration
@@ -19,7 +19,12 @@ Use when:
 - Setting up vision capabilities
 - Implementing error handling and retries
 
-**Check existing code first:** If agent implementation exists, examine it to understand current patterns before suggesting changes.
+**Do NOT use for:**
+- Agent orchestration with state machines (use LangGraph skill instead)
+- Multi-agent coordination (use framework selection skill first)
+- RAG systems (consider LlamaIndex for complex RAG)
+
+**Check existing code first:** If agent implementation exists, examine it to understand current patterns before suggesting changes. If uncertain about which approach fits the user's needs, ask clarifying questions about their use case and requirements.
 
 ## Prerequisites
 ```bash

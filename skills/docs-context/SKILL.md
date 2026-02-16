@@ -24,10 +24,15 @@ Use this skill when:
 - Simple single-step tasks
 - Code implementation (use task-specific skills)
 - Real-time editing (use direct code tools)
+- Short tasks completing in single session
+- Documenting obvious or trivial changes
+- Creating documentation that won't be referenced
 
-## How It Works
+**If uncertain:** Use this skill when work spans multiple sessions or requires coordination across parallel efforts. Skip for quick, contained tasks.
 
-### 1. Assess Current Context State
+## Process
+
+### Step 1: Assess Current Context State
 
 Check what context exists:
 
@@ -43,7 +48,7 @@ ls -la docs/DECISIONS.md 2>/dev/null
 ls -la docs/STATE.md 2>/dev/null
 ```
 
-### 2. Document Current State
+### Step 2: Document Current State
 
 Before pausing work, create context snapshot:
 
@@ -85,7 +90,7 @@ Before pausing work, create context snapshot:
 - [Dependencies to verify]
 ```
 
-### 3. Load and Review Previous Context
+### Step 3: Load and Review Previous Context
 
 When resuming work:
 
@@ -104,7 +109,7 @@ Extract:
 - Next steps
 - Open questions
 
-### 4. Synchronize with Actual State
+### Step 4: Synchronize with Actual State
 
 Compare documented state with actual codebase:
 
@@ -124,7 +129,7 @@ Update context if:
 - Blockers were resolved
 - New issues discovered
 
-### 5. Coordinate Multi-Step Workflows
+### Step 5: Coordinate Multi-Step Workflows
 
 For complex tasks spanning multiple steps:
 
@@ -269,11 +274,12 @@ Continue with: "Start UI design for query builder"
 
 ## Integration with Development
 
-This skill pairs well with:
-- **Test-Driven Development**: Document what tests verify
-- **Plan Review System**: Load context before reviewing plans
-- **Systematic Debugging**: Maintain state as debugging progresses
-- **Project Inception**: Load context from planning phase
+This skill coordinates with:
+- **dev-workflow-test-driven**: Document what tests verify
+- **review-plan**: Load context before reviewing plans
+- **dev-workflow-debug**: Maintain state as debugging progresses
+- **project-inception**: Load context from planning phase
+- **docs-manager**: Coordinate context documentation with project docs
 
 ## Common Pitfalls to Avoid
 

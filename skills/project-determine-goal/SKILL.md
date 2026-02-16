@@ -6,11 +6,32 @@ description: Interactive brainstorming to define production-ready project goals,
 # Determining Project Goal
 
 ## Purpose
+
 Systematically discover and document project requirements through adaptive questioning. Creates two key documents:
 - `docs/PROJECT_DESCRIPTION.md` - Concise overview (read on every Claude launch)
 - `docs/FULL_PROJECT_DESCRIPTION.md` - Complete detailed documentation
 
-## How This Works
+## When to Use This Skill
+
+Use this skill when:
+- Starting a new project from scratch
+- Need to clarify vague project requirements
+- Converting ideas into structured documentation
+- Project lacks clear goals or constraints
+- Ensuring all production aspects are considered
+- Setting up project context for development team
+
+**Do NOT use for:**
+- Projects with existing comprehensive documentation (use docs-bigger-picture)
+- Quick prototypes or experiments (document after validation)
+- Making technical implementation decisions (use research-deep)
+- Code implementation (use dev-workflow skills)
+- Mid-project refinements (use docs-manager)
+- When requirements are already clear and documented
+
+**If uncertain:** Use this skill at project inception when starting from scratch or when existing documentation is incomplete. Skip when comprehensive project docs already exist.
+
+## Process
 1. Ask ONE question at a time
 2. Provide sensible options when possible
 3. Adapt next questions based on previous answers
@@ -851,3 +872,32 @@ The two-file system ensures:
 - ✅ Efficient token usage (don't load everything every time)
 - ✅ Clear separation between "need to know" and "nice to know"
 - ✅ LLM cost controls are documented and enforced
+
+## Integration with Development
+
+This skill coordinates with:
+- **project-inception**: Creates initial project structure and setup
+- **docs-manager**: Maintains and updates project documentation
+- **docs-bigger-picture**: Reads the documentation created by this skill
+- **project-brainstorm**: Uses project context for feature ideation
+- **review-plan**: Validates plans against documented constraints
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Rush through questions without understanding answers
+- Accept vague responses on critical production requirements
+- Skip security or deployment considerations
+- Forget to probe on LLM cost controls for AI projects
+- Create documentation and never update it
+- Ask all questions upfront without adapting to answers
+- Ignore red flags in user responses
+
+**Do:**
+- Ask one clear question at a time
+- Adapt questions based on previous answers
+- Push for concrete answers on production concerns
+- Emphasize cost controls for LLM-heavy projects
+- Ensure all essential topics are covered before finishing
+- Create both concise and detailed documentation
+- Follow up on vague or incomplete answers

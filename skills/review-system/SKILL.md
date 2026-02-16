@@ -21,10 +21,15 @@ Use this skill when:
 
 **Do NOT use for:**
 - Quick inline feedback (direct comments fine)
-- Trivial changes (skip heavy process)
-- Early prototyping (review when ready)
+- Trivial changes or obvious bug fixes (skip heavy process)
+- Early prototyping or exploratory work (review when ready)
+- Single-file changes with no architectural impact (use review-critical)
+- Documentation-only updates (use docs-manager)
+- Quick syntax or style questions (direct answer fine)
 
-## How It Works
+**If uncertain:** Use this skill when changes are significant (multi-component, architectural impact, security-sensitive) or require comprehensive review across multiple dimensions. Skip for small, isolated changes or early-stage work.
+
+## Process
 
 ### Stage 1: Pre-Review Preparation (10 minutes)
 
@@ -325,13 +330,15 @@ Status: APPROVED / APPROVED_WITH_CONDITIONS / CHANGES_REQUIRED
 [Link to full review report]
 ```
 
-## Integration Points
+## Integration with Development
 
 This skill coordinates with:
-- **Review Critically**: Tier 1 security-focused review
-- **Dev Flow**: Review happens before integration stage
-- **Handle Ticket**: Review ticket changes before closure
-- **Plan Review System**: Validate plans before implementation
+- **review-critical**: Tier 1 security-focused review (critical issues detection)
+- **dev-workflow-flow**: Review happens before Stage 4 (Integration)
+- **project-handle-ticket**: Review ticket changes before Stage 6 (Closure)
+- **review-plan**: Validate implementation plans before code is written
+- **dev-workflow-test-driven**: Verify test coverage during Tier 3 review
+- **docs-manager**: Ensure documentation is updated during Tier 3 review
 
 ## Multi-Reviewer Coordination
 

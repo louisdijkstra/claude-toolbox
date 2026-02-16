@@ -20,11 +20,16 @@ Use this skill when:
 - Major refactoring or infrastructure change planned
 
 **Do NOT use for:**
-- Simple tasks with obvious approach
-- Quick fixes
-- Trivial changes
+- Simple tasks with obvious approach (implement directly)
+- Quick fixes or obvious bug fixes
+- Trivial changes (typos, formatting)
+- Code review of implemented code (use review-critical or review-system)
+- Early brainstorming (use project-brainstorm)
+- Documentation updates (use docs-manager)
 
-## How It Works
+**If uncertain:** Use this skill when planning complex features requiring architecture decisions, multiple phases, or team coordination. Skip for straightforward tasks with obvious implementation approaches.
+
+## Process
 
 ### Stage 1: Plan Submission (varies)
 
@@ -449,11 +454,13 @@ Conditional approval requires addressing flagged items.
 
 ## Integration with Development
 
-This skill feeds into:
-- **Dev Flow**: Use reviewed plan as blueprint
-- **Brainstorm Feature**: Generate plans for features
-- **Dev TDD**: Use plan for test component structure
-- **Test-Driven Development**: Use plan for test strategy
+This skill coordinates with:
+- **dev-workflow-flow**: Use reviewed plan as blueprint for implementation
+- **project-brainstorm**: Generate plans for features during brainstorming
+- **dev-workflow-tdd**: Use plan for test component structure and TDD approach
+- **dev-workflow-test-driven**: Use plan for comprehensive test strategy
+- **project-inception**: Review plans created during project launch (Stage 3)
+- **docs-manager**: Document plan decisions and approved approaches
 
 ## Common Pitfalls to Avoid
 

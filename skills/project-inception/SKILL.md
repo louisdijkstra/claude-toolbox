@@ -19,11 +19,16 @@ Use this skill when:
 - Need to establish project foundations
 
 **Do NOT use for:**
-- Adding features to existing projects (use feature skills)
+- Adding features to existing projects (use project-brainstorm or dev-workflow skills)
 - Quick prototyping (iterate first, then formalize)
 - Maintenance work (use existing project workflows)
+- Debugging or bug fixes (use dev-workflow-debug or project-handle-ticket)
+- Mid-project refactoring (use dev-workflow skills)
+- Projects with existing comprehensive documentation (use docs-bigger-picture)
 
-## How It Works
+**If uncertain:** Use this skill when starting from scratch or launching major initiatives requiring complete setup. Skip when working within established projects or doing maintenance/iteration work.
+
+## Process
 
 ### Stage 1: Visioning (30-60 minutes)
 
@@ -324,12 +329,14 @@ When starting project inception:
 
 ## Integration with Development
 
-This skill leads to:
-- **Setup Repository Structure**: Create project structure
-- **Project Determine Goal**: Define initial goals
-- **Docs Bigger Picture**: Validate architecture decisions
-- **Dev Workflow Flow**: Start actual development
-- **Docs Manager**: Create project documentation
+This skill coordinates with:
+- **project-determine-goal**: Define project goals and constraints interactively (Stage 1)
+- **project-brainstorm**: Brainstorm features during scope definition (Stage 2)
+- **research-deep**: Validate architecture decisions against 2026 standards (Stage 3)
+- **docs-bigger-picture**: Read existing project context if restructuring (Stage 3)
+- **setup-repository-structure**: Create detailed repository structure (Stage 4)
+- **docs-manager**: Create and maintain project documentation (Stage 5)
+- **dev-workflow-flow**: Begin development workflow after inception (Stage 6)
 
 ## Common Pitfalls to Avoid
 

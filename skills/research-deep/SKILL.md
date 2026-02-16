@@ -15,6 +15,8 @@ At four critical stages:
 3. **Review (Tier 2):** "Is this flagged issue real per 2026 standards?"
 4. **Refactoring:** "What's the current best practice for [optimization]?"
 
+If the user's query is unclear or lacks context, ask clarifying questions before proceeding with research.
+
 ## Process
 
 ### Step 1: Formulate Research Question

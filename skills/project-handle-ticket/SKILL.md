@@ -20,10 +20,15 @@ Use this skill when:
 
 **Do NOT use for:**
 - Quick one-line fixes (direct approach fine)
-- Architectural decisions (use bigger picture)
+- Obvious typos or simple syntax errors (fix directly)
+- Architectural decisions (use docs-bigger-picture)
+- Project planning or inception (use project-inception)
+- Feature brainstorming (use project-brainstorm)
 - Quick syntax questions (direct answer fine)
 
-## How It Works
+**If uncertain:** Use this skill when a ticket requires multiple steps (investigation, planning, implementation, testing, closure) or when systematic tracking is important. Skip for trivial one-line fixes or immediate answers.
+
+## Process
 
 ### Overview of Workflow
 
@@ -476,10 +481,12 @@ Maintain status throughout:
 ## Integration with Development
 
 This skill orchestrates:
-- **Systematic Debugging**: Used in Stage 2.5 for bug validation (REQUIRED for bugs)
-- **Dev Flow**: Used for implementation
-- **Test-Driven Development**: Used for verification
-- **Context Manager**: Track ticket progress
+- **dev-workflow-debug**: Used in Stage 2.5 for bug validation (REQUIRED for bugs)
+- **dev-workflow-flow**: Used in Stage 4 for implementation workflow
+- **dev-workflow-test-driven**: Used in Stage 4 for TDD implementation
+- **dev-workflow-tdd**: Alternative TDD approach for Stage 4 implementation
+- **review-critical**: Used in Stage 4 for code review
+- **docs-context**: Track ticket progress and maintain state across work sessions
 
 ## Example: Validation Stage in Action
 

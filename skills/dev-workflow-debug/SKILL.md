@@ -20,13 +20,18 @@ Use this skill when:
 - Error symptoms don't match obvious causes
 
 **Do NOT use for:**
-- Simple fixes with obvious cause
-- Obvious syntax errors
-- Known issues with obvious fixes
+- Simple fixes with obvious cause (direct fix)
+- Obvious syntax errors (fix immediately)
+- Known issues with documented fixes
+- Quick one-off scripts or prototypes
+- When error message clearly identifies the problem
+- Cosmetic issues with no functional impact
+
+**If uncertain:** Use this skill for bugs that aren't immediately obvious or when you need to understand the problem before fixing. Skip for errors with clear, direct solutions.
 
 ## How It Works
 
-### Stage 1: Symptom Documentation (5-10 minutes)
+### Step 1: Symptom Documentation (5-10 minutes)
 
 Document exactly what's happening:
 
@@ -62,7 +67,7 @@ Document exactly what's happening:
 - [Recent changes (if known)]
 ```
 
-### Stage 2: Hypothesis Formation (5-15 minutes)
+### Step 2: Hypothesis Formation (5-15 minutes)
 
 Generate potential explanations:
 
@@ -95,7 +100,7 @@ Generate potential explanations:
 - What evidence would confirm/deny this?
 - What would I need to check?
 
-### Stage 3: Evidence Gathering (10-30 minutes)
+### Step 3: Evidence Gathering (10-30 minutes)
 
 Collect data to test hypotheses:
 
@@ -149,7 +154,7 @@ git diff [working_commit]..[current]
 # Network activity (if applicable)
 ```
 
-### Stage 4: Root Cause Analysis (5-15 minutes)
+### Step 4: Root Cause Analysis (5-15 minutes)
 
 Trace the bug to its origin:
 
@@ -182,7 +187,7 @@ Trace the bug to its origin:
 - [Monitoring gap: what monitoring would catch this]
 ```
 
-### Stage 5: Implement Fix (varies)
+### Step 5: Implement Fix (varies)
 
 Write minimal fix for root cause:
 
@@ -197,7 +202,7 @@ Write minimal fix for root cause:
 # Check for side effects
 ```
 
-### Stage 6: Verify and Learn (10-15 minutes)
+### Step 6: Verify and Learn (10-15 minutes)
 
 Ensure bug is truly fixed and documented:
 
@@ -395,11 +400,12 @@ When debugging:
 
 ## Integration with Development
 
-This skill pairs with:
-- **Project Handle Ticket**: Use for bug tickets
-- **Dev Workflow Test Driven**: Add test that reproduces bug
-- **Research Deep**: For understanding complex issues
-- **Review Critical**: Identify bugs before they ship
+This skill coordinates with:
+- **dev-workflow-flow**: Use during Mode 4 (Debugging Mode)
+- **dev-workflow-test-driven**: Add test that reproduces bug before fixing
+- **project-handle-ticket**: Use for systematic bug ticket handling
+- **research-deep**: For understanding complex technical issues
+- **review-critical**: Identify bugs before they ship to production
 
 ## Common Pitfalls to Avoid
 

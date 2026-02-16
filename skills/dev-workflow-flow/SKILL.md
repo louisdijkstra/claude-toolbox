@@ -22,11 +22,12 @@ Use this skill when:
 **Do NOT use for:**
 - Quick one-off fixes (direct approach)
 - Individual task details (use specific skills)
-- Strategic planning (use `project-inception`)
+- Strategic planning (use project-inception)
+- Emergency hotfixes (skip to fix directly)
 
-## How It Works
+**If uncertain:** Use this skill for work sessions lasting 30+ minutes or involving multiple stages. Skip for quick fixes under 15 minutes.
 
-### 1. Understand Development Stages
+## Development Stages
 
 Development flows through these stages in order:
 
@@ -65,37 +66,93 @@ Development flows through these stages in order:
 - Coordinate with team
 - Merge when ready
 
-### 2. Choose Your Mode
+## Operational Modes
 
-Select the mode matching your situation:
+### Mode 1: Deep Work Mode (3+ hours available)
 
-**Deep Work Mode** (3+ hours available)
-- Full cycle: Plan → Design → Implement → Test → Review → Integrate
-- Minimize interruptions
-- Commit frequently to checkpoint progress
-- Document decisions
+**Best for:** Major features, significant refactors, complex fixes
 
-**Quick Fix Mode** (< 1 hour)
-- Skip Design stage
-- Minimal planning
-- One focused change
-- Quick verification
+**Structure:**
+```
+1. Plan (10 min) - Clarify goal completely
+2. Design (20 min) - Sketch full approach
+3. Implement (60-120 min) - Code with TDD
+4. Test (20 min) - Full verification
+5. Review (10 min) - Quality check
+6. Integrate (5 min) - Commit/push
+```
 
-**Collaboration Mode** (coordinating with others)
-- Extra emphasis on communication
+**Key practices:**
+- No interruptions
+- Commit every 15-20 minutes
+- Take 5-minute breaks between stages
+- Document decisions as you go
+
+### Mode 2: Quick Fix Mode (< 1 hour)
+
+**Best for:** Bug fixes, small feature additions, documentation
+
+**Structure:**
+```
+1. Plan (3 min) - One sentence goal
+2. Implement (15-30 min) - Make change
+3. Test (5 min) - Quick verification
+4. Integrate (2 min) - Commit/push
+```
+
+**Key practices:**
+- Skip design phase
+- One focused change only
+- Minimal testing (critical path only)
+- Commit directly if trivial
+
+### Mode 3: Collaboration Mode (coordinating with others)
+
+**Best for:** Coordination across team, shared codebase
+
+**Structure:**
+```
+1. Plan (10 min) - Define scope clearly
+2. Design (10 min) - Get feedback on approach
+3. Implement (30-60 min) - Code independently
+4. Test (10 min) - Thorough verification
+5. Review (5 min) - Self review
+6. Integrate (10 min) - Coordinate with team
+```
+
+**Key practices:**
+- Extra clarity in documentation
 - Sync at stage boundaries
-- Document assumptions clearly
-- Get feedback early
+- Get design feedback early
+- Document assumptions
+- Coordinate timing with team
 
-**Debugging Mode** (investigating issues)
-- Heavy on analysis/research
-- Test-driven verification
-- Smaller incremental changes
-- Document findings
+### Mode 4: Debugging Mode (investigating issues)
 
-### 3. Follow the Stage Workflow
+**Best for:** Investigating complex issues, root cause analysis
 
-#### Stage 1: Plan
+**Structure:**
+```
+1. Plan (5 min) - Define what we're investigating
+2. Research (30-60 min) - Understand issue deeply
+3. Verify (15 min) - Reproduce and test theories
+4. Fix (20-30 min) - Implement minimal fix
+5. Test (10 min) - Ensure no regressions
+6. Document (5 min) - Write root cause analysis
+```
+
+**Key practices:**
+- Use dev-workflow-debug skill
+- Test each theory independently
+- Keep fix minimal and focused
+- Document findings for future
+
+## Process
+
+### Step 1: Stage 1 - Plan
+
+Define what you're building and success criteria.
+
 ```markdown
 # Work Session: [Task Name]
 
@@ -119,7 +176,10 @@ Select the mode matching your situation:
 [Time in minutes/hours]
 ```
 
-#### Stage 2: Design
+### Step 2: Stage 2 - Design
+
+Sketch implementation approach and test strategy.
+
 ```markdown
 ## Implementation Approach
 [How will we build this?]
@@ -141,13 +201,19 @@ Select the mode matching your situation:
 If complex: [ ] Get feedback before proceeding
 ```
 
-#### Stage 3: Implement
-- Use `/dev-workflow-test-driven` skill
+### Step 3: Stage 3 - Implement
+
+Execute implementation using TDD.
+
+- Use dev-workflow-tdd or dev-workflow-test-driven skill
 - Commit at logical checkpoints
 - Keep tests passing continuously
 - Document code as you write
 
-#### Stage 4: Test
+### Step 4: Stage 4 - Test
+
+Verify implementation works correctly.
+
 ```bash
 # Run all tests
 pytest  # or npm test
@@ -162,7 +228,10 @@ pytest --cov=src tests/
 # [Run critical path tests]
 ```
 
-#### Stage 5: Review
+### Step 5: Stage 5 - Review
+
+Self-review code quality and documentation.
+
 ```bash
 # Self-review code
 git diff main...HEAD
@@ -177,7 +246,10 @@ git diff main...HEAD
 # [Follow CLAUDE.md conventions]
 ```
 
-#### Stage 6: Integrate
+### Step 6: Stage 6 - Integrate
+
+Create PR and coordinate merge.
+
 ```bash
 # Create PR if needed
 gh pr create --title "..." --body "..."
@@ -189,90 +261,9 @@ git push
 gh pr merge
 ```
 
-## Operational Modes
+## Stage Transitions
 
-### Deep Work Mode
-
-**Best for:** Major features, significant refactors, complex fixes
-
-**Structure:**
-```
-1. Plan (10 min) - Clarify goal completely
-2. Design (20 min) - Sketch full approach
-3. Implement (60-120 min) - Code with TDD
-4. Test (20 min) - Full verification
-5. Review (10 min) - Quality check
-6. Integrate (5 min) - Commit/push
-```
-
-**Key practices:**
-- No interruptions
-- Commit every 15-20 minutes
-- Take 5-minute breaks between stages
-- Document decisions as you go
-
-### Quick Fix Mode
-
-**Best for:** Bug fixes, small feature additions, documentation
-
-**Structure:**
-```
-1. Plan (3 min) - One sentence goal
-2. Implement (15-30 min) - Make change
-3. Test (5 min) - Quick verification
-4. Integrate (2 min) - Commit/push
-```
-
-**Key practices:**
-- Skip design phase
-- One focused change only
-- Minimal testing (critical path only)
-- Commit directly if trivial
-
-### Collaboration Mode
-
-**Best for:** Coordination across team, shared codebase
-
-**Structure:**
-```
-1. Plan (10 min) - Define scope clearly
-2. Design (10 min) - Get feedback on approach
-3. Implement (30-60 min) - Code independently
-4. Test (10 min) - Thorough verification
-5. Review (5 min) - Self review
-6. Integrate (10 min) - Coordinate with team
-```
-
-**Key practices:**
-- Extra clarity in documentation
-- Sync at stage boundaries
-- Get design feedback early
-- Document assumptions
-- Coordinate timing with team
-
-### Debugging Mode
-
-**Best for:** Investigating complex issues, root cause analysis
-
-**Structure:**
-```
-1. Plan (5 min) - Define what we're investigating
-2. Research (30-60 min) - Understand issue deeply
-3. Verify (15 min) - Reproduce and test theories
-4. Fix (20-30 min) - Implement minimal fix
-5. Test (10 min) - Ensure no regressions
-6. Document (5 min) - Write root cause analysis
-```
-
-**Key practices:**
-- Use `/research-deep` skill
-- Test each theory independently
-- Keep fix minimal and focused
-- Document findings for future
-
-## Transitions Between Stages
-
-**At stage boundaries:**
+At stage boundaries, verify:
 - [ ] Previous stage complete and verified
 - [ ] Deliverables documented
 - [ ] Ready to move forward
@@ -313,9 +304,7 @@ When structuring a dev session:
 - [ ] Ready to integrate
 ```
 
-## Examples
-
-### Example: Deep Work Session
+## Example: Deep Work Session
 
 **Task**: Add analytics export feature
 
@@ -352,10 +341,12 @@ When structuring a dev session:
 ## Integration with Development
 
 This skill coordinates with:
-- **Review Plan**: Get feedback at stage boundaries
-- **Dev Workflow Test Driven**: Used during Stage 3 (Implement)
-- **Review Critical**: Used during Stage 5 (Review)
-- **Docs Context**: Track progress across stages
+- **review-plan**: Get feedback at stage boundaries
+- **dev-workflow-tdd**: Used during Stage 3 (Implement)
+- **dev-workflow-test-driven**: Alternative for Stage 3
+- **review-critical**: Used during Stage 5 (Review)
+- **docs-context**: Track progress across stages
+- **dev-workflow-debug**: For Debugging Mode
 
 ## Common Pitfalls to Avoid
 

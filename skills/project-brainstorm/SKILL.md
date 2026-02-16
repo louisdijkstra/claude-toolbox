@@ -20,13 +20,18 @@ Use this skill when:
 - Need to evaluate feature impact on architecture or budget
 
 **Do NOT use for:**
-- Making final technical decisions (use `getting-the-bigger-picture`)
-- Code implementation (use `test-driven-development`)
-- Reviewing existing code (use `review-critically`)
+- Making final technical decisions (use docs-bigger-picture)
+- Code implementation (use dev-workflow-test-driven)
+- Reviewing existing code (use review-critical)
+- Detailed architecture planning (use project-inception)
+- Emergency bug fixes (implement directly)
+- When feature requirements are already clear and specific
 
-## How It Works
+**If uncertain:** Use this skill when exploring possibilities and need multiple perspectives. Skip when requirements are clear and implementation path is obvious.
 
-### 1. Gather Context
+## Process
+
+### Step 1: Gather Context
 
 ```bash
 # Read project goals and constraints
@@ -40,7 +45,7 @@ Identify:
 - User audience
 - MVP vs production-ready state
 
-### 2. Brainstorm Multiple Angles
+### Step 2: Brainstorm Multiple Angles
 
 For each feature idea, explore:
 
@@ -66,7 +71,7 @@ For each feature idea, explore:
 - Performance impact?
 - Compatibility issues?
 
-### 3. Generate Ideas Systematically
+### Step 3: Generate Ideas Systematically
 
 Structure brainstorm output as:
 
@@ -104,7 +109,7 @@ Structure brainstorm output as:
 - [Technical constraint to verify]
 ```
 
-### 4. Validate Against Constraints
+### Step 4: Validate Against Constraints
 
 Before recommending, check:
 - Aligns with project maturity (MVP/production)
@@ -205,11 +210,12 @@ Structure recommendations as:
 
 ## Integration with Development
 
-This skill pairs well with:
-- **Getting the Bigger Picture**: Validate ideas fit project constraints
-- **Project Inception**: Define features during project setup
-- **Plan Review System**: Evaluate brainstorm outputs before committing
-- **Test-Driven Development**: Once feature is decided, implement TDD
+This skill coordinates with:
+- **docs-bigger-picture**: Validate ideas fit project constraints
+- **project-inception**: Define features during project setup
+- **review-plan**: Evaluate brainstorm outputs before committing
+- **dev-workflow-test-driven**: Once feature is decided, implement TDD
+- **docs-manager**: Document feature decisions and rationale
 
 ## Common Pitfalls to Avoid
 

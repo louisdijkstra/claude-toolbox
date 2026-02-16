@@ -17,19 +17,24 @@ Use this skill when:
 - Implementing well-scoped features
 - Want to minimize bugs while staying fast
 - Working in short, focused sprints
+- Fixing bugs that need test coverage
 
 **Do NOT use for:**
 - Exploratory prototyping (code and validate later)
-- Emergency hotfixes (take shortest path)
+- Emergency hotfixes requiring immediate fix
 - Refactoring existing code without behavior changes
-- Infrastructure setup
+- Infrastructure setup or configuration
+- One-off scripts or throwaway code
 
-## How It Works
+**If uncertain:** Use this skill for production code where quality matters. Skip for experiments or emergencies where tests can be added afterward.
 
-### 1. Setup Phase (5 minutes)
+## Process
 
-Create a test workspace:
+### Step 1: Setup Phase (5 minutes)
 
+Create test workspace and implementation stubs.
+
+**Create test file:**
 ```bash
 # Create test file structure
 mkdir -p tests/features/
@@ -45,16 +50,15 @@ EOF
 pytest tests/features/test_feature_name.py -v
 ```
 
-Create implementation stub:
-
+**Create implementation stub:**
 ```bash
 # Create implementation file
 touch src/features/feature_name.py
 ```
 
-### 2. Development Cycle
+### Step 2: Development Cycle
 
-Repeat this cycle for each feature component:
+Repeat this RED-GREEN-REFACTOR cycle for each feature component:
 
 ```
 1. Write failing test (RED)
@@ -68,10 +72,11 @@ Repeat this cycle for each feature component:
 5. Repeat for next component
 ```
 
-### Phase A: RED - Write Failing Test
+### Step 3: RED Phase - Write Failing Test
+
+Write test using Arrange-Act-Assert pattern.
 
 **Test structure:**
-
 ```python
 def test_feature_describes_specific_behavior():
     """
@@ -96,33 +101,31 @@ def test_feature_describes_specific_behavior():
 - Should fail with clear error message
 
 **Run test:**
-
 ```bash
 pytest tests/features/test_feature_name.py::test_feature_describes_specific_behavior -v
 ```
 
 Confirm it FAILS with clear error about what's missing.
 
-### Phase B: GREEN - Minimal Implementation
+### Step 4: GREEN Phase - Minimal Implementation
 
-Write **minimal code** to make test pass:
+Write **minimal code** to make test pass.
 
 ```python
 def my_feature(data):
     return {"expected": "output"}
 ```
 
-Run test:
-
+**Run test:**
 ```bash
 pytest tests/features/test_feature_name.py::test_feature_describes_specific_behavior -v
 ```
 
 Confirm it PASSES. Don't optimize yet.
 
-### Phase C: REFACTOR - Improve Code
+### Step 5: REFACTOR Phase - Improve Code
 
-Now that test passes, improve without breaking it:
+Now that test passes, improve without breaking it.
 
 ```python
 def my_feature(data):
@@ -131,15 +134,14 @@ def my_feature(data):
     return normalize_output(processed)
 ```
 
-Run test again:
-
+**Run test again:**
 ```bash
 pytest tests/features/test_feature_name.py -v
 ```
 
 Still passing? Commit this cycle.
 
-### 3. Commit Progress
+### Step 6: Commit Progress
 
 After each 3-4 test cycles (or when a meaningful mini-feature is done):
 
@@ -153,9 +155,9 @@ git commit -m "feat(feature-name): add component functionality
 "
 ```
 
-### 4. Multi-Component Features
+### Step 7: Multi-Component Features
 
-For complex features with multiple parts:
+For complex features with multiple parts, track progress:
 
 ```markdown
 # Feature: [Feature Name]
@@ -298,9 +300,7 @@ When starting feature work:
 - [ ] Ready to merge
 ```
 
-## Examples
-
-### Example: Implementing Analytics Export
+## Example: Implementing Analytics Export
 
 **Feature**: Export analytics data to CSV
 
@@ -365,10 +365,11 @@ def ExportButton(on_click):
 
 ## Integration with Development
 
-This skill is used during:
-- **Dev Flow** (Stage 3: Implementation)
-- **Plan Review System** (Validate design before starting)
-- **Systematic Debugging** (Debug failing tests)
+This skill coordinates with:
+- **dev-workflow-flow**: Use during Stage 3 (Implementation)
+- **dev-workflow-test-driven**: Alternative TDD approach for different contexts
+- **review-plan**: Validate design before starting
+- **dev-workflow-debug**: Debug failing tests systematically
 
 ## Common Pitfalls to Avoid
 

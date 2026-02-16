@@ -10,12 +10,23 @@ Systematically instrument all LLM calls in your application with Langfuse v3 for
 
 ## When to Use This Skill
 
-Use when:
+Use this skill when:
 - Adding Langfuse tracing to a new or existing application
-- Auditing existing tracing implementation
+- Auditing existing tracing implementation for completeness
 - Standardizing tracing patterns across codebase
-- Setting up observability infrastructure
-- Preparing for production deployment
+- Setting up observability infrastructure for LLM calls
+- Preparing AI application for production deployment
+- Need to track LLM costs and performance
+
+**Do NOT use for:**
+- Applications without LLM calls (no tracing needed)
+- Quick prototypes or experiments (add observability when stabilizing)
+- Projects using other observability tools (follow existing standards)
+- Non-AI applications (Langfuse is LLM-specific)
+- When privacy requirements prohibit call tracking (assess requirements first)
+- Simple scripts with single LLM call (observability overkill)
+
+**If uncertain:** Use this skill when preparing AI applications for production or when you need to monitor LLM performance, costs, and quality. Skip for throwaway prototypes or when working within established observability infrastructure.
 
 ## Prerequisites
 ```bash
@@ -716,10 +727,44 @@ After implementation, verify:
 - [Feedback/Scores](https://langfuse.com/docs/scores/custom)
 - [Prompt Management](https://langfuse.com/docs/prompt-management)
 
-## Integration Notes
+## Integration with Development
 
-**Use with other skills:**
-- `getting-the-bigger-picture`: Check if observability is a project requirement
-- `anthropic-sdk-setup`: Coordinate with Anthropic client setup
+This skill coordinates with:
+- **docs-bigger-picture**: Check if observability is a project requirement and understand privacy constraints
+- **ai-framework-setup-anthropic**: Coordinate with Anthropic client setup for proper SDK integration
+- **ai-framework-setup-langchain**: Integrate Langfuse tracing with LangChain applications
+- **ai-framework-setup-pydanticai**: Set up observability for PydanticAI agents
+- **ai-framework-build-langgraph**: Instrument LangGraph workflows with proper tracing hierarchy
+- **setup-logging**: Coordinate general logging with LLM-specific observability
+- **project-inception**: Set up Langfuse during Stage 5 (Initial Deliverables) for AI projects
+- **dev-workflow-flow**: Add tracing during Stage 2 (Implementation) when building AI features
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Use manual `.end()` calls instead of context managers (causes incomplete traces)
+- Use generic trace names like "llm-call" or "generation_1" (makes UI useless)
+- Log PII (passwords, emails, SSN) without masking (privacy violations)
+- Skip tracing controls (always respect TRACING_ENABLED flag)
+- Put technical details in trace names (use metadata instead)
+- Forget to call `langfuse.flush()` in short-lived processes (traces lost)
+- Mix Langfuse v2 and v3 APIs (incompatible)
+- Skip SSL certificate setup in Docker (causes connection failures)
+- Use raw API request/response objects in input/output (not human-readable)
+- Ignore trace hierarchy (flat traces lose context)
+
+**Do:**
+- Use context managers (`with langfuse.start_as_current_*`) for all tracing
+- Use descriptive, business-focused trace names (`answer-user-question`, not `llm_call_1`)
+- Implement PII masking for privacy-sensitive applications
+- Add tracing controls via environment variables (TRACING_ENABLED, TRACE_CHAT)
+- Put human-readable content in input/output, technical details in metadata
+- Call `langfuse.flush()` in FastAPI lifespan or process cleanup
+- Pin Langfuse SDK version (`uv add langfuse==<version>`)
+- Use official Python Docker images for proper SSL certificate support
+- Transform raw API objects to human-readable dicts before logging
+- Create logical trace hierarchies with nested spans for multi-step workflows
+- Verify traces appear in Langfuse UI with `langfuse.auth_check()`
+- Use `propagate_attributes()` to share metadata across nested spans
 
 **Before implementing:** Understand privacy requirements and determine which operations should never be traced.

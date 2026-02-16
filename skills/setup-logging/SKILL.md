@@ -8,6 +8,26 @@ description: Set up production logging (frontend, backend, infrastructure) using
 ## Purpose
 Implement production-grade logging across entire stack using free services. Setup time: 5-10 minutes.
 
+## When to Use This Skill
+
+Use this skill when:
+- Starting a new project without logging configured
+- Adding structured logging to existing project
+- Replacing ad-hoc print statements with production logging
+- Setting up error tracking and monitoring
+- Need to debug production issues
+- Preparing project for deployment
+
+**Do NOT use for:**
+- Projects that already have logging configured (use existing setup)
+- Quick prototypes or experiments (add logging when stabilizing)
+- Simple scripts with minimal error handling needs (print statements may suffice)
+- When debugging locally with IDE debugger (direct debugging more efficient)
+- Documentation-only projects (no code to log)
+- Projects explicitly using enterprise logging solutions (follow enterprise standards)
+
+**If uncertain:** Use this skill when preparing code for production or when you need to track errors and behavior in deployed environments. Skip for throwaway prototypes or when working within established enterprise logging infrastructure.
+
 ## Core Requirements
 - **Format**: Structured JSON logs
 - **Cost**: $0 (free tier services)
@@ -30,9 +50,7 @@ Implement production-grade logging across entire stack using free services. Setu
 
 ## Standard
 
-Use deep-research skill to determine the best fit
-for the current set-up. If need be, use getting-the-bigger-picture 
-skill 
+Use **research-deep** skill to determine the best fit for the current setup. If needed, use **docs-bigger-picture** skill to understand project context and requirements. 
 
 ## What to Log
 
@@ -277,3 +295,35 @@ Done. 5,000 errors/month free forever.
 - Free tiers are generous (5K-50GB/month)
 - No credit card required
 - Start with Sentry for errors, expand later
+
+## Integration with Development
+
+This skill coordinates with:
+- **research-deep**: Validate logging service choice against 2026 best practices and project requirements
+- **docs-bigger-picture**: Understand project context, scale, and constraints for logging configuration
+- **project-inception**: Set up logging during Stage 5 (Initial Deliverables) of project launch
+- **setup-repository-structure**: Ensure logging configuration files are properly organized in project structure
+- **dev-workflow-flow**: Add logging during Stage 2 (Implementation) when building features
+- **docs-manager**: Document logging conventions, schema standards, and alert configurations
+
+## Common Pitfalls to Avoid
+
+**Don't:**
+- Log sensitive data (passwords, tokens, PII without consent)
+- Use different field names across services (breaks correlation)
+- Skip trace_id implementation (can't track requests across services)
+- Log at DEBUG level in production (performance impact)
+- Ignore log sampling for high-volume endpoints (cost explosion)
+- Forget to test alerting before production
+- Mix structured and unstructured logging
+- Use print statements instead of proper logging library
+
+**Do:**
+- Use consistent JSON schema across all services
+- Implement trace_id propagation from day one
+- Start with free tier services (Sentry, Better Stack, Grafana Cloud)
+- Log all errors with full stack traces and context
+- Set up alerting for critical metrics (error rate, latency)
+- Sample high-volume logs intelligently (100% errors, 10% success)
+- Test logging by triggering errors before deployment
+- Follow privacy requirements (redact PII, hash sensitive fields)
