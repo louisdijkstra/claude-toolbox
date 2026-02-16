@@ -33,32 +33,39 @@ Use `/ticket` when:
 - Clarify ambiguities
 - Assess priority and complexity
 
-**Phase 2: Planning**
+**Phase 2: Validation (CRITICAL for Bugs)**
+- Use `/debug` to verify bug premise
+- Reproduce reported issue
+- Validate suggested fix (if provided)
+- Confirm root cause
+- Decision: Proceed / Works as designed / Need info
+
+**Phase 3: Planning**
 - Break down into subtasks
 - Identify affected components
-- Determine approach
+- Determine approach (informed by validation)
 - Estimate effort
 - Create implementation plan
 
-**Phase 3: Implementation**
+**Phase 4: Implementation**
 - Execute planned tasks
-- Follow appropriate workflow (TDD, debugging, etc.)
+- Follow appropriate workflow (TDD, dev-flow, etc.)
 - Maintain progress tracking
 - Handle blockers
 
-**Phase 4: Testing**
+**Phase 5: Testing**
 - Validate functionality
 - Run test suite
 - Check edge cases
 - Verify no regressions
 
-**Phase 5: Validation**
+**Phase 6: Validation**
 - Confirm requirements met
 - Test from user perspective
 - Verify acceptance criteria
 - Get feedback if needed
 
-**Phase 6: Closure**
+**Phase 7: Closure**
 - Document changes
 - Update ticket status
 - Provide summary
@@ -74,11 +81,12 @@ Use `/ticket` when:
 ## Ticket Types
 
 **Bug Report:**
-1. Reproduce the bug
-2. Use `/debug` for investigation
-3. Implement fix with `/tdd`
-4. Verify resolution
-5. Add regression test
+1. Use `/debug` to validate bug premise (REQUIRED)
+2. Confirm bug exists and identify root cause
+3. Plan fix based on validated root cause
+4. Implement fix with `/tdd` or `/dev-flow`
+5. Verify resolution
+6. Add regression test
 
 **Feature Request:**
 1. Clarify requirements

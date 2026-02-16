@@ -25,6 +25,20 @@ Use this skill when:
 
 ## How It Works
 
+### Overview of Workflow
+
+```
+1. Intake → Understand the ticket
+2. Triage → Categorize and prioritize
+3. [BUG VALIDATION] → Verify premise (bugs only) ⚠️ CRITICAL STEP
+4. Planning → Design solution
+5. Implementation → Execute work
+6. Testing → Validate solution
+7. Closure → Document and complete
+```
+
+**IMPORTANT**: For bug tickets, Stage 2.5 (Bug Validation) is MANDATORY before proceeding to planning.
+
 ### Stage 1: Intake and Understanding (10-15 minutes)
 
 **Read the ticket thoroughly:**
@@ -79,26 +93,75 @@ Component: [Which part of system]
 Tags: [bug, regression, performance, security, etc.]
 ```
 
+### Stage 2.5: Bug Validation (10-20 minutes) **[CRITICAL FOR BUG TICKETS]**
+
+**For bug tickets ONLY - validate before planning:**
+
+Use `/debug` or `systematic-debugging` skill to verify the ticket's premise.
+
+**STOP and validate these questions:**
+```markdown
+## Bug Validation Checklist
+
+- [ ] Can we reproduce the reported bug?
+- [ ] Is this actually a bug or expected behavior?
+- [ ] If a fix is suggested in the ticket, is it the correct approach?
+- [ ] What is the actual root cause?
+- [ ] Do we have enough information to proceed?
+
+## Validation Results
+
+**Reproduction**: ✅ Reproduced / ❌ Cannot reproduce / ⚠️ Partial
+**Verdict**: [Bug confirmed / Works as designed / Need more info]
+**Root Cause**: [Actual cause based on investigation]
+**Suggested Fix Validity**: [If fix suggested: Valid / Invalid / Needs modification]
+
+**Evidence**:
+- [Evidence 1]
+- [Evidence 2]
+- [Evidence 3]
+
+**Proceed to Planning**: [YES/NO]
+```
+
+**Use systematic-debugging to:**
+1. Document exact symptoms
+2. Form hypotheses about root cause
+3. Gather evidence (logs, code analysis, reproduction)
+4. Validate or invalidate the ticket's premise
+5. Challenge any suggested fixes
+6. Confirm actual root cause
+
+**Possible outcomes:**
+- ✅ **Bug confirmed** → Proceed to Stage 3 (Planning)
+- ❌ **Works as designed** → Respond to user, close ticket
+- ⚠️ **Need more info** → Ask clarifying questions, wait for response
+- 🔄 **Different root cause** → Update understanding, proceed with correct cause
+
+**IMPORTANT**: Do NOT skip this stage for bugs. Validating the premise prevents wasted effort on incorrect fixes or non-existent problems.
+
 ### Stage 3: Planning and Design (15-30 minutes)
 
-**For bugs:**
+**For bugs (after Stage 2.5 validation confirms bug exists):**
 ```markdown
-## Root Cause Analysis
+## Root Cause Analysis (From Validation Stage)
 
 Expected Behavior: [What should happen]
 Actual Behavior: [What actually happens]
 
-Reproduction Steps:
+Reproduction Steps (Confirmed):
 1. [Step 1]
 2. [Step 2]
 3. [Step 3]
 
-Root Cause Hypothesis: [Why does this happen?]
+Root Cause (Validated): [Why does this happen?]
 
-Investigation Plan:
-- [ ] Check [component]
-- [ ] Verify [behavior]
-- [ ] Test [scenario]
+Solution Approach:
+- [ ] Fix [specific issue identified]
+- [ ] Add test to prevent regression
+- [ ] Verify no side effects
+
+Note: This builds on Stage 2.5 (Bug Validation) findings.
 ```
 
 **For features:**
@@ -134,9 +197,12 @@ Resolution Plan:
 ### Stage 4: Implementation (varies)
 
 **Use appropriate development skill:**
-- For new code: Use `/dev-flow` or `/dev-tdd`
-- For debugging: Use `/systematic-debugging`
+- For bugs: Use `/dev-tdd` or `/dev-flow` (validation already done in Stage 2.5)
+- For new features: Use `/dev-flow` or `/dev-tdd`
+- For complex refactoring: Use `/plan` then `/dev-flow`
 - For review: Use `/review-critically`
+
+**Note**: For bugs, systematic-debugging was already used in Stage 2.5 (Validation).
 
 **Key practice:**
 - Create test case that reproduces issue first
@@ -274,20 +340,31 @@ Thank you for reporting this. I've reviewed the issue and confirm it.
 
 ### Pattern 1: Regression (Something that was working broke)
 
-**Investigation:**
+**Stage 2.5 Validation:**
 ```bash
-# Find when it broke
+# Verify regression claim
+# 1. Confirm it worked before
+# 2. Confirm it's broken now
+# 3. Find when it broke
+
 git log --oneline | grep relevant-term
 
 # Compare working vs broken version
 git diff [working-version]..[broken-version] -- file.py
+
+# Use /debug to validate premise
 ```
 
-**Response:**
-- Acknowledge it's regression
+**After Validation, Response:**
+- Acknowledge it's regression (if confirmed)
 - Explain when it broke
 - Provide immediate workaround if applicable
 - Timeline for fix
+
+**If Not Regression:**
+- May be works-as-designed
+- May be misunderstanding of previous behavior
+- Clarify with user
 
 ### Pattern 2: Performance Issue
 
@@ -347,15 +424,21 @@ Maintain status throughout:
 - ✅ Understood
 - ✅ Triaged as [Priority]
 
-## [Date] Analysis
+## [Date] Validation (For Bugs)
+- ✅ Bug premise validated using /debug
+- ✅ Reproduction confirmed
 - ✅ Root cause identified
+- ✅ Decision: Proceed to planning
+
+## [Date] Planning
 - ✅ Solution planned
+- ✅ Approach validated
 
 ## [Date] Implementation
 - ✅ Fix implemented
 - ✅ Tests added
 
-## [Date] Verification
+## [Date] Testing
 - ✅ Bug reproduced and verified fixed
 - ✅ No regressions
 
@@ -393,15 +476,74 @@ Maintain status throughout:
 ## Integration with Development
 
 This skill orchestrates:
+- **Systematic Debugging**: Used in Stage 2.5 for bug validation (REQUIRED for bugs)
 - **Dev Flow**: Used for implementation
-- **Systematic Debugging**: Used for bug investigation
 - **Test-Driven Development**: Used for verification
 - **Context Manager**: Track ticket progress
+
+## Example: Validation Stage in Action
+
+### Ticket: "Bug - CSV export returns empty file"
+
+**Stage 1: Intake**
+```markdown
+Ticket #456: CSV export returns empty file
+User reports: "When I click export CSV, it downloads but the file is empty"
+```
+
+**Stage 2: Triage**
+```markdown
+Category: Bug
+Priority: 🟠 High (blocks data export)
+Component: Export system
+```
+
+**Stage 2.5: Validation (CRITICAL)**
+```markdown
+Using /debug to validate:
+
+HYPOTHESIS 1: Export logic is broken
+- Test: Trigger export, check server logs
+- Finding: Export runs successfully, returns 200 OK
+- Evidence: Server logs show data being serialized
+
+HYPOTHESIS 2: Data is actually empty
+- Test: Check data source
+- Finding: Data exists in database
+- Evidence: Query returns 150 rows
+
+HYPOTHESIS 3: Content-type or encoding issue
+- Test: Inspect HTTP response headers
+- Finding: Content-Type is "application/octet-stream" instead of "text/csv"
+- Evidence: Response body has data but wrong MIME type causes browser issue
+
+VALIDATION RESULT:
+✅ Bug confirmed - Not a data issue, it's a headers issue
+✅ Root cause: Incorrect Content-Type header
+✅ User's premise partially correct (file appears empty due to encoding)
+❌ This is NOT an empty file issue - it's a MIME type issue
+
+Decision: PROCEED to planning with correct root cause
+```
+
+**Stage 3: Planning** (Now informed by validation)
+```markdown
+Fix approach:
+1. Change Content-Type to "text/csv; charset=utf-8"
+2. Add Content-Disposition header
+3. Test with various browsers
+4. Add test to verify headers
+```
+
+**Result**: Validation prevented wasting time on data export logic and identified the actual issue.
 
 ## Common Pitfalls to Avoid
 
 **Don't:**
+- **Skip Stage 2.5 validation for bug tickets** ⚠️ CRITICAL
 - Start fixing before understanding issue
+- Assume the reported bug is actually a bug
+- Trust suggested fixes without validation
 - Assume you know what user wants
 - Skip verification before closing
 - Leave tickets in ambiguous state
@@ -409,7 +551,10 @@ This skill orchestrates:
 - Deploy without testing
 
 **Do:**
+- **ALWAYS validate bug tickets before planning** ✅ REQUIRED
+- Use `/debug` to verify premise and root cause
 - Ask clarifying questions upfront
+- Challenge assumptions about expected behavior
 - Understand before implementing
 - Verify fix thoroughly
 - Communicate status updates
