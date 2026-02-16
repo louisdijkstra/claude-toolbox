@@ -4,8 +4,8 @@ Production-ready configuration for Claude Code CLI with skills, agents, hooks, a
 
 ## Features
 
-- **23 Production Skills** - Structured workflows for common development tasks
-- **15 Shorthand Commands** - Quick access to frequently used skills
+- **30+ Production Skills** - Structured workflows for development, AI frameworks, compliance, and deployment
+- **16 Shorthand Commands** - Quick access to frequently used skills
 - **11 Specialized Agents** - Multi-tier code review and automation
 - **Event-Driven Hooks** - Automated workflows for session management
 - **15 MCP Integrations** - Package registries, docs, deployment tools
@@ -137,8 +137,8 @@ Check that everything loaded correctly:
 # Define goals and architecture
 /inception
 
-# Set up repository structure
-/structuring-repository
+# Get project context
+/docs
 
 # Begin development
 /flow
@@ -148,7 +148,10 @@ Check that everything loaded correctly:
 
 ```bash
 # Understand project context
-/getting-the-bigger-picture
+docs-bigger-picture (via Skill tool)
+
+# Discover existing patterns
+dev-workflow-patterns (via Skill tool)
 
 # Research best practices
 /research
@@ -183,7 +186,7 @@ Check that everything loaded correctly:
 /review
 
 # Security-focused review
-/review-critically
+review-critical (via Skill tool)
 ```
 
 ### 5. Committing and Creating PRs
@@ -201,63 +204,73 @@ Check that everything loaded correctly:
 
 ## Skills System
 
-23 production-ready skills organized by category:
+30+ production-ready skills organized by category:
 
 ### Context & Understanding (3 skills)
-- `getting-the-bigger-picture` - Read project docs and understand context
-- `pattern-discovery` - Find patterns and anti-patterns
-- `deep-research` - Research best practices with 2026 validation
+- `docs-bigger-picture` - Provides project context (goals, users, architecture, constraints) by reading docs/
+- `dev-workflow-patterns` - Discovers how features are implemented to maintain consistency
+- `research-deep` - Validates technical decisions against 2026 industry standards
 
 ### Planning & Inception (4 skills)
-- `determining-project-goal` - Interactive goal definition
-- `project-inception` - Launch new projects
-- `brainstorm-feature` - Generate feature ideas
-- `plan-review-system` - Validate plans before implementation
+- `project-determine-goal` - Interactive brainstorming to define production-ready project goals
+- `project-inception` - Launch new projects from scratch with proper planning and structure
+- `project-brainstorm` - Generate creative and diverse feature ideas aligned with project goals
+- `review-plan` - Review and validate work plans before implementation
 
-### Development Workflows (3 skills)
-- `dev-flow` - Daily development workflow
-- `dev-tdd` - Accelerated TDD workflow
-- `test-driven-development` - Complete TDD methodology
+### Development Workflows (4 skills)
+- `dev-workflow-flow` - Execute efficient daily development workflow with clear stages
+- `dev-workflow-tdd` - Accelerated test-driven development for rapid feature delivery
+- `dev-workflow-test-driven` - Complete TDD workflow with patterns for unit, integration, and E2E tests
+- `dev-workflow-debug` - Investigate and resolve complex bugs through structured analysis
 
-### Quality & Review (3 skills)
-- `review-critically` - Security-focused code review
-- `review-system` - Multi-tier comprehensive review
-- `systematic-debugging` - Structured bug investigation
+### Quality & Review (2 skills)
+- `review-critical` - Perform rigorous security-focused code review
+- `review-system` - Execute comprehensive multi-tier code and design review process
 
-### Specialized Workflows (4 skills)
-- `handle-ticket` - End-to-end ticket workflow
-- `context-manager` - Conversation context management
-- `docs-manager` - Documentation maintenance
-- `deep-research` - Production-ready research
+### Specialized Workflows (3 skills)
+- `project-handle-ticket` - Execute end-to-end ticket workflow from intake to delivery
+- `docs-context` - Manage conversation context, document state, and shared information
+- `docs-manager` - Create, maintain, and update project documentation
+
+### AI Frameworks (5 skills)
+- `ai-framework-select` - Select the best AI/LLM framework for your specific use case
+- `ai-framework-setup-anthropic` - Set up and use Anthropic's Python SDK for Claude API integration
+- `ai-framework-setup-langchain` - Set up LangChain (auto-routes to LangGraph when needed)
+- `ai-framework-setup-pydanticai` - Set up PydanticAI for production-grade AI agents
+- `ai-framework-build-langgraph` - Build production-ready stateful AI agents using LangGraph
 
 ### Setup & Infrastructure (4 skills)
-- `setting-up-anthropic-connection` - Anthropic SDK setup
-- `building-langgraph-agents` - LangGraph agent development
-- `setting-up-logging` - Production logging setup
-- `setting-up-langfuse-for-tracing` - LLM observability
+- `setup-logging` - Set up production logging with FREE services and 5-minute setup
+- `setup-langfuse-tracing` - Set up Langfuse v3 observability for all LLM calls
+- `setup-uv` - Package and version management with uv for Python projects
+- `setup-payments` - Set up secure payment processing for web and mobile platforms
 
-### Repository & Structure (1 skill)
-- `structuring-repository` - Repository organization
+### Compliance & App Store (3 skills)
+- `compliance-check` - Audit AI applications for GDPR, EU AI Act, and US privacy law compliance
+- `playstore-check` - Validate Android app against Google Play Store requirements
+- `appstore-check` - Validate iOS/iPadOS apps against Apple App Store submission requirements
 
-### Management & Tools (1 skill)
-- `uv-management` - Python package management
+### Repository & Tools (2 skills)
+- `setup-repository-structure` - Propose production-ready repository structure
+- `skill-create` - Create new Claude Code skills following 2026 best practices
+- `keybindings-help` - Customize keyboard shortcuts and keybindings
 
 See [skills/README.md](skills/README.md) for detailed documentation.
 
 ## Commands (Shortcuts)
 
-15 shorthand commands for quick access:
+16 shorthand commands for quick access:
 
 | Command | Skill | Purpose |
 |---------|-------|---------|
-| `/flow` | dev-flow | Daily development workflow |
-| `/tdd` | test-driven-development | Test-driven development |
-| `/debug` | systematic-debugging | Systematic debugging |
+| `/flow` | dev-workflow-flow | Daily development workflow |
+| `/tdd` | dev-workflow-test-driven | Test-driven development |
+| `/debug` | dev-workflow-debug | Systematic debugging |
 | `/review` | review-system | Comprehensive code review |
-| `/research` | deep-research | Best practices research |
-| `/plan` | plan-review-system | Create and validate plan |
+| `/research` | research-deep | Best practices research |
+| `/plan` | review-plan | Create and validate plan |
 | `/inception` | project-inception | Start new project |
-| `/ticket` | handle-ticket | Handle tickets end-to-end |
+| `/ticket` | project-handle-ticket | Handle tickets end-to-end |
 | `/docs` | docs-manager | Documentation management |
 | `/commit` | - | Generate commit message |
 | `/mr` | - | Generate merge request description |
@@ -265,6 +278,7 @@ See [skills/README.md](skills/README.md) for detailed documentation.
 | `/humanize` | - | Rewrite to sound human |
 | `/checkpoint` | - | Create workflow checkpoint |
 | `/build-fix` | - | Fix build/type errors |
+| `/update-docs` | - | Sync documentation with codebase |
 
 ## Specialized Agents
 
@@ -467,13 +481,15 @@ Personal configuration - adapt as needed for your workflow.
 
 ## Version
 
-**Current Version**: 1.0
+**Current Version**: 2.0
 
-- 23 production-ready skills
-- 15 shorthand commands
+- 30+ production-ready skills
+- 16 shorthand commands
 - 11 specialized agents
 - 7 event hooks
 - 15 MCP integrations
+- AI framework setup automation
+- Compliance and app store validation
 - Full development lifecycle coverage
 
 ---
