@@ -1,5 +1,5 @@
 ---
-name: dev-flow
+name: dev-workflow-flow
 description: Execute efficient daily development workflow with clear stages and operational modes. Maintains momentum through planning, implementation, testing, and integration. Use to structure work sessions and coordinate multi-step development tasks.
 ---
 
@@ -142,7 +142,7 @@ If complex: [ ] Get feedback before proceeding
 ```
 
 #### Stage 3: Implement
-- Use `/test-driven-development` skill
+- Use `/dev-workflow-test-driven` skill
 - Commit at logical checkpoints
 - Keep tests passing continuously
 - Document code as you write
@@ -265,7 +265,7 @@ gh pr merge
 ```
 
 **Key practices:**
-- Use `/deep-research` skill
+- Use `/research-deep` skill
 - Test each theory independently
 - Keep fix minimal and focused
 - Document findings for future
@@ -352,10 +352,10 @@ When structuring a dev session:
 ## Integration with Development
 
 This skill coordinates with:
-- **Plan Review System**: Get feedback at stage boundaries
-- **Test-Driven Development**: Used during Stage 3 (Implement)
-- **Review Critically**: Used during Stage 5 (Review)
-- **Context Manager**: Track progress across stages
+- **Review Plan**: Get feedback at stage boundaries
+- **Dev Workflow Test Driven**: Used during Stage 3 (Implement)
+- **Review Critical**: Used during Stage 5 (Review)
+- **Docs Context**: Track progress across stages
 
 ## Common Pitfalls to Avoid
 

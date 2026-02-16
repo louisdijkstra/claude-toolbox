@@ -1,5 +1,5 @@
 ---
-name: setting-up-langchain
+name: ai-framework-setup-langchain
 description: Set up LangChain for your project. Intelligently routes to LangGraph when stateful agents, multi-agent systems, or complex workflows are detected. Use for RAG, chatbots, and LLM-powered applications.
 ---
 
@@ -15,7 +15,7 @@ Set up LangChain in your project following 2026 best practices. This skill intel
 - Uncertain whether LangChain or LangGraph is needed
 
 ## Important Note
-**LangGraph is preferred for production agents in 2026.** This skill will assess your requirements and automatically route to the `building-langgraph-agents` skill if:
+**LangGraph is preferred for production agents in 2026.** This skill will assess your requirements and automatically route to the `ai-framework-build-langgraph` skill if:
 - You need stateful agents with persistent conversations
 - You require multi-agent coordination
 - Your workflow has loops, branches, or conditional logic
@@ -78,12 +78,12 @@ LangGraph provides:
 - Better scalability and observability
 - Explicit control flow (vs. implicit chains)
 
-I'll now invoke the building-langgraph-agents skill to set this up properly.
+I'll now invoke the ai-framework-build-langgraph skill to set this up properly.
 ```
 
 Then invoke:
 ```
-Skill: building-langgraph-agents
+Skill: ai-framework-build-langgraph
 ```
 
 **If LangChain is appropriate:**
@@ -456,7 +456,7 @@ If you later need:
 - Multi-agent coordination
 - Complex workflows (loops, branches)
 
-Consider migrating to LangGraph. See: [building-langgraph-agents skill]
+Consider migrating to LangGraph. See: [ai-framework-build-langgraph skill]
 
 ## Observability
 
@@ -491,7 +491,7 @@ Before deploying, ensure:
 
 **Migration strategy:**
 1. Read existing LangChain implementation
-2. Invoke `building-langgraph-agents` skill
+2. Invoke `ai-framework-build-langgraph` skill
 3. Map chains to graph nodes
 4. Add state schema for data flow
 5. Implement persistence (PostgreSQL)
@@ -541,12 +541,12 @@ Before deploying, ensure:
 ### Use Case 2: Chatbot with Memory
 **Appropriate for LangChain**: NO - Use LangGraph
 **Reason**: Needs state persistence across conversations
-**Action**: Invoke `building-langgraph-agents` skill
+**Action**: Invoke `ai-framework-build-langgraph` skill
 
 ### Use Case 3: Multi-Agent System
 **Appropriate for LangChain**: NO - Use LangGraph
 **Reason**: Multi-agent coordination requires graph architecture
-**Action**: Invoke `building-langgraph-agents` skill
+**Action**: Invoke `ai-framework-build-langgraph` skill
 
 ### Use Case 4: Data Processing Pipeline
 **Appropriate for LangChain**: Yes (if one-off/batch)
@@ -565,7 +565,7 @@ Before deploying, ensure:
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [UV Package Manager](https://github.com/astral-sh/uv)
 - [Research: LangChain Setup Best Practices](docs/research/2026-02-16-langchain-setup-best-practices.md)
-- [Building LangGraph Agents Skill](~/.claude/skills/building-langgraph-agents/SKILL.md)
+- [Building LangGraph Agents Skill](~/.claude/skills/ai-framework-build-langgraph/SKILL.md)
 
 ## Next Steps
 
@@ -578,7 +578,7 @@ After completing setup:
    - Document API endpoints
 
 2. **If migrating to LangGraph:**
-   - Invoke `building-langgraph-agents` skill
+   - Invoke `ai-framework-build-langgraph` skill
    - Plan migration strategy
    - Test thoroughly before switching
 

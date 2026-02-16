@@ -53,7 +53,7 @@ Define what you're building and why:
 - Launch target: [Date]
 ```
 
-**Use skill:** `/determining-project-goal` for interactive planning if needed
+**Use skill:** `/project-determine-goal` for interactive planning if needed
 
 ### Stage 2: Scope Definition (30-45 minutes)
 
@@ -119,7 +119,7 @@ Plan the technical approach:
 [How will this scale as usage grows?]
 ```
 
-**Use skill:** `/getting-the-bigger-picture` and `/deep-research` for validation
+**Use skill:** `/docs-bigger-picture` and `/research-deep` for validation
 
 ### Stage 4: Repository Structure (30-45 minutes)
 
@@ -145,7 +145,7 @@ Set up project structure:
 [How environment/secrets are managed]
 ```
 
-**Use skill:** `/structuring-repository` for detailed structure
+**Use skill:** `/setup-repository-structure` for detailed structure
 
 ### Stage 5: Initial Deliverables (varies)
 
@@ -325,10 +325,10 @@ When starting project inception:
 ## Integration with Development
 
 This skill leads to:
-- **Structuring Repository**: Create project structure
-- **Determining Project Goal**: Define initial goals
-- **Getting the Bigger Picture**: Validate architecture decisions
-- **Dev Flow**: Start actual development
+- **Setup Repository Structure**: Create project structure
+- **Project Determine Goal**: Define initial goals
+- **Docs Bigger Picture**: Validate architecture decisions
+- **Dev Workflow Flow**: Start actual development
 - **Docs Manager**: Create project documentation
 
 ## Common Pitfalls to Avoid

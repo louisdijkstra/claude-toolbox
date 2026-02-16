@@ -1,5 +1,5 @@
 ---
-name: systematic-debugging
+name: dev-workflow-debug
 description: Investigate and resolve complex bugs through structured analysis and hypothesis testing. Combines code analysis, error investigation, and root cause discovery. Use when tracking down elusive bugs or investigating unexpected behavior.
 ---
 
@@ -190,7 +190,7 @@ Write minimal fix for root cause:
 # Strategy: Fix the root cause, not the symptom
 
 # Create test that reproduces bug first
-# See: /test-driven-development
+# See: /dev-workflow-test-driven
 
 # Implement minimal fix
 # Verify fix works
@@ -396,10 +396,10 @@ When debugging:
 ## Integration with Development
 
 This skill pairs with:
-- **Handle Ticket**: Use for bug tickets
-- **Test-Driven Development**: Add test that reproduces bug
-- **Deep Research**: For understanding complex issues
-- **Review Critically**: Identify bugs before they ship
+- **Project Handle Ticket**: Use for bug tickets
+- **Dev Workflow Test Driven**: Add test that reproduces bug
+- **Research Deep**: For understanding complex issues
+- **Review Critical**: Identify bugs before they ship
 
 ## Common Pitfalls to Avoid
 
