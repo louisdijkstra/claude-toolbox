@@ -209,9 +209,10 @@ Resolution Plan:
 
 **Note**: For bugs, systematic-debugging was already used in Stage 2.5 (Validation).
 
-**Key practice:**
-- Create test case that reproduces issue first
-- Implement minimal fix
+**TDD — apply to both bugs and features:**
+- **Bugs**: Write a failing test that reproduces the issue first, then fix
+- **Features**: Write failing tests that define the expected behavior, then implement
+- Implement minimal code to make tests pass
 - Verify no regressions
 - Commit with reference to ticket
 

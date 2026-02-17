@@ -35,6 +35,8 @@
 - No cost estimates; careful with time estimates
 
 ## Testing
+- Default to TDD: write a failing test first, then implement (applies to new features and bug fixes)
+- Use `setup-testing` skill to bootstrap test infrastructure; use `tdd` / `dev-workflow-tdd` for day-to-day TDD cycles
 - Test critical paths and edge cases
 - Simple, maintainable tests over high coverage
 - Don't over-test trivial code
