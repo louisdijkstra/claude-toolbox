@@ -118,6 +118,23 @@
       }
     ],
 
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [{
+          "type": "command",
+          "command": "afplay /System/Library/Sounds/Glass.aiff &"
+        }]
+      },
+      {
+        "matcher": "permission_prompt",
+        "hooks": [{
+          "type": "command",
+          "command": "afplay /System/Library/Sounds/Basso.aiff &"
+        }]
+      }
+    ],
+
     "Stop": [
       {
         "matcher": "*",
@@ -126,6 +143,14 @@
           "command": "node ~/.claude/hooks/scripts/session-end.js"
         }],
         "description": "Save session summary and extract patterns"
+      },
+      {
+        "matcher": "*",
+        "hooks": [{
+          "type": "command",
+          "command": "afplay /System/Library/Sounds/Hero.aiff &"
+        }],
+        "description": "Play sound on stop"
       }
     ],
 
