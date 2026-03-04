@@ -16,9 +16,15 @@ paste-cache/
 stats-cache.json
 compact-suggestions.json
 observations.jsonl
+mcp-needs-auth-cache.json
+image-cache/
+backups/
 
 # Plugin Data
 plugins/known_marketplaces.json
+plugins/install-counts-cache.json
+plugins/blocklist.json
+plugins/marketplaces/
 
 # Debug and Telemetry
 debug/

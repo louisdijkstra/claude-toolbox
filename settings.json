@@ -1,25 +1,35 @@
 {
-  "model": "sonnet",
-  "enabledPlugins": {
-    "superpowers@superpowers-marketplace": false
-  },
-  "skipDangerousModePermissionPrompt": true,
-
   "env": {
     "MAX_THINKING_TOKENS": "10000",
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
   },
-
-  "enabledMcpjsonServers": ["package-registry", "brave-search", "filesystem", "memory"],
-
   "permissions": {
-    "autoApproveTools": ["Read", "Grep", "Glob", "WebSearch", "WebFetch"],
+    "autoApproveTools": [
+      "Read",
+      "Grep",
+      "Glob",
+      "WebSearch",
+      "WebFetch"
+    ],
     "mcpAutoApprove": {
-      "package-registry": ["search", "get_package_info"],
-      "brave-search": ["brave_web_search"],
-      "filesystem": ["read_file", "list_directory", "get_file_info"],
-      "memory": ["create_memory", "read_memory", "search_memories"]
+      "package-registry": [
+        "search",
+        "get_package_info"
+      ],
+      "brave-search": [
+        "brave_web_search"
+      ],
+      "filesystem": [
+        "read_file",
+        "list_directory",
+        "get_file_info"
+      ],
+      "memory": [
+        "create_memory",
+        "read_memory",
+        "search_memories"
+      ]
     },
     "bashSafePatterns": [
       "^git (status|diff|log|show|branch|blame)($| )",
@@ -50,130 +60,155 @@
     "safeGuardrails": {
       "maxConcurrentFileEdits": 10,
       "preventForcePush": true,
-      "protectedBranches": ["main", "master", "production"],
+      "protectedBranches": [
+        "main",
+        "master",
+        "production"
+      ],
       "requireBashConfirmation": true
     }
   },
-
+  "model": "sonnet",
+  "enabledMcpjsonServers": [
+    "package-registry",
+    "brave-search",
+    "filesystem",
+    "memory"
+  ],
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash && (npm run dev|pnpm dev|yarn dev|bun dev)",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/block-dev-without-tmux.js"
-        }],
-        "description": "Ensure dev servers run in tmux for log access"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/block-dev-without-tmux.js"
+          }
+        ]
       },
       {
         "matcher": "Bash && git push",
-        "hooks": [{
-          "type": "command",
-          "command": "echo '[Hook] Review changes before push' >&2"
-        }],
-        "description": "Reminder to review before pushing"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Hook] Review changes before push' >&2"
+          }
+        ]
       },
       {
         "matcher": "Write && .md && !(README|CLAUDE)",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/block-random-md.js"
-        }],
-        "description": "Keep docs consolidated"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/block-random-md.js"
+          }
+        ]
       },
       {
         "matcher": "Edit|Write",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/suggest-compact.js"
-        }],
-        "description": "Strategic compaction suggestions"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/suggest-compact.js"
+          }
+        ]
       }
     ],
-
     "PostToolUse": [
       {
         "matcher": "Edit && (.ts|.tsx|.js|.jsx)",
-        "hooks": [{
-          "type": "command",
-          "command": "npx prettier --write \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true"
-        }],
-        "description": "Auto-format TypeScript/JavaScript"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true"
+          }
+        ]
       },
       {
         "matcher": "Edit && (.ts|.tsx|.js|.jsx)",
-        "hooks": [{
-          "type": "command",
-          "command": "grep -n 'console\\.log' \"$CLAUDE_TOOL_FILE_PATH\" && echo '[Hook] ⚠️  Remove console.log before commit' >&2 || true"
-        }],
-        "description": "Warn about console.log"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -n 'console\\.log' \"$CLAUDE_TOOL_FILE_PATH\" && echo '[Hook] ⚠️  Remove console.log before commit' >&2 || true"
+          }
+        ]
       },
       {
         "matcher": "Bash && gh pr create",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/log-pr-url.js"
-        }],
-        "description": "Log PR URL and review command"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/log-pr-url.js"
+          }
+        ]
       }
     ],
-
     "Notification": [
       {
         "matcher": "idle_prompt",
-        "hooks": [{
-          "type": "command",
-          "command": "afplay /System/Library/Sounds/Glass.aiff &"
-        }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Glass.aiff &"
+          }
+        ]
       },
       {
         "matcher": "permission_prompt",
-        "hooks": [{
-          "type": "command",
-          "command": "afplay /System/Library/Sounds/Basso.aiff &"
-        }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Basso.aiff &"
+          }
+        ]
       }
     ],
-
     "Stop": [
       {
         "matcher": "*",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/session-end.js"
-        }],
-        "description": "Save session summary and extract patterns"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/session-end.js"
+          }
+        ]
       },
       {
         "matcher": "*",
-        "hooks": [{
-          "type": "command",
-          "command": "afplay /System/Library/Sounds/Hero.aiff &"
-        }],
-        "description": "Play sound on stop"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Hero.aiff &"
+          }
+        ]
       }
     ],
-
     "SessionStart": [
       {
         "matcher": "*",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/session-start.js"
-        }],
-        "description": "Load previous context and detect environment"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/session-start.js"
+          }
+        ]
       }
     ],
-
     "PreCompact": [
       {
         "matcher": "*",
-        "hooks": [{
-          "type": "command",
-          "command": "node ~/.claude/hooks/scripts/pre-compact.js"
-        }],
-        "description": "Save state before compaction"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/pre-compact.js"
+          }
+        ]
       }
     ]
-  }
+  },
+  "enabledPlugins": {
+    "superpowers@superpowers-marketplace": false,
+    "frontend-design@claude-code-plugins": true
+  },
+  "skipDangerousModePermissionPrompt": true
 }
