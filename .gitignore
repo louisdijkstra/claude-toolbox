@@ -3,6 +3,8 @@ history.jsonl
 shell-snapshots/
 session-env/
 file-history/
+compaction-state/
+sessions/
 
 # Project Session Files
 # Ignore session transcripts, session-specific subdirectories, and memory files
@@ -35,6 +37,10 @@ statsig/
 tasks/
 todos/
 plans/
+
+# Docs contents (keep folder via .gitkeep)
+docs/*
+!docs/.gitkeep
 
 # IDE and Browser Data
 ide/
