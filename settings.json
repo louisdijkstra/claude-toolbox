@@ -209,5 +209,9 @@
     "superpowers@superpowers-marketplace": false,
     "frontend-design@claude-code-plugins": true
   },
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "sh ~/.claude/hooks/scripts/statusline.sh"
+  }
 }
