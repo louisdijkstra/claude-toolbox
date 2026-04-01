@@ -68,7 +68,6 @@
       "requireBashConfirmation": true
     }
   },
-  "model": "sonnet",
   "enabledMcpjsonServers": [
     "package-registry",
     "brave-search",
