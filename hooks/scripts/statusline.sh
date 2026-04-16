@@ -62,6 +62,11 @@ countdown() {
   fi
 }
 
+# Persist rate limits for the dashboard
+if [ -n "$five_h" ] || [ -n "$seven_d" ]; then
+  echo "$input" | jq '{five_hour: .rate_limits.five_hour, seven_day: .rate_limits.seven_day}' > ~/.claude/rate_limits.json 2>/dev/null
+fi
+
 # --- Line 1: Model | branch | context bar ---
 
 # Model label
