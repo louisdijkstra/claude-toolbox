@@ -27,6 +27,27 @@ const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
 const date = now.toISOString().slice(0, 10);
 const sessionFile = path.join(sessionsDir, `${date}-${timestamp.slice(11)}.md`);
 
+// Accumulate Enterprise session cost into monthly budget file
+let sessionCost = 0;
+try {
+  const stdin = fs.readFileSync(0, 'utf8');
+  const data = JSON.parse(stdin);
+  sessionCost = data.cost_usd || data.cost?.total_cost_usd || 0;
+} catch (err) { /* no cost data available */ }
+
+if (sessionCost > 0) {
+  const budgetFile = path.join(claudeDir, 'budget.json');
+  const thisMonth = now.toISOString().slice(0, 7); // YYYY-MM
+  let budget = {};
+  try { budget = JSON.parse(fs.readFileSync(budgetFile, 'utf8')); } catch (err) {}
+  budget[thisMonth] = (budget[thisMonth] || 0) + sessionCost;
+  try {
+    fs.writeFileSync(budgetFile, JSON.stringify(budget, null, 2));
+  } catch (err) {
+    console.error(`[Hook] Error saving budget: ${err.message}`);
+  }
+}
+
 // Get basic session info
 const sessionInfo = {
   timestamp: now.toISOString(),

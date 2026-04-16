@@ -63,6 +63,24 @@ countdown() {
   fi
 }
 
+# Caveman mode badge — only if caveman plugin is installed
+caveman_badge=""
+CAVEMAN_HOOK="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/marketplaces/caveman/hooks/caveman-activate.js"
+CAVEMAN_FLAG="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.caveman-active"
+if [ -f "$CAVEMAN_HOOK" ] && [ ! -L "$CAVEMAN_FLAG" ] && [ -f "$CAVEMAN_FLAG" ]; then
+  cm=$(head -c 64 "$CAVEMAN_FLAG" 2>/dev/null | tr -d '\n\r' | tr -cd 'a-z0-9-')
+  case "$cm" in
+    off|lite|full|ultra|wenyan-lite|wenyan|wenyan-full|wenyan-ultra|commit|review|compress)
+      if [ "$cm" = "full" ] || [ -z "$cm" ]; then
+        caveman_badge="🗿"
+      else
+        CM_UP=$(printf '%s' "$cm" | tr '[:lower:]' '[:upper:]')
+        caveman_badge="🗿 ${CM_UP}"
+      fi
+      ;;
+  esac
+fi
+
 # --- Line 1: Model | branch | context bar ---
 
 # Model label
@@ -103,6 +121,11 @@ if [ -n "$used" ]; then
   [ -n "$line1" ] && line1="$line1 ${D}|${X} $ctx_bar" || line1="$ctx_bar"
 fi
 
+# Caveman badge (appended after context bar)
+if [ -n "$caveman_badge" ]; then
+  [ -n "$line1" ] && line1="$line1 ${D}|${X} $caveman_badge" || line1="$caveman_badge"
+fi
+
 # --- Line 2: account-type-aware ---
 # Max account: rate_limits present → show 5h + week windows
 # Enterprise account: rate_limits absent, cost present → show budget bar
@@ -123,12 +146,22 @@ if [ -n "$five_h" ]; then
     fi
   fi
 elif [ -n "$cost" ]; then
-  # Enterprise: dollar budget ($100)
+  # Enterprise: track monthly spend across all sessions
   BUDGET=100
-  cost_pct=$(echo "$cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
-  budget_bar=$(make_bar "$cost_pct" 10)
-  cost_fmt=$(printf '$%.2f' "$cost")
-  line2="budget: ${budget_bar} ${cost_fmt} / \$${BUDGET}"
+  this_month=$(date +%Y-%m)
+  BUDGET_FILE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/budget.json"
+  hist_cost=0
+  if [ -f "$BUDGET_FILE" ] && [ ! -L "$BUDGET_FILE" ]; then
+    hist_cost=$(jq -r --arg m "$this_month" '.[$m] // 0' "$BUDGET_FILE" 2>/dev/null || echo 0)
+  fi
+  # hist_cost = completed sessions this month; cost = current session
+  total_cost=$(echo "$hist_cost $cost" | awk '{printf "%.4f", $1 + $2}')
+  remaining=$(echo "$total_cost $BUDGET" | awk '{printf "%.2f", $2 - $1}')
+  total_pct=$(echo "$total_cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
+  budget_bar=$(make_bar "$total_pct" 10)
+  total_fmt=$(printf '$%.2f' "$total_cost")
+  rem_fmt=$(printf '$%.2f' "$remaining")
+  line2="budget: ${budget_bar} ${total_fmt} / \$${BUDGET} ${D}(${rem_fmt} left)${X}"
 fi
 
 # Output
