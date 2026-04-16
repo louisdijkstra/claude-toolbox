@@ -149,6 +149,10 @@
           {
             "type": "command",
             "command": "afplay /System/Library/Sounds/Glass.aiff &"
+          },
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/scripts/tts-idle.js"
           }
         ]
       },
@@ -169,15 +173,6 @@
           {
             "type": "command",
             "command": "node ~/.claude/hooks/scripts/session-end.js"
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay /System/Library/Sounds/Hero.aiff &"
           }
         ]
       }

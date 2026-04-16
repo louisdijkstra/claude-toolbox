@@ -14,6 +14,7 @@ five_h=$(val '.rate_limits.five_hour.used_percentage')
 seven_d=$(val '.rate_limits.seven_day.used_percentage')
 reset_5h=$(val '.rate_limits.five_hour.resets_at')
 reset_7d=$(val '.rate_limits.seven_day.resets_at')
+cost=$(val '.cost.total_cost_usd')
 
 # ANSI colors
 C="\033[36m"   # cyan
@@ -102,23 +103,32 @@ if [ -n "$used" ]; then
   [ -n "$line1" ] && line1="$line1 ${D}|${X} $ctx_bar" || line1="$ctx_bar"
 fi
 
-# --- Line 2: 5h bar + reset | week bar + reset ---
+# --- Line 2: account-type-aware ---
+# Max account: rate_limits present → show 5h + week windows
+# Enterprise account: rate_limits absent, cost present → show budget bar
 
 line2=""
 if [ -n "$five_h" ]; then
+  # Max: rate limit windows
   five_bar=$(make_bar "$five_h" 10)
   line2="5h: ${five_bar}"
   if [ -n "$reset_5h" ]; then
     line2="$line2 ${D}↻$(countdown "$reset_5h")${X}"
   fi
-fi
-if [ -n "$seven_d" ]; then
-  seven_bar=$(make_bar "$seven_d" 10 gray)
-  [ -n "$line2" ] && line2="$line2 ${D}|${X} "
-  line2="${line2}week: ${seven_bar}"
-  if [ -n "$reset_7d" ]; then
-    line2="$line2 ${D}↻$(countdown "$reset_7d")${X}"
+  if [ -n "$seven_d" ]; then
+    seven_bar=$(make_bar "$seven_d" 10 gray)
+    line2="$line2 ${D}|${X} week: ${seven_bar}"
+    if [ -n "$reset_7d" ]; then
+      line2="$line2 ${D}↻$(countdown "$reset_7d")${X}"
+    fi
   fi
+elif [ -n "$cost" ]; then
+  # Enterprise: dollar budget ($100)
+  BUDGET=100
+  cost_pct=$(echo "$cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
+  budget_bar=$(make_bar "$cost_pct" 10)
+  cost_fmt=$(printf '$%.2f' "$cost")
+  line2="budget: ${budget_bar} ${cost_fmt} / \$${BUDGET}"
 fi
 
 # Output
