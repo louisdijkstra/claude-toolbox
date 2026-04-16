@@ -68,6 +68,7 @@
       "requireBashConfirmation": true
     }
   },
+  "model": "sonnet",
   "enabledMcpjsonServers": [
     "package-registry",
     "brave-search",
@@ -211,7 +212,17 @@
   },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": false,
-    "frontend-design@claude-code-plugins": true
+    "frontend-design@claude-code-plugins": true,
+    "caveman@caveman": true
   },
-  "skipDangerousModePermissionPrompt": true
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "tui": "fullscreen"
 }
