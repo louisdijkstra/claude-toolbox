@@ -28,12 +28,17 @@ const date = now.toISOString().slice(0, 10);
 const sessionFile = path.join(sessionsDir, `${date}-${timestamp.slice(11)}.md`);
 
 // Accumulate Enterprise session cost into monthly budget file
+// Stop hook has no cost field — read cost saved by statusline hook
 let sessionCost = 0;
 try {
-  const stdin = fs.readFileSync(0, 'utf8');
-  const data = JSON.parse(stdin);
-  sessionCost = data.cost_usd || data.cost?.total_cost_usd || 0;
-} catch (err) { /* no cost data available */ }
+  fs.readFileSync(0, 'utf8'); // consume stdin
+} catch (_) {}
+try {
+  const costFile = path.join(claudeDir, '.session_costs', 'current');
+  const costStr = fs.readFileSync(costFile, 'utf8').trim();
+  sessionCost = parseFloat(costStr) || 0;
+  fs.unlinkSync(costFile);
+} catch (_) {}
 
 if (sessionCost > 0) {
   const budgetFile = path.join(claudeDir, 'budget.json');

@@ -63,6 +63,13 @@ countdown() {
   fi
 }
 
+# Persist current session cost for Stop hook (which has no cost data)
+if [ -n "$cost" ]; then
+  COSTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.session_costs"
+  mkdir -p "$COSTS_DIR" 2>/dev/null
+  echo "$cost" > "$COSTS_DIR/current" 2>/dev/null
+fi
+
 # Persist rate limits for the dashboard
 if [ -n "$five_h" ] || [ -n "$seven_d" ]; then
   echo "$input" | jq '{five_hour: .rate_limits.five_hour, seven_day: .rate_limits.seven_day}' > ~/.claude/rate_limits.json 2>/dev/null
@@ -161,7 +168,10 @@ elif [ -n "$cost" ]; then
   total_pct=$(echo "$total_cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
   budget_bar=$(make_bar "$total_pct" 10)
   total_fmt=$(printf '$%.2f' "$total_cost")
-  line2="budget: ${budget_bar} ${total_fmt} / \$${BUDGET}"
+  next_reset_ts=$(date -v+1m -v1d -v0H -v0M -v0S +%s 2>/dev/null)
+  reset_str=""
+  [ -n "$next_reset_ts" ] && reset_str=" ${D}↻$(countdown "$next_reset_ts")${X}"
+  line2="budget: ${budget_bar} ${total_fmt} / \$${BUDGET}${reset_str}"
 fi
 
 # Output
