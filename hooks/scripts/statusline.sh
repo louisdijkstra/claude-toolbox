@@ -76,12 +76,8 @@ if [ -f "$CAVEMAN_HOOK" ] && [ ! -L "$CAVEMAN_FLAG" ] && [ -f "$CAVEMAN_FLAG" ];
   cm=$(head -c 64 "$CAVEMAN_FLAG" 2>/dev/null | tr -d '\n\r' | tr -cd 'a-z0-9-')
   case "$cm" in
     off|lite|full|ultra|wenyan-lite|wenyan|wenyan-full|wenyan-ultra|commit|review|compress)
-      if [ "$cm" = "full" ] || [ -z "$cm" ]; then
-        caveman_badge="🗿"
-      else
-        CM_UP=$(printf '%s' "$cm" | tr '[:lower:]' '[:upper:]')
-        caveman_badge="🗿 ${CM_UP}"
-      fi
+      CM_UP=$(printf '%s' "$cm" | tr '[:lower:]' '[:upper:]')
+      caveman_badge="🗿 ${CM_UP}"
       ;;
   esac
 fi
@@ -165,8 +161,7 @@ elif [ -n "$cost" ]; then
   total_pct=$(echo "$total_cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
   budget_bar=$(make_bar "$total_pct" 10)
   total_fmt=$(printf '$%.2f' "$total_cost")
-  rem_fmt=$(printf '$%.2f' "$remaining")
-  line2="budget: ${budget_bar} ${total_fmt} / \$${BUDGET} ${D}(${rem_fmt} left)${X}"
+  line2="budget: ${budget_bar} ${total_fmt} / \$${BUDGET}"
 fi
 
 # Output
