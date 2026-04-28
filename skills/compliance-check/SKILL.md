@@ -129,7 +129,7 @@ Read project documentation and code to understand:
 - AI-enabled video games
 - Inventory management
 
-**Determine Project's classification:**
+**Determine the application's classification:**
 ```
 Based on use cases:
 - If used for analytics on HR/employee data → High-risk

@@ -12,7 +12,7 @@
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "~/.claude"],
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${HOME}/.claude"],
       "autoapprove": ["read_file", "list_directory", "get_file_info"]
     },
     "memory": {

@@ -77,7 +77,7 @@ uv lock
 ```
 
 ### Installing Specific Extras
-For Project evals module:
+Example — install an optional dependency group:
 ```bash
 uv pip install -r pyproject.toml --extra evals
 ```

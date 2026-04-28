@@ -11,7 +11,7 @@ This command analyzes branch changes and generates human-readable QA documentati
 1. **Analyze Changes** - Review git diff since branch diverged from main/dev
 2. **Summarize Features** - Describe what was implemented
 3. **Generate Test Steps** - Create actionable testing instructions
-4. **Identify UI/Services** - Determine where to test (Project UI, Langfuse, Prefect, etc.)
+4. **Identify UI/Services** - Determine where to test (web UI, observability tools, orchestrators, etc.)
 5. **Format Document** - Output concise, human-written style
 
 ## When to Use
@@ -27,7 +27,7 @@ Use `/qa-steps` when:
 
 1. **Run git diff** against base branch (usually dev or main)
 2. **Identify changed features** from code analysis
-3. **Determine applicable UIs** (Project, Langfuse, Prefect, etc.)
+3. **Determine applicable UIs** (web UI, observability dashboards, orchestrators, etc.)
 4. **Write feature summary** - high-level, minimal code references
 5. **Create test steps** - specific actions to verify functionality
 6. **Note limitations** - if feature can't be easily tested, say so
@@ -50,9 +50,9 @@ Focus on user-facing impact, not implementation details.]
 3. [How to verify it worked]
 
 [If applicable:]
-- Test in Project UI: [specific steps]
-- Check Langfuse: [what to look for]
-- Verify in Prefect: [expected behavior]
+- Test in [web UI]: [specific steps]
+- Check [observability dashboard]: [what to look for]
+- Verify in [orchestrator]: [expected behavior]
 
 [If not testable:]
 This change can't be easily tested through the UI because [reason].

@@ -36,7 +36,7 @@
       "^git (status|diff|log|show|branch|blame)($| )",
       "^git commit($| -m)",
       "^ls($| )",
-      "^cat (\\./|~/\\.claude/|~/\\.claude/)",
+      "^cat (\\./|~/\\.claude/)",
       "^pwd$",
       "^npm (list|view|search|outdated)($| )",
       "^python -m (json\\.tool|py_compile|unittest)($| )",
@@ -225,5 +225,6 @@
   },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "theme": "light"
 }

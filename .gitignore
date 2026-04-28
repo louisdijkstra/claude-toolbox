@@ -5,6 +5,12 @@ session-env/
 file-history/
 compaction-state/
 sessions/
+auto_resume/
+.session_costs/
+budget.json
+rate_limits.json
+.claudechic.yaml
+.caveman-active
 
 # Project Session Files
 # Ignore session transcripts, session-specific subdirectories, and memory files
@@ -27,6 +33,9 @@ plugins/known_marketplaces.json
 plugins/install-counts-cache.json
 plugins/blocklist.json
 plugins/marketplaces/
+plugins/installed_plugins.json
+plugins/config.json
+plugins/cache/
 
 # Debug and Telemetry
 debug/
