@@ -2,10 +2,10 @@
 
 Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) — skills, agents, hooks, slash commands, and MCP wiring built around a TDD + multi-tier-review workflow.
 
-![stars](https://img.shields.io/github/stars/louisdijkstra/claude?style=flat)
-![forks](https://img.shields.io/github/forks/louisdijkstra/claude?style=flat)
-![last commit](https://img.shields.io/github/last-commit/louisdijkstra/claude)
-![license](https://img.shields.io/github/license/louisdijkstra/claude)
+![stars](https://img.shields.io/github/stars/louisdijkstra/claude-toolbox?style=flat)
+![forks](https://img.shields.io/github/forks/louisdijkstra/claude-toolbox?style=flat)
+![last commit](https://img.shields.io/github/last-commit/louisdijkstra/claude-toolbox)
+![license](https://img.shields.io/github/license/louisdijkstra/claude-toolbox)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.x-blue)
 
 **Contents:** 33 skills · 16 slash commands · 13 review agents · 8 hooks · MCP integrations
@@ -18,18 +18,18 @@ Three install paths.
 
 **Fresh install** (no existing config):
 ```bash
-git clone https://github.com/louisdijkstra/claude.git ~/.claude
+git clone https://github.com/louisdijkstra/claude-toolbox.git ~/.claude
 ```
 
 **Replace existing config** (back up first):
 ```bash
 mv ~/.claude ~/.claude.backup
-git clone https://github.com/louisdijkstra/claude.git ~/.claude
+git clone https://github.com/louisdijkstra/claude-toolbox.git ~/.claude
 ```
 
 **Cherry-pick** — copy individual skills/commands into your existing config:
 ```bash
-git clone https://github.com/louisdijkstra/claude.git /tmp/claude
+git clone https://github.com/louisdijkstra/claude-toolbox.git /tmp/claude
 cp -r /tmp/claude/skills/<skill-name> ~/.claude/skills/
 ```
 
