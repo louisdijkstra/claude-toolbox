@@ -37,14 +37,13 @@ Then restart Claude Code.
 
 ## Compatibility
 
-Tested on:
-- Claude Code 2.x
-- macOS 14+ (Darwin)
-- Node 22.13+ (for hooks)
-- Python 3.13+ (for skill-related scripts where present)
-- zsh / bash
+- **Claude Code 2.x** — required. Config uses the v2 skills/agents/commands layout and v2 hook schema in `settings.json`. Verified on 2.1.x.
+- **POSIX shell** — `statusline.sh` runs under `/bin/sh`; works on bash and zsh.
+- **Node 18+** — for hook scripts. They use only `fs`, `path`, `child_process`, `process.env` — older Node likely works but is untested.
+- **macOS** — `Notification` and `Stop` hooks call `afplay` for sound. On Linux/WSL these calls fail silently; everything else is OS-agnostic.
+- **Python** — not required by the config itself. A few skills ship illustrative `.py` example scripts.
 
-Most content is shell-agnostic and OS-agnostic; hooks reference `$HOME` and `${CLAUDE_CONFIG_DIR}`.
+Hooks reference `$HOME` and `${CLAUDE_CONFIG_DIR}` so the config is portable across machines.
 
 ## Repository Layout
 
