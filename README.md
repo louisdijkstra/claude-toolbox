@@ -1,4 +1,4 @@
-# claude
+# Claude Toolbox
 
 Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) — skills, agents, hooks, slash commands, and MCP wiring built around a TDD + multi-tier-review workflow.
 
