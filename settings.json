@@ -5,6 +5,7 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
   },
   "permissions": {
+    "defaultMode": "auto",
     "autoApproveTools": [
       "Read",
       "Grep",
@@ -68,7 +69,6 @@
       "requireBashConfirmation": true
     }
   },
-  "model": "sonnet",
   "enabledMcpjsonServers": [
     "package-registry",
     "brave-search",
@@ -223,6 +223,7 @@
       }
     }
   },
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "tui": "fullscreen"
+  "skipAutoPermissionPrompt": true
 }
