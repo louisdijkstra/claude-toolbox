@@ -415,3 +415,15 @@ def test_image_gallery_grids_multi_images(page_loader):
     page.reload()
     page.wait_for_selector("p.gallery")
     assert page.locator("p.gallery img").count() == 3
+
+
+def test_anim_respects_reduced_motion(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\nbody\n")
+    page.emulate_media(reduced_motion="reduce")
+    page.reload()
+    page.wait_for_selector(".phase")
+    val = page.locator(".phase").first.evaluate(
+        "el => getComputedStyle(el).animationName"
+    )
+    assert val == "none"

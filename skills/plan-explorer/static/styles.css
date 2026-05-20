@@ -620,3 +620,10 @@ p.gallery img:hover { transform: scale(1.02); }
   color: #fff; font-size: 32px;
   cursor: pointer; line-height: 1;
 }
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  input.task-cb:checked { animation: cb-pop .2s ease-out; }
+  @keyframes cb-pop {
+    50% { transform: scale(1.25); }
+  }
+}
