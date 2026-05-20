@@ -485,6 +485,36 @@ function attachGlossaryPopovers(terms) {
   ensureGlossPopover();
 }
 
+function ensureFootnotePopover() {
+  if (document.getElementById("fn-popover")) return;
+  const pop = document.createElement("div");
+  pop.id = "fn-popover";
+  pop.hidden = true;
+  pop.setAttribute("role", "tooltip");
+  document.body.appendChild(pop);
+}
+
+function attachFootnoteHovers() {
+  ensureFootnotePopover();
+  const pop = document.getElementById("fn-popover");
+  document.querySelectorAll("sup.fn-ref a").forEach(a => {
+    const show = () => {
+      const def = document.getElementById(`fn-${a.dataset.fnId}`);
+      if (!def) return;
+      pop.textContent = def.textContent.trim();
+      pop.hidden = false;
+      const r = a.getBoundingClientRect();
+      pop.style.left = `${window.scrollX + r.left + r.width / 2}px`;
+      pop.style.top = `${window.scrollY + r.top - 8}px`;
+    };
+    const hide = () => { pop.hidden = true; };
+    a.addEventListener("mouseenter", show);
+    a.addEventListener("mouseleave", hide);
+    a.addEventListener("focus", show);
+    a.addEventListener("blur", hide);
+  });
+}
+
 function renderAll(phases) {
   renderPhases(phases);
   renderSidebar(phases);
@@ -500,6 +530,7 @@ function renderAll(phases) {
   runPrism();
   attachIdeLinks();
   attachGlossaryPopovers(window.GLOSSARY_TERMS || []);
+  attachFootnoteHovers();
   attachEnvControls();
   attachRiskChips();
 
@@ -1134,6 +1165,43 @@ function configureMarked() {
         return `<a class="xref" href="#${slug}" data-xref-kind="${t.kind}" data-xref-num="${t.num}">${t.kind} ${t.num}</a>`;
       },
     }],
+  });
+  marked.use({
+    extensions: [
+      {
+        name: "footnoteRef",
+        level: "inline",
+        start(src) {
+          const i = src.indexOf("[^");
+          return i < 0 ? undefined : i;
+        },
+        tokenizer(src) {
+          const m = src.match(/^\[\^([A-Za-z0-9_-]+)\]/);
+          if (!m) return;
+          const after = src.slice(m[0].length);
+          if (after.startsWith(":")) return;
+          return { type: "footnoteRef", raw: m[0], id: m[1] };
+        },
+        renderer(t) {
+          return `<sup class="fn-ref"><a href="#fn-${escapeHtml(t.id)}" data-fn-id="${escapeHtml(t.id)}">${escapeHtml(t.id)}</a></sup>`;
+        },
+      },
+      {
+        name: "footnoteDef",
+        level: "block",
+        start(src) {
+          return src.indexOf("[^");
+        },
+        tokenizer(src) {
+          const m = src.match(/^\[\^([A-Za-z0-9_-]+)\]:\s*(.+)/);
+          if (!m) return;
+          return { type: "footnoteDef", raw: m[0], id: m[1], text: m[2].trim() };
+        },
+        renderer(t) {
+          return `<div class="fn-def" id="fn-${escapeHtml(t.id)}"><sup>${escapeHtml(t.id)}</sup> ${escapeHtml(t.text)}</div>`;
+        },
+      },
+    ],
   });
 }
 

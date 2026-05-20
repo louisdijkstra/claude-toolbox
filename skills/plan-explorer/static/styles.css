@@ -565,3 +565,24 @@ svg.cross-ref-graph .mini-arc {
   pointer-events: none;
 }
 #gloss-popover[hidden], #fn-popover[hidden] { display: none; }
+sup.fn-ref {
+  font-size: 10px;
+  vertical-align: super;
+  line-height: 1;
+}
+sup.fn-ref a {
+  color: var(--accent);
+  text-decoration: none;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(74, 122, 254, .12);
+}
+sup.fn-ref a:hover { background: rgba(74, 122, 254, .25); }
+.fn-def {
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 8px;
+}
+.fn-def sup { color: var(--accent); margin-right: 4px; }

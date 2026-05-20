@@ -392,3 +392,16 @@ def test_glossary_wraps_terms_and_hides_section(page_loader):
     assert page.locator(".gloss-term").count() == 2
     titles = page.locator(".phase h2").all_text_contents()
     assert "Glossary" not in " ".join(titles)
+
+
+def test_footnote_renders_ref_and_def(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\nSpec §11 requires token auth[^1] everywhere.\n\n"
+        "[^1]: see security section for details\n"
+    )
+    page.reload()
+    page.wait_for_selector("sup.fn-ref a")
+    href = page.locator("sup.fn-ref a").first.get_attribute("href")
+    assert href == "#fn-1"
+    assert page.locator("#fn-1").count() == 1
