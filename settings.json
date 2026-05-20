@@ -69,6 +69,7 @@
       "requireBashConfirmation": true
     }
   },
+  "model": "opus[1m]",
   "enabledMcpjsonServers": [
     "package-registry",
     "brave-search",
@@ -211,7 +212,7 @@
     "command": "sh ~/.claude/hooks/scripts/statusline.sh"
   },
   "enabledPlugins": {
-    "superpowers@superpowers-marketplace": false,
+    "superpowers@superpowers-marketplace": true,
     "frontend-design@claude-code-plugins": true,
     "caveman@caveman": true
   },
@@ -221,10 +222,16 @@
         "source": "github",
         "repo": "JuliusBrussee/caveman"
       }
+    },
+    "superpowers-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers-marketplace"
+      }
     }
   },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
-  "theme": "light"
+  "theme": "light",
+  "skipAutoPermissionPrompt": true
 }

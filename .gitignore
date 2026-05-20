@@ -36,6 +36,17 @@ plugins/marketplaces/
 plugins/installed_plugins.json
 plugins/config.json
 plugins/cache/
+plugins/data/
+plugins/plugin-catalog-cache.json
+
+# Daemon and Runtime State
+.last-cleanup
+daemon.lock
+daemon.log
+daemon.status.json
+daemon/
+jobs/
+policy-limits.json
 
 # Debug and Telemetry
 debug/
