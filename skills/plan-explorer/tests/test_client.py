@@ -98,3 +98,15 @@ def test_external_edit_propagates(page_loader):
         "() => document.querySelector('.phase-body').textContent.includes('after external')",
         timeout=4000,
     )
+
+
+def test_callouts_styled(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n> [!NOTE]\n> info text\n\n"
+        "> [!WARNING]\n> watch out\n"
+    )
+    page.reload()
+    page.wait_for_selector(".callout.note")
+    assert page.locator(".callout.note").count() == 1
+    assert page.locator(".callout.warning").count() == 1

@@ -78,3 +78,17 @@ textarea.editor { width: 100%; min-height: 120px; padding: 16px;
 .conflict-actions button { padding: 8px 16px; border-radius: 8px;
                            border: 1px solid var(--border); background: var(--bg);
                            color: var(--text); cursor: pointer; font-size: 14px; }
+.callout { padding: 12px 16px; border-left: 3px solid var(--accent);
+           background: #eff6ff; border-radius: 8px; margin: 12px 0; font-size: 14px; }
+.callout.note      { border-color: #4a7afe; background: #eff6ff; }
+.callout.tip       { border-color: #10b981; background: #ecfdf5; }
+.callout.warning   { border-color: #eab308; background: #fefce8; }
+.callout.risk      { border-color: #ef4444; background: #fef2f2; }
+.callout.important { border-color: #a855f7; background: #faf5ff; }
+.callout-label { display: block; font-size: 11px; text-transform: uppercase;
+                 letter-spacing: .08em; margin-bottom: 4px; opacity: .8; }
+body.dark .callout.note      { background: #0e1a30; }
+body.dark .callout.tip       { background: #0e1f17; }
+body.dark .callout.warning   { background: #1f1c08; }
+body.dark .callout.risk      { background: #1f0c0c; }
+body.dark .callout.important { background: #1c0e26; }

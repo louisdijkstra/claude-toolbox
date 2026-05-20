@@ -272,8 +272,23 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
+function configureMarked() {
+  const renderer = new marked.Renderer();
+  const origBlockquote = renderer.blockquote.bind(renderer);
+  renderer.blockquote = (quote) => {
+    const m = quote.match(/^<p>\[!(NOTE|TIP|WARNING|RISK|IMPORTANT)\]\s*(?:<br>)?\s*([\s\S]*?)<\/p>/i);
+    if (m) {
+      const kind = m[1].toLowerCase();
+      return `<div class="callout ${kind}"><strong class="callout-label">${m[1]}</strong><div class="callout-body">${m[2]}</div></div>`;
+    }
+    return origBlockquote(quote);
+  };
+  marked.use({ renderer });
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   try {
+    configureMarked();
     const { body, etag } = await fetchPlan();
     SRC = body; ETAG = etag;
     const { preludeRaw, prelude, phases } = parsePhases(body);
