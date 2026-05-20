@@ -303,6 +303,17 @@ function renderSidebar(phases) {
       });
     }
   });
+  const toolbar = document.createElement("div");
+  toolbar.className = "toolbar";
+  toolbar.innerHTML = `
+    <span class="filename">${escapeHtml(document.title)}</span>
+    <button id="theme-toggle">🌙</button>
+  `;
+  side.appendChild(toolbar);
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const dark = document.body.classList.toggle("dark");
+    localStorage.setItem("plan-explorer:dark", dark ? "1" : "0");
+  });
 }
 
 function phaseH3s(phase) {
@@ -383,6 +394,11 @@ function slug(s) {
 
 window.addEventListener("DOMContentLoaded", async () => {
   try {
+    const saved = localStorage.getItem("plan-explorer:dark");
+    const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+    if (saved === "1" || (saved === null && prefersDark)) {
+      document.body.classList.add("dark");
+    }
     configureMarked();
     const { body, etag } = await fetchPlan();
     SRC = body; ETAG = etag;

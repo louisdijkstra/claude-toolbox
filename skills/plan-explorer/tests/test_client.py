@@ -159,3 +159,12 @@ def test_kanban_toggle(page_loader):
     page.locator(".view-toggle button[data-view='kanban']").click()
     page.wait_for_selector(".kanban-board")
     assert page.locator(".kanban-card").count() == 2
+
+
+def test_dark_mode_persists(page_loader):
+    page, md = page_loader
+    page.locator("#theme-toggle").click()
+    assert page.locator("body.dark").count() == 1
+    page.reload()
+    page.wait_for_load_state()
+    assert page.locator("body.dark").count() == 1
