@@ -3,9 +3,15 @@
 """Launch the Plan Explorer browser UI for a markdown file."""
 
 import argparse
+import atexit
+import os
 import secrets
+import signal
 import socket
+import subprocess
 import sys
+import time
+import webbrowser
 from pathlib import Path
 
 PORT_RANGE = range(51000, 51101)
@@ -42,9 +48,42 @@ def main():
     port = pick_port(args.port if args.port > 0 else None)
     token = secrets.token_hex(16)
     url = f"http://127.0.0.1:{port}/?t={token}"
-    print(f"plan-explore serving {path}")
-    print(f"url: {url}")
-    # next task: spawn server.py with (path, token, port)
+    print(f"plan-explore serving {path}", flush=True)
+    print(f"url: {url}", flush=True)
+
+    server_script = Path(__file__).resolve().parent / "server.py"
+    proc = subprocess.Popen(
+        [sys.executable, str(server_script), str(path), token, str(port)],
+    )
+
+    def cleanup(*_):
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+    def signal_handler(*_):
+        # Kill server immediately and exit (cleanup() on atexit will handle any remaining cleanup)
+        if proc.poll() is None:
+            proc.kill()
+        os._exit(0)
+
+    atexit.register(cleanup)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    time.sleep(0.3)
+    if proc.poll() is not None:
+        print("error: server failed to start", file=sys.stderr)
+        sys.exit(1)
+
+    if not args.no_open:
+        webbrowser.open(url)
+
+    print("press Ctrl-C to stop")
+    proc.wait()
 
 
 if __name__ == "__main__":
