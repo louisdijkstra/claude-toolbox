@@ -2,6 +2,7 @@
 # ~/.claude/skills/plan-explorer/scripts/server.py
 """Plan Explorer HTTP server. Bound to 127.0.0.1 only."""
 
+import json
 import os
 import sys
 import time
@@ -16,6 +17,7 @@ class State:
     plan_path: Path
     token: str
     last_self_write_ns: int = 0
+    base_dir: Path
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -52,6 +54,8 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_plan()
         elif url.path == "/events":
             self._stream_events()
+        elif url.path == "/resolve":
+            self._serve_resolve(url)
         elif url.path.startswith("/static/"):
             self._serve_static(url.path[len("/static/"):])
         else:
@@ -118,6 +122,27 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _serve_resolve(self, url):
+        qs = parse_qs(url.query)
+        rel = (qs.get("path") or [""])[0]
+        if not rel:
+            self.send_error(400, "missing path")
+            return
+        try:
+            target = (State.base_dir / rel).resolve()
+        except OSError:
+            self.send_error(400)
+            return
+        if State.base_dir not in target.parents and target != State.base_dir:
+            self.send_error(403, "outside base dir")
+            return
+        payload = json.dumps({"abs": str(target)}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
     def _stream_events(self):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
@@ -174,6 +199,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     plan_path = Path(sys.argv[1]).resolve()
     State.plan_path = plan_path
+    State.base_dir = plan_path.parent
     State.token = sys.argv[2]
     port = int(sys.argv[3])
     httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)

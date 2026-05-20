@@ -1,5 +1,6 @@
 # ~/.claude/skills/plan-explorer/tests/test_server.py
 import http.client
+import json
 import subprocess
 import sys
 import threading
@@ -252,5 +253,31 @@ def test_cookie_carries_token_for_static(tmp_md, free_port):
         conn2 = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
         conn2.request("GET", "/static/styles.css", headers={"Cookie": f"pe_t={token}"})
         assert conn2.getresponse().status == 200
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
+
+
+def test_resolve_endpoint(tmp_md, free_port):
+    token = "r" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        (tmp_md.parent / "foo.md").write_text("hi")
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", f"/resolve?t={token}&path=foo.md")
+        resp = conn.getresponse()
+        assert resp.status == 200
+        body = json.loads(resp.read())
+        assert body["abs"].endswith("/foo.md")
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
+
+
+def test_resolve_blocks_traversal(tmp_md, free_port):
+    token = "s" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", f"/resolve?t={token}&path=../../etc/passwd")
+        assert conn.getresponse().status == 403
     finally:
         proc.terminate(); proc.wait(timeout=2)
