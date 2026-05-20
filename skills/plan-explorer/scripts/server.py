@@ -31,17 +31,18 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def do_GET(self):
+        url = urlparse(self.path)
+        if url.path.startswith("/static/"):
+            self._serve_static(url.path[len("/static/"):])
+            return
         if not self._check_token():
             return
-        url = urlparse(self.path)
         if url.path == "/":
             self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
         elif url.path == "/plan":
             self._serve_plan()
         elif url.path == "/events":
             self._stream_events()
-        elif url.path.startswith("/static/"):
-            self._serve_static(url.path[len("/static/"):])
         else:
             self.send_error(404)
 

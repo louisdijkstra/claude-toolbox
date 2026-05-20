@@ -1,0 +1,35 @@
+def test_phases_grouped_by_h2(page_loader):
+    page, md = page_loader
+    md.write_text("# Title\n\n## Phase A\n\nA body\n\n## Phase B\n\nB body\n")
+    page.reload()
+    page.wait_for_selector(".phase")
+    assert page.locator(".phase").count() == 2
+    assert page.locator(".phase >> nth=0 >> h2").inner_text() == "Phase A"
+
+
+def test_sidebar_lists_phases(page_loader):
+    page, md = page_loader
+    md.write_text("# T\n\n## P1\n\nx\n\n## P2\n\ny\n")
+    page.reload()
+    page.wait_for_selector(".nav-item")
+    items = page.locator(".nav-item").all_text_contents()
+    assert "P1" in "".join(items)
+    assert "P2" in "".join(items)
+
+
+def test_doc_mode_no_progress(page_loader):
+    page, md = page_loader
+    md.write_text("# Spec\n\n## Section A\n\nProse only\n")
+    page.reload()
+    page.wait_for_selector(".phase")
+    assert page.locator("body.plan-mode").count() == 0
+    assert page.locator("body.doc-mode").count() == 1
+    assert page.locator("#progress-bar").count() == 0
+
+
+def test_plan_mode_with_checkboxes(page_loader):
+    page, md = page_loader
+    md.write_text("# Plan\n\n## P1\n\n- [ ] do thing\n")
+    page.reload()
+    page.wait_for_selector(".phase")
+    assert page.locator("body.plan-mode").count() == 1
