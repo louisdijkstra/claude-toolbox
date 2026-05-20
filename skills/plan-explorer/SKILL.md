@@ -1,6 +1,9 @@
 ---
 name: plan-explorer
 description: Open a markdown plan, spec, or design doc in a beautiful browser UI for interactive exploration and editing. Round-trips edits to disk. Use when the user types /plan-explore <path>, asks to "open this plan in a browser", or wants to visually navigate phases of an implementation plan.
+user-invocable: true
+allowed-tools: Bash
+argument-hint: <path> [--port N] [--no-open]
 ---
 
 # Plan Explorer
