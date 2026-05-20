@@ -369,3 +369,13 @@ def test_timeline_view(page_loader):
         "el => el.style.width"
     )
     assert fill_width == "50%"
+
+
+def test_minimap_strips_match_phases(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n" + ("- [ ] task\n" * 30) + "\n## B\n\nshort\n"
+    )
+    page.reload()
+    page.wait_for_selector("#minimap .mini-strip")
+    assert page.locator("#minimap .mini-strip").count() == 2

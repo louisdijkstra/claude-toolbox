@@ -340,6 +340,64 @@ function rebuildSource(phases, idx, newBody) {
   return out;
 }
 
+function renderMinimap(phases) {
+  const map = document.getElementById("minimap");
+  if (!map) return;
+  map.replaceChildren();
+  if (phases.length === 0) { map.hidden = true; return; }
+  const docH = document.documentElement.scrollHeight;
+  if (docH <= window.innerHeight + 40) { map.hidden = true; return; }
+  map.hidden = false;
+  const isPlan = document.body.classList.contains("plan-mode");
+  phases.forEach((p, i) => {
+    const el = document.getElementById(`phase-${i}`);
+    if (!el) return;
+    const h = (el.offsetHeight / docH) * 100;
+    const sk = isPlan ? phaseStatus(p).kind : "neutral";
+    const cls = sk === "none" ? "todo" : sk;
+    const strip = document.createElement("div");
+    strip.className = `mini-strip ${cls}`;
+    strip.style.height = `${h}%`;
+    strip.dataset.phaseIdx = String(i);
+    map.appendChild(strip);
+  });
+  const viewport = document.createElement("div");
+  viewport.className = "mini-viewport";
+  viewport.style.top = `${(window.scrollY / docH) * 100}%`;
+  viewport.style.height = `${(window.innerHeight / docH) * 100}%`;
+  map.appendChild(viewport);
+}
+
+function attachMinimap() {
+  const map = document.getElementById("minimap");
+  if (!map || map.dataset.bound === "true") return;
+  map.dataset.bound = "true";
+  let frame = null;
+  const sync = () => {
+    frame = null;
+    const docH = document.documentElement.scrollHeight;
+    const v = map.querySelector(".mini-viewport");
+    if (!v) return;
+    v.style.top = `${(window.scrollY / docH) * 100}%`;
+    v.style.height = `${(window.innerHeight / docH) * 100}%`;
+  };
+  window.addEventListener("scroll", () => {
+    if (frame) return;
+    frame = requestAnimationFrame(sync);
+  }, { passive: true });
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => renderMinimap(window.LAST_PHASES || []), 100);
+  });
+  map.addEventListener("click", (e) => {
+    const rect = map.getBoundingClientRect();
+    const frac = (e.clientY - rect.top) / rect.height;
+    const docH = document.documentElement.scrollHeight;
+    window.scrollTo({ top: frac * docH, behavior: "smooth" });
+  });
+}
+
 function renderAll(phases) {
   renderPhases(phases);
   renderSidebar(phases);
@@ -370,6 +428,10 @@ function renderAll(phases) {
     mermaid.run({ querySelector: ".mermaid" });
     if (edges.length > 0) attachDepGraphNodes();
   }
+
+  window.LAST_PHASES = phases;
+  renderMinimap(phases);
+  attachMinimap();
 }
 
 function parsePhases(src) {
