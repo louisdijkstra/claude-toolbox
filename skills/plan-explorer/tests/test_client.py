@@ -195,3 +195,19 @@ def test_syntax_highlight_python(page_loader):
     md.write_text("# P\n\n## A\n\n```python\ndef hi(): pass\n```\n")
     page.reload()
     page.wait_for_selector(".language-python .token.keyword")
+
+
+def test_tree_block_collapsible(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n```tree\n"
+        "root/\n├── a.py\n└── sub/\n    └── b.md\n"
+        "```\n"
+    )
+    page.reload()
+    page.wait_for_selector(".tree-dir")
+    assert page.locator(".tree-dir").count() >= 2  # root/ and sub/
+    assert page.locator(".tree-file").count() == 2  # a.py and b.md
+    page.locator(".tree-dir .tree-toggle").nth(1).click()
+    expanded = page.locator(".tree-dir").nth(1).get_attribute("aria-expanded")
+    assert expanded == "false"

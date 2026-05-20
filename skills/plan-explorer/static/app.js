@@ -230,6 +230,7 @@ function renderAll(phases) {
   attachScrollSpy();
   attachPhaseEdit(phases);
   wireCopyButtons();
+  attachTreeToggles();
   attachAnchors();
   runPrism();
   if (window.mermaid) {
@@ -361,6 +362,78 @@ function runPrism() {
   Prism.highlightAllUnder(document.getElementById("content"));
 }
 
+const TREE_ICONS = {
+  py:"🐍", js:"📜", ts:"📘", json:"⚙️", yaml:"⚙️", yml:"⚙️", toml:"⚙️",
+  md:"📝", html:"🌐", css:"🎨", sh:"🔧", rs:"🦀", go:"🦫",
+  png:"🖼", jpg:"🖼", svg:"🖼",
+};
+
+function treeFileIcon(name) {
+  const ext = name.split(".").pop().toLowerCase();
+  return TREE_ICONS[ext] || "📄";
+}
+
+function parseTreeLines(raw) {
+  // Returns an array of { depth, name, isDir }
+  // Strips connector chars: ├ └ │ ─ and counts indent based on
+  // the column where the leaf name starts.
+  const out = [];
+  const lines = raw.split("\n").filter(l => l.trim().length > 0);
+  for (const line of lines) {
+    // Strip everything up to and including the last connector run
+    const match = line.match(/^([│\s]*)(?:[├└][─\s]+)?(.+)$/);
+    if (!match) continue;
+    const prefix = match[1];
+    const name = match[2].trim();
+    if (!name) continue;
+    // Depth = number of `│   ` or 4-space columns in the prefix
+    const depth = Math.floor(prefix.replace(/[│]/g, " ").length / 4);
+    const isDir = name.endsWith("/");
+    out.push({ depth, name: isDir ? name.slice(0, -1) : name, isDir });
+  }
+  return out;
+}
+
+function renderTreeBlock(raw) {
+  const entries = parseTreeLines(raw);
+  if (entries.length === 0) {
+    return `<pre class="tree-warning">${escapeHtml(raw)}</pre>`;
+  }
+  // Build nested HTML by walking entries and tracking depth stack
+  let html = '<ul class="tree" role="tree">';
+  let lastDepth = -1;
+  const openTags = [];
+  for (const e of entries) {
+    while (lastDepth >= e.depth) {
+      html += openTags.pop() === "li" ? "</li>" : "</ul></li>";
+      lastDepth--;
+    }
+    if (e.isDir) {
+      html += `<li class="tree-dir" aria-expanded="true"><span class="tree-toggle"></span><span class="tree-name">${escapeHtml(e.name)}/</span><ul>`;
+      openTags.push("li", "ul");
+      lastDepth = e.depth;
+      continue;
+    }
+    html += `<li class="tree-file" data-path="${escapeHtml(e.name)}"><span class="tree-icon">${treeFileIcon(e.name)}</span><span class="tree-name">${escapeHtml(e.name)}</span></li>`;
+    lastDepth = e.depth;
+  }
+  while (openTags.length) {
+    html += openTags.pop() === "li" ? "</li>" : "</ul></li>";
+  }
+  html += "</ul>";
+  return html;
+}
+
+function attachTreeToggles() {
+  document.querySelectorAll(".tree-dir > .tree-toggle").forEach(t => {
+    t.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const li = t.parentElement;
+      li.setAttribute("aria-expanded", li.getAttribute("aria-expanded") === "true" ? "false" : "true");
+    });
+  });
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -375,6 +448,9 @@ function configureMarked() {
   renderer.code = (code, lang) => {
     if (lang === "mermaid") {
       return `<div class="mermaid">${escapeHtml(code)}</div>`;
+    }
+    if (lang === "tree") {
+      return renderTreeBlock(code);
     }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;

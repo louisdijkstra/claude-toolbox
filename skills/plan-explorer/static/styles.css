@@ -134,3 +134,33 @@ body.dark tbody tr:nth-child(even) { background: rgba(255,255,255,.03); }
 #theme-toggle { background: transparent; border: 1px solid var(--border);
                 color: var(--text); padding: 4px 10px; border-radius: 6px;
                 cursor: pointer; font-size: 13px; }
+
+ul.tree, ul.tree ul {
+  list-style: none;
+  margin: 0; padding-left: 18px;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+ul.tree { padding-left: 0; margin: 12px 0; }
+ul.tree li { position: relative; }
+.tree-dir > .tree-toggle {
+  display: inline-block;
+  width: 14px; text-align: center;
+  cursor: pointer; color: var(--muted);
+  user-select: none;
+}
+.tree-dir > .tree-toggle::before { content: "▾"; transition: transform .12s; display: inline-block; }
+.tree-dir[aria-expanded="false"] > .tree-toggle::before { content: "▸"; }
+.tree-dir[aria-expanded="false"] > ul { display: none; }
+.tree-dir > .tree-name { color: var(--text); font-weight: 500; }
+.tree-file { padding-left: 14px; cursor: default; }
+.tree-file .tree-icon { display: inline-block; width: 18px; }
+.tree-file:hover { background: var(--hover); border-radius: 4px; }
+.tree-warning {
+  background: #fef2f2; color: #991b1b;
+  padding: 8px 12px; border-radius: 6px;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 12px;
+}
+body.dark .tree-warning { background: #1f0c0c; color: #fca5a5; }
