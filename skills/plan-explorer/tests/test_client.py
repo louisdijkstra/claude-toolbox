@@ -33,3 +33,15 @@ def test_plan_mode_with_checkboxes(page_loader):
     page.reload()
     page.wait_for_selector(".phase")
     assert page.locator("body.plan-mode").count() == 1
+
+
+def test_phase_badges(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n- [x] x\n- [x] y\n\n## B\n\n- [x] x\n- [ ] y\n\n## C\n\n- [ ] x\n"
+    )
+    page.reload()
+    page.wait_for_selector(".badge")
+    assert page.locator(".badge.done").count() == 1
+    assert page.locator(".badge.wip").count() == 1
+    assert page.locator(".badge.todo").count() == 1
