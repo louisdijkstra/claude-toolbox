@@ -515,6 +515,45 @@ function attachFootnoteHovers() {
   });
 }
 
+function attachImageGallery() {
+  document.querySelectorAll(".phase-body p").forEach(p => {
+    const kids = [...p.childNodes].filter(n => !(n.nodeType === Node.TEXT_NODE && !n.nodeValue.trim()));
+    if (kids.length < 2) return;
+    const allImgs = kids.every(n => n.nodeType === Node.ELEMENT_NODE && n.tagName === "IMG");
+    if (!allImgs) return;
+    p.classList.add("gallery");
+    kids.forEach(img => {
+      img.addEventListener("click", () => openLightbox(img.src, img.alt || ""));
+    });
+  });
+}
+
+function openLightbox(src, alt) {
+  let lb = document.getElementById("lightbox");
+  if (!lb) {
+    lb = document.createElement("div");
+    lb.id = "lightbox";
+    lb.hidden = true;
+    lb.innerHTML = '<img class="lightbox-img" alt=""><button class="lightbox-close" type="button" aria-label="Close">×</button>';
+    document.body.appendChild(lb);
+    lb.addEventListener("click", (e) => {
+      if (e.target.classList.contains("lightbox-close") || e.target === lb) closeLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeLightbox();
+    });
+  }
+  const img = lb.querySelector(".lightbox-img");
+  img.src = src;
+  img.alt = alt;
+  lb.hidden = false;
+}
+
+function closeLightbox() {
+  const lb = document.getElementById("lightbox");
+  if (lb) lb.hidden = true;
+}
+
 function renderAll(phases) {
   renderPhases(phases);
   renderSidebar(phases);
@@ -531,6 +570,7 @@ function renderAll(phases) {
   attachIdeLinks();
   attachGlossaryPopovers(window.GLOSSARY_TERMS || []);
   attachFootnoteHovers();
+  attachImageGallery();
   attachEnvControls();
   attachRiskChips();
 

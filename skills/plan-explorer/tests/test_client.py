@@ -405,3 +405,13 @@ def test_footnote_renders_ref_and_def(page_loader):
     href = page.locator("sup.fn-ref a").first.get_attribute("href")
     assert href == "#fn-1"
     assert page.locator("#fn-1").count() == 1
+
+
+def test_image_gallery_grids_multi_images(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n![](a.png) ![](b.png) ![](c.png)\n"
+    )
+    page.reload()
+    page.wait_for_selector("p.gallery")
+    assert page.locator("p.gallery img").count() == 3
