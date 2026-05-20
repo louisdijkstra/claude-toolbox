@@ -113,3 +113,21 @@ sqlalchemy@2.0
 ecosystem: crates
 serde@1.0
 ```
+
+## Cross-references
+
+This phase references the [[Phase 1]] callouts section and the [[Phase 3]] diagram. See [[Task 2]] for the implementation order.
+
+## Task dependencies
+
+### Task 1
+
+Set up the base.
+
+### Task 2
+
+This depends on Task 1.
+
+### Task 3
+
+This requires Task 2 and Task 1.
