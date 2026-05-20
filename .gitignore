@@ -61,6 +61,8 @@ plans/
 # Docs contents (keep folder via .gitkeep)
 docs/*
 !docs/.gitkeep
+!docs/superpowers/
+!docs/superpowers/**
 
 # IDE and Browser Data
 ide/
@@ -98,3 +100,6 @@ MANIFEST
 # OS-specific
 .DS_Store
 Thumbs.db
+.superpowers/
+skills/plan-explorer/.venv/
+.pytest_cache/
