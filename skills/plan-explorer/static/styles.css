@@ -475,3 +475,26 @@ a.xref::after {
   opacity: .7;
 }
 a.xref:hover { border-bottom-style: solid; }
+svg.cross-ref-graph {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin: 18px auto 0;
+  height: auto;
+}
+svg.cross-ref-graph .mini-dot {
+  fill: var(--muted);
+  opacity: .75;
+  cursor: pointer;
+  transition: opacity .12s, r .12s;
+}
+svg.cross-ref-graph .mini-dot:hover {
+  fill: var(--accent);
+  opacity: 1;
+}
+svg.cross-ref-graph .mini-arc {
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  opacity: .5;
+  fill: none;
+}

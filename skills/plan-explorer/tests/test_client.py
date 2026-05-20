@@ -342,3 +342,14 @@ def test_xref_renders_link_and_jumps(page_loader):
     page.wait_for_selector("a.xref")
     href = page.locator("a.xref").first.get_attribute("href")
     assert href == "#phase-2"
+
+
+def test_cross_ref_mini_graph(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## Phase 1\n\nlinks [[Phase 3]]\n\n## Phase 2\n\nno refs\n\n## Phase 3\n\nback to [[Phase 1]]\n"
+    )
+    page.reload()
+    page.wait_for_selector("svg.cross-ref-graph")
+    assert page.locator("svg.cross-ref-graph .mini-dot").count() == 3
+    assert page.locator("svg.cross-ref-graph .mini-arc").count() == 2

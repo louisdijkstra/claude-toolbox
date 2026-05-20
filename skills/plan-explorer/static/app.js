@@ -96,6 +96,50 @@ function attachDepGraphNodes() {
   });
 }
 
+function extractCrossRefs(phases) {
+  const refs = [];
+  phases.forEach((p, idx) => {
+    const text = p.body.join("");
+    for (const m of text.matchAll(/\[\[(Phase|Task)\s+(\d+)\]\]/g)) {
+      refs.push({ fromPhaseIdx: idx, toKind: m[1], toNum: parseInt(m[2], 10) });
+    }
+  });
+  return refs;
+}
+
+function renderCrossRefMiniGraph(refs, phases) {
+  const side = document.getElementById("sidebar");
+  side.querySelector(".cross-ref-graph")?.remove();
+  if (refs.length === 0) return;
+  const n = phases.length;
+  if (n === 0) return;
+  const w = 200, h = 100, pad = 14;
+  const xStep = (w - 2 * pad) / Math.max(1, n - 1);
+  const cy = h - 18;
+  const dotsHtml = phases.map((p, i) => {
+    const cx = pad + i * xStep;
+    return `<circle class="mini-dot" cx="${cx}" cy="${cy}" r="4" data-idx="${i}"><title>${escapeHtml(p.title)}</title></circle>`;
+  }).join("");
+  const arcs = refs
+    .filter(r => r.toKind === "Phase" && (r.toNum - 1) !== r.fromPhaseIdx && (r.toNum - 1) >= 0 && (r.toNum - 1) < n)
+    .map(r => {
+      const a = pad + r.fromPhaseIdx * xStep;
+      const b = pad + (r.toNum - 1) * xStep;
+      const mid = (a + b) / 2;
+      const lift = 22 + Math.abs(b - a) / 6;
+      return `<path class="mini-arc" d="M${a},${cy} Q${mid},${cy - lift} ${b},${cy}" fill="none" />`;
+    }).join("");
+  const svg = `<svg class="cross-ref-graph" viewBox="0 0 ${w} ${h}" aria-label="Phase cross references">${arcs}${dotsHtml}</svg>`;
+  side.insertAdjacentHTML("beforeend", svg);
+  side.querySelectorAll(".cross-ref-graph .mini-dot").forEach(d => {
+    d.addEventListener("click", () => {
+      const idx = parseInt(d.dataset.idx, 10);
+      const target = document.getElementById(`phase-${idx}`);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
 function renderProgressBar(phases) {
   if (!document.body.classList.contains("plan-mode")) return;
   let done = 0, total = 0;
@@ -281,6 +325,9 @@ function renderAll(phases) {
   attachIdeLinks();
   attachEnvControls();
   attachRiskChips();
+
+  const refs = extractCrossRefs(phases);
+  renderCrossRefMiniGraph(refs, phases);
 
   const edges = document.body.classList.contains("plan-mode") ? extractDeps() : [];
   if (edges.length > 0) {
