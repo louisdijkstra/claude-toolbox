@@ -168,3 +168,27 @@ def test_sse_emits_on_external_change(tmp_md, free_port):
         assert any("change" in e for e in events), events
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_sse_suppresses_after_own_put(tmp_md, free_port):
+    token = "k" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        sub = http.client.HTTPConnection("127.0.0.1", free_port, timeout=3)
+        sub.request("GET", f"/events?t={token}")
+        resp = sub.getresponse()
+        put = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        put.request("PUT", f"/plan?t={token}", body="# new\n")
+        assert put.getresponse().status == 200
+        time.sleep(0.1)
+        # Try to read with short timeout
+        import select
+        if hasattr(sub, 'sock') and sub.sock:
+            sub.sock.settimeout(0.8)
+        try:
+            line = resp.fp.readline().decode()
+        except Exception:
+            line = ""
+        assert "change" not in line, f"unexpected event: {line}"
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
