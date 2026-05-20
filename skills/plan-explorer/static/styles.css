@@ -100,3 +100,13 @@ pre code { font-family: inherit; }
             color: #ccc; border: none; padding: 3px 9px; border-radius: 4px;
             font-size: 11px; cursor: pointer; opacity: 0; transition: opacity .15s; }
 pre:hover .copy-btn { opacity: 1; }
+table { border-collapse: collapse; margin: 14px 0; font-size: 14px;
+        width: 100%; }
+th, td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+thead th { background: var(--hover); font-weight: 600; }
+tbody tr:nth-child(even) { background: rgba(0,0,0,.02); }
+body.dark tbody tr:nth-child(even) { background: rgba(255,255,255,.03); }
+
+.anchor { margin-left: 8px; color: var(--muted); text-decoration: none;
+          opacity: 0; font-weight: 400; }
+.phase h2:hover .anchor, .phase h3:hover .anchor { opacity: 1; }

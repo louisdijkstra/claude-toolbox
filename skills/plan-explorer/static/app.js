@@ -180,6 +180,7 @@ function renderAll(phases) {
   attachScrollSpy();
   attachPhaseEdit(phases);
   wireCopyButtons();
+  attachAnchors();
 }
 
 function parsePhases(src) {
@@ -299,6 +300,23 @@ function wireCopyButtons() {
       b.textContent = "copied"; setTimeout(() => b.textContent = "copy", 1200);
     });
   });
+}
+
+function attachAnchors() {
+  document.querySelectorAll(".phase h2, .phase h3").forEach(h => {
+    if (!h.id) {
+      h.id = slug(h.textContent.replace(/#$/, "").trim());
+    }
+    if (!h.querySelector(".anchor")) {
+      const a = document.createElement("a");
+      a.className = "anchor"; a.href = "#" + h.id; a.textContent = "#";
+      h.appendChild(a);
+    }
+  });
+}
+
+function slug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 window.addEventListener("DOMContentLoaded", async () => {

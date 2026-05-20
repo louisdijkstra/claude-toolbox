@@ -4,7 +4,7 @@ def test_phases_grouped_by_h2(page_loader):
     page.reload()
     page.wait_for_selector(".phase")
     assert page.locator(".phase").count() == 2
-    assert page.locator(".phase >> nth=0 >> h2").inner_text() == "Phase A"
+    assert "Phase A" in page.locator(".phase >> nth=0 >> h2").inner_text()
 
 
 def test_sidebar_lists_phases(page_loader):
@@ -117,3 +117,16 @@ def test_code_copy_button(page_loader):
     md.write_text("# P\n\n## A\n\n```python\nprint('hi')\n```\n")
     page.reload()
     page.wait_for_selector("pre .copy-btn")
+
+
+def test_tables_and_anchors(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## Section\n\n"
+        "| col | col2 |\n|---|---|\n| a | b |\n"
+    )
+    page.reload()
+    page.wait_for_selector("table")
+    assert page.locator("table th").count() == 2
+    h2_id = page.locator(".phase h2").first.get_attribute("id")
+    assert h2_id is not None
