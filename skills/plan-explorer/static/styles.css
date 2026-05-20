@@ -164,3 +164,37 @@ ul.tree li { position: relative; }
   font-size: 12px;
 }
 body.dark .tree-warning { background: #1f0c0c; color: #fca5a5; }
+
+pre.diff {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 12px 0;
+}
+pre.diff .line { display: flex; gap: 8px; padding: 0 12px; }
+pre.diff .line .gutter {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  white-space: pre;
+  min-width: 64px;
+}
+pre.diff .line .text { white-space: pre; flex: 1; }
+pre.diff .line.add { background: #dcfce7; color: #166534; }
+pre.diff .line.del { background: #fee2e2; color: #991b1b; }
+pre.diff .line.ctx { background: transparent; }
+pre.diff .line.hunk {
+  background: var(--hover);
+  color: var(--muted);
+  font-style: italic;
+  padding: 4px 12px;
+}
+body.dark pre.diff .line.add { background: #0f2417; color: #86efac; }
+body.dark pre.diff .line.del { background: #2a0e10; color: #fca5a5; }

@@ -211,3 +211,18 @@ def test_tree_block_collapsible(page_loader):
     page.locator(".tree-dir .tree-toggle").nth(1).click()
     expanded = page.locator(".tree-dir").nth(1).get_attribute("aria-expanded")
     assert expanded == "false"
+
+
+def test_diff_block_classifies_lines(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n```diff\n"
+        "@@ -1,2 +1,2 @@\n"
+        " context\n-old\n+new\n"
+        "```\n"
+    )
+    page.reload()
+    page.wait_for_selector(".diff .line.hunk")
+    assert page.locator(".diff .line.add").count() == 1
+    assert page.locator(".diff .line.del").count() == 1
+    assert page.locator(".diff .line.ctx").count() == 1

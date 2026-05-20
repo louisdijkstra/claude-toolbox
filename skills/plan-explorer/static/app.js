@@ -434,6 +434,44 @@ function attachTreeToggles() {
   });
 }
 
+function renderDiffBlock(raw) {
+  const lines = raw.split("\n");
+  let oldLine = null, newLine = null;
+  const hunkRe = /^@@\s+-(\d+)(?:,\d+)?\s+\+(\d+)(?:,\d+)?\s+@@/;
+  let html = '<pre class="diff">';
+  for (const line of lines) {
+    if (line.length === 0) continue;
+    const hunk = line.match(hunkRe);
+    if (hunk) {
+      oldLine = parseInt(hunk[1], 10);
+      newLine = parseInt(hunk[2], 10);
+      html += `<div class="line hunk"><span class="gutter"></span><span class="text">${escapeHtml(line)}</span></div>`;
+      continue;
+    }
+    const head = line.charAt(0);
+    let cls, oldNum = "", newNum = "";
+    if (head === "+") {
+      cls = "add";
+      if (newLine !== null) { newNum = String(newLine); newLine++; }
+    } else if (head === "-") {
+      cls = "del";
+      if (oldLine !== null) { oldNum = String(oldLine); oldLine++; }
+    } else {
+      cls = "ctx";
+      if (oldLine !== null && newLine !== null) {
+        oldNum = String(oldLine); newNum = String(newLine);
+        oldLine++; newLine++;
+      }
+    }
+    const gutter = (oldLine !== null || newLine !== null)
+      ? `<span class="gutter">${oldNum.padStart(3," ")} ${newNum.padStart(3," ")}</span>`
+      : `<span class="gutter"></span>`;
+    html += `<div class="line ${cls}">${gutter}<span class="text">${escapeHtml(line)}</span></div>`;
+  }
+  html += "</pre>";
+  return html;
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -451,6 +489,9 @@ function configureMarked() {
     }
     if (lang === "tree") {
       return renderTreeBlock(code);
+    }
+    if (lang === "diff") {
+      return renderDiffBlock(code);
     }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;
