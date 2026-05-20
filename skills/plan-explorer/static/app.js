@@ -92,13 +92,74 @@ function showConflict() {
   toast("conflict — disk changed under you");
 }
 
+function attachPhaseEdit(phases) {
+  document.querySelectorAll(".phase").forEach((el, i) => {
+    const body = el.querySelector(".phase-body");
+    body.addEventListener("click", (e) => {
+      if (e.target.matches("input, a, button")) return;
+      enterEdit(el, i, phases);
+    });
+  });
+}
+
+function enterEdit(phaseEl, index, phases) {
+  if (phaseEl.classList.contains("editing")) return;
+  phaseEl.classList.add("editing");
+  const body = phaseEl.querySelector(".phase-body");
+  const raw = phases[index].body.join("");
+  const ta = document.createElement("textarea");
+  ta.className = "editor";
+  ta.value = raw;
+  body.replaceChildren(ta);
+  ta.focus();
+  ta.style.height = ta.scrollHeight + "px";
+  ta.addEventListener("input", () => {
+    ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px";
+  });
+  ta.addEventListener("blur", async () => {
+    const newBody = ta.value;
+    const newSrc = rebuildSource(phases, index, newBody);
+    SRC = newSrc;
+    const ok = await savePlan(newSrc);
+    if (ok) {
+      const { preludeRaw, phases: fresh } = parsePhases(SRC);
+      window.PRELUDE_RAW = preludeRaw;
+      renderAll(fresh);
+    } else {
+      body.innerHTML = marked.parse(raw);
+    }
+    phaseEl.classList.remove("editing");
+  });
+}
+
+function rebuildSource(phases, idx, newBody) {
+  let out = "";
+  out += window.PRELUDE_RAW || "";
+  phases.forEach((p, i) => {
+    const body = i === idx ? newBody : p.body.join("");
+    out += `## ${p.title}\n${body.startsWith("\n") ? body : "\n" + body}`;
+  });
+  return out;
+}
+
+function renderAll(phases) {
+  renderPhases(phases);
+  renderSidebar(phases);
+  renderProgressBar(phases);
+  attachCheckboxes();
+  attachCollapse();
+  attachScrollSpy();
+  attachPhaseEdit(phases);
+}
+
 function parsePhases(src) {
   // Split source into: prelude (everything before first H2) + array of phases
   // Each phase: { title, level: 2, raw, body, tokens }
   const tokens = marked.lexer(src);
   const phases = [];
-  let prelude = [];
+  let preludeTokens = [];
   let current = null;
+  let preludeEnd = 0;
   for (const tok of tokens) {
     if (tok.type === "heading" && tok.depth === 2) {
       if (current) phases.push(current);
@@ -109,11 +170,12 @@ function parsePhases(src) {
       current.body.push(tok.raw);
       current.tokens.push(tok);
     } else {
-      prelude.push(tok);
+      preludeTokens.push(tok);
+      preludeEnd += tok.raw.length;
     }
   }
   if (current) phases.push(current);
-  return { prelude, phases };
+  return { prelude: preludeTokens, preludeRaw: src.slice(0, preludeEnd), phases };
 }
 
 async function fetchPlan() {
@@ -185,19 +247,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   try {
     const { body, etag } = await fetchPlan();
     SRC = body; ETAG = etag;
-    const { prelude, phases } = parsePhases(body);
+    const { preludeRaw, prelude, phases } = parsePhases(body);
+    window.PRELUDE_RAW = preludeRaw;
     const h1 = prelude.find(t => t.type === "heading" && t.depth === 1);
     document.getElementById("title").textContent = h1 ? h1.text : "Plan";
 
     const isPlan = /^\s*-\s*\[[ xX]\]/m.test(body);
     document.body.classList.add(isPlan ? "plan-mode" : "doc-mode");
 
-    renderPhases(phases);
-    renderSidebar(phases);
-    renderProgressBar(phases);
-    attachScrollSpy();
-    attachCollapse();
-    attachCheckboxes();
+    renderAll(phases);
   } catch (e) {
     document.getElementById("title").textContent = "Failed to load";
     console.error(e);

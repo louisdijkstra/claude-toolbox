@@ -58,3 +58,19 @@ def test_checkbox_toggle_saves(page_loader):
     while _t.time() < deadline and "[x]" not in md.read_text():
         _t.sleep(0.1)
     assert "[x]" in md.read_text()
+
+
+def test_edit_phase_body_saves(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\nold body\n")
+    page.reload()
+    page.wait_for_selector(".phase-body")
+    page.locator(".phase-body").first.click()
+    page.wait_for_selector("textarea.editor")
+    page.locator("textarea.editor").fill("new body content\n")
+    page.locator("textarea.editor").blur()
+    import time as _t
+    deadline = _t.time() + 2
+    while _t.time() < deadline and "new body content" not in md.read_text():
+        _t.sleep(0.1)
+    assert "new body content" in md.read_text()

@@ -60,3 +60,10 @@ input.task-cb { width: 16px; height: 16px; cursor: pointer; }
          color: #fff; padding: 10px 14px; border-radius: 8px; opacity: 0;
          transition: opacity .2s; pointer-events: none; font-size: 13px; }
 #toast.show { opacity: 1; }
+.phase.editing .phase-body { padding: 0; }
+textarea.editor { width: 100%; min-height: 120px; padding: 16px;
+                  border: 2px solid var(--accent); border-radius: 10px;
+                  background: var(--bg); color: var(--text);
+                  font-family: "JetBrains Mono", Menlo, monospace;
+                  font-size: 14px; line-height: 1.55; resize: vertical;
+                  box-sizing: border-box; }
