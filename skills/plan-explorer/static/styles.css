@@ -498,3 +498,50 @@ svg.cross-ref-graph .mini-arc {
   opacity: .5;
   fill: none;
 }
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 14px 0;
+}
+.timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.timeline-row:hover { background: var(--hover); }
+.timeline-label {
+  flex: 0 0 180px;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.timeline-bar {
+  height: 14px;
+  background: var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+  position: relative;
+  min-width: 80px;
+}
+.timeline-fill {
+  display: block;
+  height: 100%;
+  border-radius: 7px;
+}
+.timeline-fill.done { background: linear-gradient(90deg, #34d399, #10b981); }
+.timeline-fill.wip  { background: linear-gradient(90deg, #fde047, #eab308); }
+.timeline-fill.todo { background: transparent; }
+.timeline-count {
+  flex: 0 0 56px;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

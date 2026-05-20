@@ -353,3 +353,19 @@ def test_cross_ref_mini_graph(page_loader):
     page.wait_for_selector("svg.cross-ref-graph")
     assert page.locator("svg.cross-ref-graph .mini-dot").count() == 3
     assert page.locator("svg.cross-ref-graph .mini-arc").count() == 2
+
+
+def test_timeline_view(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n- [x] one\n- [ ] two\n\n## B\n\n- [ ] three\n"
+    )
+    page.reload()
+    page.wait_for_selector(".view-toggle button[data-view='timeline']")
+    page.locator(".view-toggle button[data-view='timeline']").click()
+    page.wait_for_selector(".timeline .timeline-row")
+    assert page.locator(".timeline-row").count() == 2
+    fill_width = page.locator(".timeline-row").first.locator(".timeline-fill").evaluate(
+        "el => el.style.width"
+    )
+    assert fill_width == "50%"

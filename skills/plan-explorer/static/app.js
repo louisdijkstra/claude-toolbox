@@ -29,8 +29,10 @@ function setView(view, phases) {
     renderPhases(phases);
     attachCheckboxes(); attachCollapse(); attachScrollSpy(); attachPhaseEdit(phases);
     attachAnchors(); wireCopyButtons();
-  } else {
+  } else if (view === "kanban") {
     renderKanban(phases);
+  } else if (view === "timeline") {
+    renderTimeline(phases);
   }
 }
 
@@ -54,6 +56,34 @@ function renderKanban(phases) {
       `).join("")}
     </div>
   `;
+}
+
+function renderTimeline(phases) {
+  const content = document.getElementById("content");
+  const rows = phases.map((p, i) => {
+    const s = phaseStatus(p);
+    const flex = Math.max(1, s.total || 1);
+    const donePct = s.total ? Math.round(100 * s.done / s.total) : 0;
+    const fillClass = s.kind === "done" ? "done" : s.kind === "wip" ? "wip" : "todo";
+    const count = s.total ? `${s.done} / ${s.total}` : "—";
+    return `<div class="timeline-row" data-phase-idx="${i}">
+      <span class="timeline-label">${escapeHtml(p.title)}</span>
+      <div class="timeline-bar" style="flex:${flex}">
+        <span class="timeline-fill ${fillClass}" style="width:${donePct}%"></span>
+      </div>
+      <span class="timeline-count">${count}</span>
+    </div>`;
+  }).join("");
+  content.innerHTML = `<div class="timeline">${rows}</div>`;
+  document.querySelectorAll(".timeline-row").forEach(row => {
+    row.addEventListener("click", () => {
+      const idx = parseInt(row.dataset.phaseIdx, 10);
+      setView("list", phases);
+      setTimeout(() => {
+        document.getElementById(`phase-${idx}`)?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    });
+  });
 }
 
 function extractDeps() {
@@ -151,6 +181,7 @@ function renderProgressBar(phases) {
     <div class="view-toggle">
       <button data-view="list" class="active">List</button>
       <button data-view="kanban">Kanban</button>
+      <button data-view="timeline">Timeline</button>
     </div>
   `;
   document.querySelectorAll(".view-toggle button").forEach(b => {
