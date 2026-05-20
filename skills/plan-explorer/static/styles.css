@@ -289,3 +289,43 @@ a.ide-link::after { content: "↗"; font-size: 10px; margin-left: 2px; opacity: 
   font-size: 12px;
 }
 body.dark .block-warning { background: #1f0c0c; color: #fca5a5; }
+
+table.env {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+table.env td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+table.env tr:last-child td { border-bottom: none; }
+.env-comment td {
+  background: var(--hover);
+  color: var(--muted);
+  font-style: italic;
+  font-size: 12px;
+}
+.env-key { color: var(--muted); width: 200px; }
+.env-val { color: var(--text); }
+.env-mask { letter-spacing: 2px; opacity: .8; }
+.env-actions {
+  width: 70px; text-align: right;
+  white-space: nowrap;
+}
+.env-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text);
+}
+.env-actions button:hover { background: var(--hover); }

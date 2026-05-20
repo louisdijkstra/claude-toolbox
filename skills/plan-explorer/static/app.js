@@ -238,6 +238,7 @@ function renderAll(phases) {
   attachAnchors();
   runPrism();
   attachIdeLinks();
+  attachEnvControls();
   if (window.mermaid) {
     mermaid.initialize({ startOnLoad: false, theme: document.body.classList.contains("dark") ? "dark" : "default" });
     mermaid.run({ querySelector: ".mermaid" });
@@ -608,6 +609,74 @@ function renderEndpointBlock(raw) {
   return `<div class="endpoint-list">${endpoints.map(renderOneEndpoint).join("")}</div>`;
 }
 
+const ENV_SECRET_RE = /SECRET|TOKEN|PASS|KEY|CREDENTIAL|PRIVATE/i;
+
+function parseEnvBlock(raw) {
+  const rows = [];
+  let pendingComment = null;
+  for (const rawLine of raw.split("\n")) {
+    const line = rawLine.trim();
+    if (!line) { pendingComment = null; continue; }
+    if (line.startsWith("#")) { pendingComment = line.slice(1).trim(); continue; }
+    const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    let value = m[2].trim();
+    if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    const masked = ENV_SECRET_RE.test(m[1]);
+    rows.push({ comment: pendingComment, key: m[1], value, masked });
+    pendingComment = null;
+  }
+  return rows;
+}
+
+function renderEnvRow(r) {
+  const comment = r.comment
+    ? `<tr class="env-comment"><td colspan="3">${escapeHtml(r.comment)}</td></tr>`
+    : "";
+  const valueCell = r.masked
+    ? `<td class="env-val" data-masked="true"><span class="env-mask">••••••••</span><span class="env-plain" hidden>${escapeHtml(r.value)}</span></td>`
+    : `<td class="env-val"><span class="env-plain">${escapeHtml(r.value)}</span></td>`;
+  const revealBtn = r.masked
+    ? `<button class="env-reveal" type="button" aria-label="Reveal value">👁</button>`
+    : "";
+  return `${comment}<tr class="env-row" data-masked="${r.masked}"><td class="env-key">${escapeHtml(r.key)}</td>${valueCell}<td class="env-actions">${revealBtn}<button class="env-copy" type="button" aria-label="Copy value" data-value="${encodeURIComponent(r.value)}">📋</button></td></tr>`;
+}
+
+function renderEnvBlock(raw) {
+  const rows = parseEnvBlock(raw);
+  if (rows.length === 0) return `<pre class="block-warning">${escapeHtml(raw)}</pre>`;
+  return `<table class="env"><tbody>${rows.map(renderEnvRow).join("")}</tbody></table>`;
+}
+
+function attachEnvControls() {
+  document.querySelectorAll("table.env .env-reveal").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const row = btn.closest(".env-row");
+      const valCell = row.querySelector(".env-val");
+      const revealed = valCell.getAttribute("data-masked") === "false";
+      valCell.setAttribute("data-masked", revealed ? "true" : "false");
+      row.setAttribute("data-masked", revealed ? "true" : "false");
+      valCell.querySelector(".env-mask").hidden = !revealed;
+      valCell.querySelector(".env-plain").hidden = revealed;
+      btn.textContent = revealed ? "👁" : "🙈";
+    });
+  });
+  document.querySelectorAll("table.env .env-copy").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const v = decodeURIComponent(btn.dataset.value);
+      try { await navigator.clipboard.writeText(v); } catch (err) { /* ignore */ }
+      const orig = btn.textContent;
+      btn.textContent = "✓";
+      setTimeout(() => { btn.textContent = orig; }, 1200);
+    });
+  });
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -631,6 +700,9 @@ function configureMarked() {
     }
     if (lang === "endpoint") {
       return renderEndpointBlock(code);
+    }
+    if (lang === "env") {
+      return renderEnvBlock(code);
     }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;

@@ -263,3 +263,27 @@ def test_endpoint_card_method_color(page_loader):
     assert page.locator(".endpoint-path").inner_text() == "/users"
     assert "list users" in page.locator(".endpoint-desc").inner_text()
     assert page.locator(".endpoint-meta dt", has_text="params").count() == 1
+
+
+def test_env_masks_secret_key(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n```env\nPUBLIC=foo\nAPI_SECRET=bar\n```\n"
+    )
+    page.reload()
+    page.wait_for_selector("table.env")
+    rows = page.locator(".env-row")
+    assert rows.count() == 2
+    assert rows.nth(0).get_attribute("data-masked") == "false"
+    assert rows.nth(1).get_attribute("data-masked") == "true"
+
+
+def test_env_reveal_button(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\n```env\nAPI_SECRET=hunter2\n```\n")
+    page.reload()
+    page.wait_for_selector(".env-reveal")
+    page.locator(".env-reveal").click()
+    plain = page.locator(".env-plain")
+    assert plain.is_visible()
+    assert plain.inner_text() == "hunter2"
