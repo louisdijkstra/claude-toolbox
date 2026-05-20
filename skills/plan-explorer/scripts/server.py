@@ -33,6 +33,8 @@ class Handler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         if url.path == "/":
             self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
+        elif url.path.startswith("/static/"):
+            self._serve_static(url.path[len("/static/"):])
         else:
             self.send_error(404)
 
@@ -46,6 +48,30 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    _MIME = {
+        ".html": "text/html; charset=utf-8",
+        ".js":   "application/javascript",
+        ".css":  "text/css",
+        ".json": "application/json",
+        ".svg":  "image/svg+xml",
+        ".txt":  "text/plain; charset=utf-8",
+    }
+
+    def _serve_static(self, rel: str):
+        try:
+            target = (STATIC_DIR / rel).resolve()
+        except OSError:
+            self.send_error(400)
+            return
+        if STATIC_DIR not in target.parents and target != STATIC_DIR:
+            self.send_error(403)
+            return
+        if not target.is_file():
+            self.send_error(404)
+            return
+        ext = target.suffix
+        self._serve_file(target, self._MIME.get(ext, "application/octet-stream"))
 
 
 def main():

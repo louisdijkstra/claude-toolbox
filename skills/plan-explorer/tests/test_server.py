@@ -50,3 +50,33 @@ def test_wrong_token_returns_401(tmp_md, free_port):
         assert conn.getresponse().status == 401
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_static_file_served(tmp_md, free_port, tmp_path):
+    from .conftest import SKILL_DIR
+    asset = SKILL_DIR / "static" / "_probe.txt"
+    asset.write_text("hello")
+    try:
+        token = "d" * 32
+        proc = start_server(tmp_md, token, free_port)
+        try:
+            conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+            conn.request("GET", f"/static/_probe.txt?t={token}")
+            resp = conn.getresponse()
+            assert resp.status == 200
+            assert resp.read().decode() == "hello"
+        finally:
+            proc.terminate(); proc.wait(timeout=2)
+    finally:
+        asset.unlink()
+
+
+def test_path_traversal_blocked(tmp_md, free_port):
+    token = "e" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", f"/static/../../../etc/passwd?t={token}")
+        assert conn.getresponse().status in (400, 403, 404)
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
