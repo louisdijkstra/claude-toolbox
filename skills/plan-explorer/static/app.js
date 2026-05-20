@@ -17,18 +17,57 @@ function badgeLabel(s) {
   return ({done:"Done", wip:"In progress", todo:"Todo"})[s.kind];
 }
 
+function setView(view, phases) {
+  document.querySelectorAll(".view-toggle button").forEach(b => {
+    b.classList.toggle("active", b.dataset.view === view);
+  });
+  if (view === "list") {
+    renderPhases(phases);
+    attachCheckboxes(); attachCollapse(); attachScrollSpy(); attachPhaseEdit(phases);
+    attachAnchors(); wireCopyButtons();
+  } else {
+    renderKanban(phases);
+  }
+}
+
+function renderKanban(phases) {
+  const content = document.getElementById("content");
+  const cols = { todo: [], wip: [], done: [] };
+  phases.forEach(p => {
+    const text = p.body.join("");
+    [...text.matchAll(/^\s*-\s*\[([ xX])\]\s*(.*)$/gm)].forEach(m => {
+      const status = m[1].trim().toLowerCase() === "x" ? "done" : "todo";
+      cols[status].push({ title: m[2], phase: p.title });
+    });
+  });
+  content.innerHTML = `
+    <div class="kanban-board">
+      ${["todo","wip","done"].map(k => `
+        <div class="kanban-col">
+          <h5>${k}</h5>
+          ${cols[k].map(c => `<div class="kanban-card"><div class="card-phase">${escapeHtml(c.phase)}</div>${escapeHtml(c.title)}</div>`).join("")}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderProgressBar(phases) {
   if (!document.body.classList.contains("plan-mode")) return;
   let done = 0, total = 0;
-  for (const p of phases) {
-    const s = phaseStatus(p); done += s.done; total += s.total;
-  }
+  for (const p of phases) { const s = phaseStatus(p); done += s.done; total += s.total; }
   const pct = total ? Math.round(100 * done / total) : 0;
-  const meta = document.getElementById("meta");
-  meta.innerHTML = `
+  document.getElementById("meta").innerHTML = `
     <span>${done} of ${total} tasks</span>
     <div id="progress-bar" class="progress-bar"><div style="width:${pct}%"></div></div>
+    <div class="view-toggle">
+      <button data-view="list" class="active">List</button>
+      <button data-view="kanban">Kanban</button>
+    </div>
   `;
+  document.querySelectorAll(".view-toggle button").forEach(b => {
+    b.addEventListener("click", () => setView(b.dataset.view, phases));
+  });
 }
 
 function attachCheckboxes() {

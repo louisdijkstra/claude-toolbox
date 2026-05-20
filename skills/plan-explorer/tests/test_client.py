@@ -149,3 +149,13 @@ def test_mermaid_renders(page_loader):
     md.write_text("# P\n\n## A\n\n```mermaid\ngraph TD; A-->B\n```\n")
     page.reload()
     page.wait_for_selector("svg[id^='mermaid-']", timeout=4000)
+
+
+def test_kanban_toggle(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\n- [x] done one\n- [ ] todo one\n")
+    page.reload()
+    page.wait_for_selector(".view-toggle")
+    page.locator(".view-toggle button[data-view='kanban']").click()
+    page.wait_for_selector(".kanban-board")
+    assert page.locator(".kanban-card").count() == 2
