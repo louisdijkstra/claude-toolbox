@@ -5,7 +5,7 @@ let ETAG = null;
 
 const RESOLVE_CACHE = new Map();
 const IDE_LINK_RE = /\b([a-zA-Z0-9_\-./]+\.[a-zA-Z0-9]{1,8})(?::(\d+))?\b/g;
-const IDE_LINK_SCOPE = ".phase-body p, .phase-body li, .tree-file .tree-name";
+const IDE_LINK_SCOPE = ".phase-body p, .phase-body li";
 
 function phaseStatus(phase) {
   const text = phase.body.join("");
@@ -367,36 +367,36 @@ function runPrism() {
   Prism.highlightAllUnder(document.getElementById("content"));
 }
 
-const TREE_ICONS = {
-  py:"🐍", js:"📜", ts:"📘", json:"⚙️", yaml:"⚙️", yml:"⚙️", toml:"⚙️",
-  md:"📝", html:"🌐", css:"🎨", sh:"🔧", rs:"🦀", go:"🦫",
-  png:"🖼", jpg:"🖼", svg:"🖼",
-};
+const TREE_FOLDER_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z"/></svg>';
 
-function treeFileIcon(name) {
-  const ext = name.split(".").pop().toLowerCase();
-  return TREE_ICONS[ext] || "📄";
-}
+const TREE_FILE_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 
 function parseTreeLines(raw) {
-  // Returns an array of { depth, name, isDir }
-  // Strips connector chars: ├ └ │ ─ and counts indent based on
-  // the column where the leaf name starts.
+  // Each entry: { depth, name, isDir }
+  // Depth derived from the column where the connector (├ or └) appears.
+  // Lines with no connector are treated as depth 0 (root entries).
   const out = [];
   const lines = raw.split("\n").filter(l => l.trim().length > 0);
   for (const line of lines) {
-    // Strip everything up to and including the last connector run
-    const match = line.match(/^([│\s]*)(?:[├└][─\s]+)?(.+)$/);
-    if (!match) continue;
-    const prefix = match[1];
-    const name = match[2].trim();
+    const withConnector = line.match(/^([│ ]*?)([├└])[─\s]+(.+)$/);
+    let depth, name;
+    if (withConnector) {
+      depth = Math.floor(withConnector[1].length / 4) + 1;
+      name = withConnector[3].trim();
+    } else {
+      depth = 0;
+      name = line.trim();
+    }
     if (!name) continue;
-    // Depth = number of `│   ` or 4-space columns in the prefix
-    const depth = Math.floor(prefix.replace(/[│]/g, " ").length / 4);
     const isDir = name.endsWith("/");
     out.push({ depth, name: isDir ? name.slice(0, -1) : name, isDir });
   }
   return out;
+}
+
+function fileExt(name) {
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(dot + 1).toLowerCase() : "";
 }
 
 function renderTreeBlock(raw) {
@@ -404,26 +404,24 @@ function renderTreeBlock(raw) {
   if (entries.length === 0) {
     return `<pre class="tree-warning">${escapeHtml(raw)}</pre>`;
   }
-  // Build nested HTML by walking entries and tracking depth stack
   let html = '<ul class="tree" role="tree">';
-  let lastDepth = -1;
-  const openTags = [];
+  const openDepths = [];  // stack of currently-open directory depths
   for (const e of entries) {
-    while (lastDepth >= e.depth) {
-      html += openTags.pop() === "li" ? "</li>" : "</ul></li>";
-      lastDepth--;
+    while (openDepths.length > 0 && openDepths[openDepths.length - 1] >= e.depth) {
+      html += "</ul></li>";
+      openDepths.pop();
     }
     if (e.isDir) {
-      html += `<li class="tree-dir" aria-expanded="true"><span class="tree-toggle"></span><span class="tree-name">${escapeHtml(e.name)}/</span><ul>`;
-      openTags.push("li", "ul");
-      lastDepth = e.depth;
+      html += `<li class="tree-dir" aria-expanded="true"><div class="tree-row"><span class="tree-toggle"></span><span class="tree-icon">${TREE_FOLDER_SVG}</span><span class="tree-name">${escapeHtml(e.name)}/</span></div><ul>`;
+      openDepths.push(e.depth);
       continue;
     }
-    html += `<li class="tree-file" data-path="${escapeHtml(e.name)}"><span class="tree-icon">${treeFileIcon(e.name)}</span><span class="tree-name">${escapeHtml(e.name)}</span></li>`;
-    lastDepth = e.depth;
+    const ext = fileExt(e.name);
+    html += `<li class="tree-file" data-ext="${escapeHtml(ext)}" data-path="${escapeHtml(e.name)}"><div class="tree-row"><span class="tree-icon">${TREE_FILE_SVG}</span><span class="tree-name">${escapeHtml(e.name)}</span></div></li>`;
   }
-  while (openTags.length) {
-    html += openTags.pop() === "li" ? "</li>" : "</ul></li>";
+  while (openDepths.length > 0) {
+    html += "</ul></li>";
+    openDepths.pop();
   }
   html += "</ul>";
   return html;
@@ -517,10 +515,10 @@ async function attachIdeLinks() {
 }
 
 function attachTreeToggles() {
-  document.querySelectorAll(".tree-dir > .tree-toggle").forEach(t => {
-    t.addEventListener("click", (e) => {
+  document.querySelectorAll(".tree-dir > .tree-row").forEach(row => {
+    row.addEventListener("click", (e) => {
       e.stopPropagation();
-      const li = t.parentElement;
+      const li = row.parentElement;
       li.setAttribute("aria-expanded", li.getAttribute("aria-expanded") === "true" ? "false" : "true");
     });
   });
