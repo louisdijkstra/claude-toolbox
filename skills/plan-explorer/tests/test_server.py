@@ -192,3 +192,27 @@ def test_sse_suppresses_after_own_put(tmp_md, free_port):
         assert "change" not in line, f"unexpected event: {line}"
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_sse_emits_gone_on_delete(tmp_md, free_port):
+    token = "l" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        events = []
+
+        def reader():
+            conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=3)
+            conn.request("GET", f"/events?t={token}")
+            resp = conn.getresponse()
+            for _ in range(20):
+                line = resp.fp.readline().decode()
+                if line.startswith("data:"):
+                    events.append(line); return
+
+        t = threading.Thread(target=reader, daemon=True); t.start()
+        time.sleep(0.4)
+        tmp_md.unlink()
+        t.join(timeout=3)
+        assert any("gone" in e for e in events), events
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
