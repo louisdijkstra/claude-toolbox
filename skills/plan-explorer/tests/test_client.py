@@ -142,3 +142,10 @@ def test_doc_mode_nested_toc(page_loader):
     sub = page.locator(".nav-sub").all_text_contents()
     assert "A.1" in "".join(sub)
     assert "B.1" in "".join(sub)
+
+
+def test_mermaid_renders(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\n```mermaid\ngraph TD; A-->B\n```\n")
+    page.reload()
+    page.wait_for_selector("svg[id^='mermaid-']", timeout=4000)

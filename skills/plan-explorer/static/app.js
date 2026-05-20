@@ -181,6 +181,10 @@ function renderAll(phases) {
   attachPhaseEdit(phases);
   wireCopyButtons();
   attachAnchors();
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: false, theme: document.body.classList.contains("dark") ? "dark" : "default" });
+    mermaid.run({ querySelector: ".mermaid" });
+  }
 }
 
 function parsePhases(src) {
@@ -302,6 +306,9 @@ function configureMarked() {
     return origBlockquote(quote);
   };
   renderer.code = (code, lang) => {
+    if (lang === "mermaid") {
+      return `<div class="mermaid">${escapeHtml(code)}</div>`;
+    }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="lang-${lang||'plain'}">${safe}</code></pre>`;
   };
