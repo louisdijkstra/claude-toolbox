@@ -131,3 +131,28 @@ This depends on Task 1.
 ### Task 3
 
 This requires Task 2 and Task 1.
+
+## Footnotes Demo
+
+The Plan Explorer v1.4[^1] supports inline footnotes[^2] and automatic reference linking. Footnotes enhance documentation by providing supplementary information without cluttering the main text.
+
+[^1]: Released in May 2026.
+[^2]: Each footnote is a reference link that users can hover or click to see the content.
+
+## Image Gallery
+
+This gallery demonstrates multiple inline images rendered as a responsive grid. Click any image to open the lightbox viewer.
+
+![Mountain landscape](/static/img/mountain.jpg) ![Forest trees](/static/img/forest.jpg) ![Ocean waves](/static/img/ocean.jpg)
+
+## Glossary
+
+**Adaptive**: Adjusting behavior based on user preferences or system state.
+
+**Cache**: A storage layer that holds frequently accessed data for quick retrieval.
+
+**Declarative**: Specifying what should happen rather than how it should happen.
+
+**Ephemeral**: Lasting only a short time; temporary by nature.
+
+**Memoization**: Storing computed results to avoid recalculation.
