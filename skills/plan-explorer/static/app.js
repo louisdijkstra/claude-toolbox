@@ -56,6 +56,46 @@ function renderKanban(phases) {
   `;
 }
 
+function extractDeps() {
+  const edges = [];
+  const depRe = /(?:depends on|requires)\s+Task\s+(\d+)/gi;
+  const taskHeadRe = /^###\s+Task\s+(\d+)/gm;
+  const headings = [...SRC.matchAll(taskHeadRe)].map(m => ({
+    num: parseInt(m[1], 10),
+    start: m.index,
+  }));
+  for (let i = 0; i < headings.length; i++) {
+    const start = headings[i].start;
+    const end = i + 1 < headings.length ? headings[i + 1].start : SRC.length;
+    const block = SRC.slice(start, end);
+    const num = headings[i].num;
+    for (const m of block.matchAll(depRe)) {
+      edges.push({ from: parseInt(m[1], 10), to: num });
+    }
+  }
+  return edges;
+}
+
+function renderDepGraph(edges) {
+  if (edges.length === 0) return "";
+  const lines = ["graph LR"];
+  for (const e of edges) lines.push(`  T${e.from} --> T${e.to}`);
+  return `<div class="dep-graph-card"><header class="dep-graph-head">Task dependencies</header><div class="mermaid">${escapeHtml(lines.join("\n"))}</div></div>`;
+}
+
+function attachDepGraphNodes() {
+  document.querySelectorAll(".dep-graph-card .mermaid g.node").forEach(node => {
+    const label = (node.textContent || "").trim();
+    const m = label.match(/^T(\d+)$/);
+    if (!m) return;
+    node.style.cursor = "pointer";
+    node.addEventListener("click", () => {
+      const target = document.getElementById(`task-${m[1]}`);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
 function renderProgressBar(phases) {
   if (!document.body.classList.contains("plan-mode")) return;
   let done = 0, total = 0;
@@ -240,9 +280,16 @@ function renderAll(phases) {
   attachIdeLinks();
   attachEnvControls();
   attachRiskChips();
+
+  const edges = document.body.classList.contains("plan-mode") ? extractDeps() : [];
+  if (edges.length > 0) {
+    document.getElementById("content").insertAdjacentHTML("afterbegin", renderDepGraph(edges));
+  }
+
   if (window.mermaid) {
     mermaid.initialize({ startOnLoad: false, theme: document.body.classList.contains("dark") ? "dark" : "default" });
     mermaid.run({ querySelector: ".mermaid" });
+    if (edges.length > 0) attachDepGraphNodes();
   }
 }
 
@@ -861,6 +908,14 @@ function attachAnchors() {
       const a = document.createElement("a");
       a.className = "anchor"; a.href = "#" + h.id; a.textContent = "#";
       h.appendChild(a);
+    }
+    const taskMatch = h.textContent.match(/^Task\s+(\d+)/);
+    if (taskMatch && !document.getElementById(`task-${taskMatch[1]}`)) {
+      const alias = document.createElement("span");
+      alias.id = `task-${taskMatch[1]}`;
+      alias.style.position = "absolute";
+      alias.style.top = "-80px";
+      h.parentElement.insertBefore(alias, h);
     }
   });
 }

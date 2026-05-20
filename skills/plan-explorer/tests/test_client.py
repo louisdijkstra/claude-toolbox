@@ -319,3 +319,15 @@ def test_deps_badges_with_links(page_loader):
     pypi_href = page.locator(".dep[data-eco='pypi']").first.get_attribute("href")
     assert npm_href == "https://npmjs.com/package/react"
     assert pypi_href == "https://pypi.org/project/fastapi/"
+
+
+def test_dep_graph_auto_extracts(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## Phase 1\n\n### Task 1\nbase work\n\n"
+        "### Task 2\n- [ ] work item\n\ndepends on Task 1\n\n"
+        "### Task 3\nrequires Task 2\n"
+    )
+    page.reload()
+    page.wait_for_selector(".dep-graph-card .mermaid")
+    page.wait_for_selector(".dep-graph-card svg", timeout=4000)

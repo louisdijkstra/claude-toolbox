@@ -437,3 +437,29 @@ body.dark .risk-sev-high { background: #2a0e10; }
 .dep[data-eco='crates'] .dep-name { color: #c47e3a; }
 .dep[data-eco='go']     { border-left-color: #00add8; }
 .dep[data-eco='go']     .dep-name { color: #00add8; }
+.dep-graph-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 0 0 18px;
+}
+.dep-graph-head {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+.dep-graph-card .mermaid {
+  background: transparent;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+.dep-graph-card .mermaid g.node {
+  transition: opacity .12s;
+}
+.dep-graph-card .mermaid g.node:hover {
+  opacity: .75;
+}
