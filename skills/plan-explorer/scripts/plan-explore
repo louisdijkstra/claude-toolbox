@@ -3,14 +3,31 @@
 """Launch the Plan Explorer browser UI for a markdown file."""
 
 import argparse
+import secrets
+import socket
 import sys
 from pathlib import Path
+
+PORT_RANGE = range(51000, 51101)
+
+
+def pick_port(preferred: int | None) -> int:
+    candidates = [preferred] if preferred and preferred > 0 else list(PORT_RANGE)
+    for p in candidates:
+        with socket.socket() as s:
+            try:
+                s.bind(("127.0.0.1", p))
+                return s.getsockname()[1]
+            except OSError:
+                continue
+    print("error: no free port in 51000-51100", file=sys.stderr)
+    sys.exit(1)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Open a markdown plan in the browser")
     parser.add_argument("path", help="path to the .md file")
-    parser.add_argument("--port", type=int, help="override port (default: pick free 51000-51100)")
+    parser.add_argument("--port", type=int, default=0, help="override port (0 = pick free)")
     parser.add_argument("--no-open", action="store_true", help="skip opening browser")
     args = parser.parse_args()
 
@@ -22,8 +39,12 @@ def main():
         print(f"error: expected a .md file, got {path.suffix}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"validated: {path}")
-    # next task: spawn server
+    port = pick_port(args.port if args.port > 0 else None)
+    token = secrets.token_hex(16)
+    url = f"http://127.0.0.1:{port}/?t={token}"
+    print(f"plan-explore serving {path}")
+    print(f"url: {url}")
+    # next task: spawn server.py with (path, token, port)
 
 
 if __name__ == "__main__":
