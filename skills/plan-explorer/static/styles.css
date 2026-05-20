@@ -110,3 +110,6 @@ body.dark tbody tr:nth-child(even) { background: rgba(255,255,255,.03); }
 .anchor { margin-left: 8px; color: var(--muted); text-decoration: none;
           opacity: 0; font-weight: 400; }
 .phase h2:hover .anchor, .phase h3:hover .anchor { opacity: 1; }
+.nav-sub { display: block; padding: 4px 10px 4px 42px; font-size: 13px;
+           color: var(--muted); text-decoration: none; }
+.nav-sub:hover { color: var(--text); }

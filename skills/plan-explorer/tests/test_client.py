@@ -130,3 +130,15 @@ def test_tables_and_anchors(page_loader):
     assert page.locator("table th").count() == 2
     h2_id = page.locator(".phase h2").first.get_attribute("id")
     assert h2_id is not None
+
+
+def test_doc_mode_nested_toc(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# Doc\n\n## A\n\n### A.1\n### A.2\n\n## B\n\n### B.1\n"
+    )
+    page.reload()
+    page.wait_for_selector(".nav-item")
+    sub = page.locator(".nav-sub").all_text_contents()
+    assert "A.1" in "".join(sub)
+    assert "B.1" in "".join(sub)

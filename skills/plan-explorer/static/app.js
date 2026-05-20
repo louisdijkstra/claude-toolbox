@@ -240,6 +240,7 @@ function renderPhases(phases) {
 function renderSidebar(phases) {
   const side = document.getElementById("sidebar");
   side.replaceChildren();
+  const isDoc = document.body.classList.contains("doc-mode");
   phases.forEach((p, i) => {
     const s = phaseStatus(p);
     const item = document.createElement("a");
@@ -248,7 +249,22 @@ function renderSidebar(phases) {
     const frac = s.total ? `<span class="frac">${s.done}/${s.total}</span>` : "";
     item.innerHTML = `<div class="pill ${s.kind}">${i+1}</div><span>${escapeHtml(p.title)}</span>${frac}`;
     side.appendChild(item);
+    if (isDoc) {
+      const subs = phaseH3s(p);
+      subs.forEach(h3 => {
+        const sub = document.createElement("a");
+        sub.className = "nav-sub";
+        sub.href = "#" + slug(h3);
+        sub.textContent = h3;
+        side.appendChild(sub);
+      });
+    }
   });
+}
+
+function phaseH3s(phase) {
+  const text = phase.body.join("");
+  return [...text.matchAll(/^###\s+(.+)$/gm)].map(m => m[1].trim());
 }
 
 function attachScrollSpy() {
