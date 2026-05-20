@@ -545,3 +545,23 @@ svg.cross-ref-graph .mini-arc {
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+.gloss-term {
+  border-bottom: 1px dotted var(--muted);
+  cursor: help;
+}
+#gloss-popover, #fn-popover {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  max-width: 320px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  z-index: 200;
+  pointer-events: none;
+}
+#gloss-popover[hidden], #fn-popover[hidden] { display: none; }

@@ -379,3 +379,16 @@ def test_minimap_strips_match_phases(page_loader):
     page.reload()
     page.wait_for_selector("#minimap .mini-strip")
     assert page.locator("#minimap .mini-strip").count() == 2
+
+
+def test_glossary_wraps_terms_and_hides_section(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## Intro\n\nThe SSE stream uses mtime polling.\n\n"
+        "## Glossary\n\n**SSE** — server-sent events.\n**mtime** — file modification time.\n"
+    )
+    page.reload()
+    page.wait_for_selector(".gloss-term")
+    assert page.locator(".gloss-term").count() == 2
+    titles = page.locator(".phase h2").all_text_contents()
+    assert "Glossary" not in " ".join(titles)

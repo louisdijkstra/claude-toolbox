@@ -275,7 +275,12 @@ function showConflict() {
     SRC = body; ETAG = etag;
     const { preludeRaw, phases } = parsePhases(body);
     window.PRELUDE_RAW = preludeRaw;
-    renderAll(phases);
+    const { terms, glossaryPhaseIdx } = parseGlossary(phases);
+    window.GLOSSARY_TERMS = terms;
+    const renderedPhases = glossaryPhaseIdx === -1
+      ? phases
+      : phases.filter((_, i) => i !== glossaryPhaseIdx);
+    renderAll(renderedPhases);
   });
   modal.querySelector("#conflict-force").addEventListener("click", async () => {
     modal.hidden = true;
@@ -398,6 +403,88 @@ function attachMinimap() {
   });
 }
 
+function parseGlossary(phases) {
+  const idx = phases.findIndex(p => p.title.toLowerCase().trim() === "glossary");
+  if (idx === -1) return { terms: [], glossaryPhaseIdx: -1 };
+  const body = phases[idx].body.join("");
+  const terms = [];
+  for (const m of body.matchAll(/\*\*([^*]+)\*\*\s*[—\-:]\s*(.+)/g)) {
+    terms.push({ term: m[1].trim(), definition: m[2].trim() });
+  }
+  return { terms, glossaryPhaseIdx: idx };
+}
+
+function buildGlossRegex(terms) {
+  if (terms.length === 0) return null;
+  const escaped = terms.map(t => t.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .sort((a, b) => b.length - a.length);
+  return new RegExp(`\\b(${escaped.join("|")})\\b`, "g");
+}
+
+function walkAndWrap(root, regex, defs, wrapClass) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+  for (const node of nodes) {
+    if (insideExcludedAncestor(node)) continue;
+    const text = node.nodeValue;
+    regex.lastIndex = 0;
+    const matches = [...text.matchAll(regex)];
+    if (matches.length === 0) continue;
+    const frag = document.createDocumentFragment();
+    let cursor = 0;
+    for (const m of matches) {
+      const start = m.index;
+      const end = start + m[0].length;
+      if (start > cursor) frag.appendChild(document.createTextNode(text.slice(cursor, start)));
+      const span = document.createElement("span");
+      span.className = wrapClass;
+      span.tabIndex = 0;
+      span.textContent = m[0];
+      span.dataset.definition = defs.get(m[1]) || defs.get(m[0]) || "";
+      frag.appendChild(span);
+      cursor = end;
+    }
+    if (cursor < text.length) frag.appendChild(document.createTextNode(text.slice(cursor)));
+    node.parentNode.replaceChild(frag, node);
+  }
+}
+
+function ensureGlossPopover() {
+  if (document.getElementById("gloss-popover")) return;
+  const pop = document.createElement("div");
+  pop.id = "gloss-popover";
+  pop.hidden = true;
+  pop.setAttribute("role", "tooltip");
+  document.body.appendChild(pop);
+  const show = (e) => {
+    const t = e.target.closest(".gloss-term");
+    if (!t) return;
+    pop.textContent = t.dataset.definition || "";
+    pop.hidden = false;
+    const r = t.getBoundingClientRect();
+    pop.style.left = `${window.scrollX + r.left + r.width / 2}px`;
+    pop.style.top = `${window.scrollY + r.top - 8}px`;
+  };
+  const hide = (e) => { if (e.target.closest(".gloss-term")) pop.hidden = true; };
+  document.addEventListener("mouseover", show);
+  document.addEventListener("focusin", show);
+  document.addEventListener("mouseout", hide);
+  document.addEventListener("focusout", hide);
+}
+
+function attachGlossaryPopovers(terms) {
+  if (!terms || terms.length === 0) return;
+  const regex = buildGlossRegex(terms);
+  if (!regex) return;
+  const defs = new Map(terms.map(t => [t.term, t.definition]));
+  document.querySelectorAll(".phase-body p, .phase-body li").forEach(el => {
+    walkAndWrap(el, regex, defs, "gloss-term");
+  });
+  ensureGlossPopover();
+}
+
 function renderAll(phases) {
   renderPhases(phases);
   renderSidebar(phases);
@@ -412,6 +499,7 @@ function renderAll(phases) {
   ensureXrefClickHandler();
   runPrism();
   attachIdeLinks();
+  attachGlossaryPopovers(window.GLOSSARY_TERMS || []);
   attachEnvControls();
   attachRiskChips();
 
@@ -1114,6 +1202,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.PRELUDE_RAW = preludeRaw;
     const h1 = prelude.find(t => t.type === "heading" && t.depth === 1);
     document.getElementById("title").textContent = h1 ? h1.text : "Plan";
+    const { terms, glossaryPhaseIdx } = parseGlossary(phases);
+    window.GLOSSARY_TERMS = terms;
+    const renderedPhases = glossaryPhaseIdx === -1
+      ? phases
+      : phases.filter((_, i) => i !== glossaryPhaseIdx);
 
     const draft = localStorage.getItem(draftKey());
     if (draft && draft !== body) {
@@ -1125,7 +1218,12 @@ window.addEventListener("DOMContentLoaded", async () => {
           SRC = fresh.body; ETAG = fresh.etag;
           const { preludeRaw, phases: freshPhases } = parsePhases(fresh.body);
           window.PRELUDE_RAW = preludeRaw;
-          return renderAll(freshPhases);
+          const { terms: freshTerms, glossaryPhaseIdx: freshGlossIdx } = parseGlossary(freshPhases);
+          window.GLOSSARY_TERMS = freshTerms;
+          const freshRenderedPhases = freshGlossIdx === -1
+            ? freshPhases
+            : freshPhases.filter((_, i) => i !== freshGlossIdx);
+          return renderAll(freshRenderedPhases);
         }
       } else {
         clearDraft();
@@ -1135,7 +1233,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const isPlan = /^\s*-\s*\[[ xX]\]/m.test(body);
     document.body.classList.add(isPlan ? "plan-mode" : "doc-mode");
 
-    renderAll(phases);
+    renderAll(renderedPhases);
     connectSSE();
   } catch (e) {
     document.getElementById("title").textContent = "Failed to load";
@@ -1157,7 +1255,12 @@ function connectSSE() {
         SRC = body; ETAG = etag;
         const { preludeRaw, phases } = parsePhases(body);
         window.PRELUDE_RAW = preludeRaw;
-        renderAll(phases);
+        const { terms, glossaryPhaseIdx } = parseGlossary(phases);
+        window.GLOSSARY_TERMS = terms;
+        const renderedPhases = glossaryPhaseIdx === -1
+          ? phases
+          : phases.filter((_, i) => i !== glossaryPhaseIdx);
+        renderAll(renderedPhases);
       } else if (data.type === "gone") {
         toast("file removed from disk; saves disabled");
         document.body.classList.add("file-gone");
