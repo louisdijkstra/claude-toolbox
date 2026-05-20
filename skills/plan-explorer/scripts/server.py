@@ -51,6 +51,12 @@ class Handler(BaseHTTPRequestHandler):
         if url.path != "/plan":
             self.send_error(404)
             return
+        if_match = self.headers.get("If-Match")
+        if if_match:
+            current_etag = f'"{State.plan_path.stat().st_mtime_ns}"'
+            if if_match != current_etag:
+                self.send_error(412, "etag mismatch")
+                return
         length = int(self.headers.get("Content-Length") or 0)
         if length > self.MAX_BODY:
             self.send_error(413, "plan too large")

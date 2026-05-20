@@ -113,3 +113,31 @@ def test_put_plan_writes_atomically(tmp_md, free_port):
         assert tmp_md.read_text() == new_body
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_put_stale_etag_returns_412(tmp_md, free_port):
+    token = "h" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("PUT", f"/plan?t={token}", body="x",
+                     headers={"If-Match": '"0"'})
+        assert conn.getresponse().status == 412
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
+
+
+def test_put_size_limit_returns_413(tmp_md, free_port):
+    token = "i" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        body = "x" * (6 * 1024 * 1024)
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        try:
+            conn.request("PUT", f"/plan?t={token}", body=body)
+            assert conn.getresponse().status == 413
+        except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected):
+            # Server closes connection when body is too large
+            pass
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
