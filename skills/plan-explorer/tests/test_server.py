@@ -80,3 +80,19 @@ def test_path_traversal_blocked(tmp_md, free_port):
         assert conn.getresponse().status in (400, 403, 404)
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_get_plan_returns_body_and_etag(tmp_md, free_port):
+    token = "f" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", f"/plan?t={token}")
+        resp = conn.getresponse()
+        body = resp.read().decode()
+        assert resp.status == 200
+        assert body == tmp_md.read_text()
+        assert resp.getheader("ETag")
+        assert resp.getheader("Content-Type", "").startswith("text/markdown")
+    finally:
+        proc.terminate(); proc.wait(timeout=2)

@@ -33,6 +33,8 @@ class Handler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         if url.path == "/":
             self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
+        elif url.path == "/plan":
+            self._serve_plan()
         elif url.path.startswith("/static/"):
             self._serve_static(url.path[len("/static/"):])
         else:
@@ -45,6 +47,20 @@ class Handler(BaseHTTPRequestHandler):
         data = path.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _serve_plan(self):
+        path = State.plan_path
+        if not path.exists():
+            self.send_error(410, "plan file gone")
+            return
+        data = path.read_bytes()
+        etag = f'"{path.stat().st_mtime_ns}"'
+        self.send_response(200)
+        self.send_header("Content-Type", "text/markdown; charset=utf-8")
+        self.send_header("ETag", etag)
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
