@@ -179,6 +179,7 @@ function renderAll(phases) {
   attachCollapse();
   attachScrollSpy();
   attachPhaseEdit(phases);
+  wireCopyButtons();
 }
 
 function parsePhases(src) {
@@ -283,7 +284,21 @@ function configureMarked() {
     }
     return origBlockquote(quote);
   };
+  renderer.code = (code, lang) => {
+    const safe = escapeHtml(code);
+    return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="lang-${lang||'plain'}">${safe}</code></pre>`;
+  };
   marked.use({ renderer });
+}
+
+function wireCopyButtons() {
+  document.querySelectorAll("pre .copy-btn").forEach(b => {
+    b.addEventListener("click", async () => {
+      const code = decodeURIComponent(b.dataset.code);
+      await navigator.clipboard.writeText(code);
+      b.textContent = "copied"; setTimeout(() => b.textContent = "copy", 1200);
+    });
+  });
 }
 
 window.addEventListener("DOMContentLoaded", async () => {

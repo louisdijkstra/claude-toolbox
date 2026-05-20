@@ -110,3 +110,10 @@ def test_callouts_styled(page_loader):
     page.wait_for_selector(".callout.note")
     assert page.locator(".callout.note").count() == 1
     assert page.locator(".callout.warning").count() == 1
+
+
+def test_code_copy_button(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\n```python\nprint('hi')\n```\n")
+    page.reload()
+    page.wait_for_selector("pre .copy-btn")
