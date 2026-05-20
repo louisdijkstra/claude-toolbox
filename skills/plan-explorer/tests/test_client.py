@@ -331,3 +331,14 @@ def test_dep_graph_auto_extracts(page_loader):
     page.reload()
     page.wait_for_selector(".dep-graph-card .mermaid")
     page.wait_for_selector(".dep-graph-card svg", timeout=4000)
+
+
+def test_xref_renders_link_and_jumps(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## Phase 1\n\nsee [[Phase 2]] for details\n\n## Phase 2\n\nx\n"
+    )
+    page.reload()
+    page.wait_for_selector("a.xref")
+    href = page.locator("a.xref").first.get_attribute("href")
+    assert href == "#phase-2"

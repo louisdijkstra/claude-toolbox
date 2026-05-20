@@ -276,6 +276,7 @@ function renderAll(phases) {
   wireCopyButtons();
   attachTreeToggles();
   attachAnchors();
+  ensureXrefClickHandler();
   runPrism();
   attachIdeLinks();
   attachEnvControls();
@@ -887,6 +888,25 @@ function configureMarked() {
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;
   };
   marked.use({ renderer });
+  marked.use({
+    extensions: [{
+      name: "wikilink",
+      level: "inline",
+      start(src) {
+        const i = src.indexOf("[[");
+        return i < 0 ? undefined : i;
+      },
+      tokenizer(src) {
+        const m = src.match(/^\[\[(Phase|Task)\s+(\d+)\]\]/);
+        if (!m) return;
+        return { type: "wikilink", raw: m[0], kind: m[1], num: m[2] };
+      },
+      renderer(t) {
+        const slug = `${t.kind.toLowerCase()}-${t.num}`;
+        return `<a class="xref" href="#${slug}" data-xref-kind="${t.kind}" data-xref-num="${t.num}">${t.kind} ${t.num}</a>`;
+      },
+    }],
+  });
 }
 
 function wireCopyButtons() {
@@ -896,6 +916,22 @@ function wireCopyButtons() {
       await navigator.clipboard.writeText(code);
       b.textContent = "copied"; setTimeout(() => b.textContent = "copy", 1200);
     });
+  });
+}
+
+function ensureXrefClickHandler() {
+  if (window.__xrefBound) return;
+  window.__xrefBound = true;
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a.xref");
+    if (!a) return;
+    e.preventDefault();
+    const kind = a.dataset.xrefKind;
+    const num = parseInt(a.dataset.xrefNum, 10);
+    let target = null;
+    if (kind === "Task") target = document.getElementById(`task-${num}`);
+    else if (kind === "Phase") target = document.querySelectorAll(".phase")[num - 1];
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
 
