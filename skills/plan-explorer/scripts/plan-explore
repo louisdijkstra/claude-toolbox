@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# ~/.claude/skills/plan-explorer/scripts/plan-explore
+"""Launch the Plan Explorer browser UI for a markdown file."""
+
+import argparse
+import sys
+from pathlib import Path
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Open a markdown plan in the browser")
+    parser.add_argument("path", help="path to the .md file")
+    parser.add_argument("--port", type=int, help="override port (default: pick free 51000-51100)")
+    parser.add_argument("--no-open", action="store_true", help="skip opening browser")
+    args = parser.parse_args()
+
+    path = Path(args.path).expanduser().resolve()
+    if not path.exists():
+        print(f"error: file not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    if path.suffix != ".md":
+        print(f"error: expected a .md file, got {path.suffix}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"validated: {path}")
+    # next task: spawn server
+
+
+if __name__ == "__main__":
+    main()
