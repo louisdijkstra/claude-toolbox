@@ -216,3 +216,41 @@ def test_sse_emits_gone_on_delete(tmp_md, free_port):
         assert any("gone" in e for e in events), events
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_static_requires_token(tmp_md, free_port):
+    """Static files must not bypass token check."""
+    from .conftest import SKILL_DIR
+    asset = SKILL_DIR / "static" / "_probe2.txt"
+    asset.write_text("secret")
+    try:
+        token = "m" * 32
+        proc = start_server(tmp_md, token, free_port)
+        try:
+            conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+            conn.request("GET", "/static/_probe2.txt")  # no token
+            assert conn.getresponse().status == 401
+        finally:
+            proc.terminate(); proc.wait(timeout=2)
+    finally:
+        asset.unlink()
+
+
+def test_cookie_carries_token_for_static(tmp_md, free_port):
+    """First GET sets cookie; subsequent /static/ requests use cookie."""
+    token = "n" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        # initial GET / with token sets cookie
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", f"/?t={token}")
+        resp = conn.getresponse()
+        cookie = resp.getheader("Set-Cookie") or ""
+        assert "pe_t=" in cookie and token in cookie
+        resp.read()
+        # second GET /static/* using just the cookie, no query token
+        conn2 = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn2.request("GET", "/static/styles.css", headers={"Cookie": f"pe_t={token}"})
+        assert conn2.getresponse().status == 200
+    finally:
+        proc.terminate(); proc.wait(timeout=2)

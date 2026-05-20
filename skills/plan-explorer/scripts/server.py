@@ -23,26 +23,37 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write("[server] " + fmt % args + "\n")
 
     def _check_token(self) -> bool:
+        # query param ?t=
         qs = parse_qs(urlparse(self.path).query)
-        provided = (qs.get("t") or [None])[0] or self.headers.get("X-Auth-Token")
+        provided = (qs.get("t") or [None])[0]
+        # header X-Auth-Token
+        if not provided:
+            provided = self.headers.get("X-Auth-Token")
+        # cookie pe_t=
+        if not provided:
+            cookie_header = self.headers.get("Cookie", "")
+            for pair in cookie_header.split(";"):
+                k, _, v = pair.strip().partition("=")
+                if k == "pe_t":
+                    provided = v
+                    break
         if provided != State.token:
             self.send_error(401, "auth required")
             return False
         return True
 
     def do_GET(self):
-        url = urlparse(self.path)
-        if url.path.startswith("/static/"):
-            self._serve_static(url.path[len("/static/"):])
-            return
         if not self._check_token():
             return
+        url = urlparse(self.path)
         if url.path == "/":
-            self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
+            self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8", set_cookie=True)
         elif url.path == "/plan":
             self._serve_plan()
         elif url.path == "/events":
             self._stream_events()
+        elif url.path.startswith("/static/"):
+            self._serve_static(url.path[len("/static/"):])
         else:
             self.send_error(404)
 
@@ -77,7 +88,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", "0")
         self.end_headers()
 
-    def _serve_file(self, path: Path, content_type: str):
+    def _serve_file(self, path: Path, content_type: str, set_cookie: bool = False):
         if not path.exists():
             self.send_error(404)
             return
@@ -85,6 +96,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
+        if set_cookie:
+            self.send_header(
+                "Set-Cookie",
+                f"pe_t={State.token}; Path=/; HttpOnly; SameSite=Strict"
+            )
         self.end_headers()
         self.wfile.write(data)
 
