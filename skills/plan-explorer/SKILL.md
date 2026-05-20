@@ -26,3 +26,14 @@ User can edit blocks click-to-edit; changes save to the original `.md` file.
 - One file per session
 - Chromium-based browsers and Firefox supported (Safari best-effort)
 - Server binds 127.0.0.1 only; not for remote access
+
+## Manual Acceptance Test
+
+Run from a clean shell:
+
+1. `~/.claude/skills/plan-explorer/scripts/plan-explore ~/.claude/skills/plan-explorer/tests/fixtures/plan.md`
+2. Browser opens to the URL printed. Three phases visible with badges (Done / In progress / Todo).
+3. Click a checkbox → reload page → state persisted.
+4. Open the file in your IDE; change a heading; save. Browser updates within 2s.
+5. Click a phase body → edit text → click outside. Reopen in IDE; edit reflected on disk.
+6. Press Ctrl-C in the launcher terminal. No `python` orphan processes remain (`ps aux | grep server.py`).
