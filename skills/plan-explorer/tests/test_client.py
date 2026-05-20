@@ -188,3 +188,10 @@ def test_offline_edit_recovery(page_loader):
         "() => localStorage.getItem('plan-explorer:draft:' + location.pathname) || ''"
     )
     assert "draft-unsaved" in stored
+
+
+def test_syntax_highlight_python(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\n```python\ndef hi(): pass\n```\n")
+    page.reload()
+    page.wait_for_selector(".language-python .token.keyword")

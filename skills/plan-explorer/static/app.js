@@ -231,6 +231,7 @@ function renderAll(phases) {
   attachPhaseEdit(phases);
   wireCopyButtons();
   attachAnchors();
+  runPrism();
   if (window.mermaid) {
     mermaid.initialize({ startOnLoad: false, theme: document.body.classList.contains("dark") ? "dark" : "default" });
     mermaid.run({ querySelector: ".mermaid" });
@@ -355,6 +356,11 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
+function runPrism() {
+  if (!window.Prism) return;
+  Prism.highlightAllUnder(document.getElementById("content"));
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -371,7 +377,7 @@ function configureMarked() {
       return `<div class="mermaid">${escapeHtml(code)}</div>`;
     }
     const safe = escapeHtml(code);
-    return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="lang-${lang||'plain'}">${safe}</code></pre>`;
+    return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;
   };
   marked.use({ renderer });
 }
