@@ -103,7 +103,7 @@ class Handler(BaseHTTPRequestHandler):
         if set_cookie:
             self.send_header(
                 "Set-Cookie",
-                f"pe_t={State.token}; Path=/; HttpOnly; SameSite=Strict"
+                f"pe_t={State.token}; Path=/; HttpOnly; SameSite=Lax"
             )
         self.end_headers()
         self.wfile.write(data)
