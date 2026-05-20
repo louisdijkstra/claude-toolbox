@@ -246,3 +246,20 @@ def test_ide_link_not_inside_code(page_loader):
     page.reload()
     page.wait_for_selector(".phase-body")
     assert page.locator("code a.ide-link").count() == 0
+
+
+def test_endpoint_card_method_color(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n```endpoint\n"
+        "GET /users\n"
+        "description: list users\n"
+        "params: id (uuid, optional), include (string, optional)\n"
+        "response: 200 {users: []}\n"
+        "```\n"
+    )
+    page.reload()
+    page.wait_for_selector(".endpoint .endpoint-method.method-get")
+    assert page.locator(".endpoint-path").inner_text() == "/users"
+    assert "list users" in page.locator(".endpoint-desc").inner_text()
+    assert page.locator(".endpoint-meta dt", has_text="params").count() == 1

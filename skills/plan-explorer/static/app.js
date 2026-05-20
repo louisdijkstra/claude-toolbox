@@ -562,6 +562,52 @@ function renderDiffBlock(raw) {
   return html;
 }
 
+const METHOD_CLASSES = {
+  GET: "method-get", POST: "method-post", PUT: "method-put",
+  PATCH: "method-patch", DELETE: "method-delete",
+  HEAD: "method-other", OPTIONS: "method-other",
+};
+
+function parseOneEndpoint(block) {
+  const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return null;
+  const head = lines[0].match(/^([A-Z]+)\s+(\S.*)$/);
+  if (!head) return null;
+  const method = head[1].toUpperCase();
+  const path = head[2];
+  const meta = {};
+  let description = null;
+  for (const line of lines.slice(1)) {
+    const m = line.match(/^([a-zA-Z][\w-]*)\s*:\s*(.+)$/);
+    if (!m) continue;
+    if (m[1].toLowerCase() === "description") description = m[2];
+    else meta[m[1]] = m[2];
+  }
+  return { method, path, description, meta };
+}
+
+function parseEndpointBlock(raw) {
+  return raw.split(/\n\s*\n/).map(parseOneEndpoint).filter(Boolean);
+}
+
+function renderOneEndpoint(ep) {
+  const cls = METHOD_CLASSES[ep.method] || "method-other";
+  const desc = ep.description
+    ? `<p class="endpoint-desc">${escapeHtml(ep.description)}</p>`
+    : "";
+  const metaRows = Object.entries(ep.meta)
+    .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`)
+    .join("");
+  const metaBlock = metaRows ? `<dl class="endpoint-meta">${metaRows}</dl>` : "";
+  return `<div class="endpoint"><header class="endpoint-head"><span class="endpoint-method ${cls}">${escapeHtml(ep.method)}</span><code class="endpoint-path">${escapeHtml(ep.path)}</code></header><div class="endpoint-body">${desc}${metaBlock}</div></div>`;
+}
+
+function renderEndpointBlock(raw) {
+  const endpoints = parseEndpointBlock(raw);
+  if (endpoints.length === 0) return `<pre class="block-warning">${escapeHtml(raw)}</pre>`;
+  return `<div class="endpoint-list">${endpoints.map(renderOneEndpoint).join("")}</div>`;
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -582,6 +628,9 @@ function configureMarked() {
     }
     if (lang === "diff") {
       return renderDiffBlock(code);
+    }
+    if (lang === "endpoint") {
+      return renderEndpointBlock(code);
     }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;
