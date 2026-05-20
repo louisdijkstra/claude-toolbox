@@ -2,6 +2,7 @@
 # ~/.claude/skills/plan-explorer/scripts/server.py
 """Plan Explorer HTTP server. Bound to 127.0.0.1 only."""
 
+import os
 import sys
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
@@ -13,6 +14,7 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 class State:
     plan_path: Path
     token: str
+    last_self_write_ns: int = 0
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -39,6 +41,31 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_static(url.path[len("/static/"):])
         else:
             self.send_error(404)
+
+    MAX_BODY = 5 * 1024 * 1024  # 5 MB
+
+    def do_PUT(self):
+        if not self._check_token():
+            return
+        url = urlparse(self.path)
+        if url.path != "/plan":
+            self.send_error(404)
+            return
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > self.MAX_BODY:
+            self.send_error(413, "plan too large")
+            return
+        body = self.rfile.read(length)
+        path = State.plan_path
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        tmp.write_bytes(body)
+        os.replace(tmp, path)
+        etag = f'"{path.stat().st_mtime_ns}"'
+        State.last_self_write_ns = path.stat().st_mtime_ns
+        self.send_response(200)
+        self.send_header("ETag", etag)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def _serve_file(self, path: Path, content_type: str):
         if not path.exists():

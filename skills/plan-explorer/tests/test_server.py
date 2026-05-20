@@ -96,3 +96,20 @@ def test_get_plan_returns_body_and_etag(tmp_md, free_port):
         assert resp.getheader("Content-Type", "").startswith("text/markdown")
     finally:
         proc.terminate(); proc.wait(timeout=2)
+
+
+def test_put_plan_writes_atomically(tmp_md, free_port):
+    token = "g" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        new_body = "# New\n\n## Phase 2\n\n- [x] changed\n"
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("PUT", f"/plan?t={token}", body=new_body,
+                     headers={"Content-Type": "text/markdown; charset=utf-8"})
+        resp = conn.getresponse()
+        assert resp.status == 200
+        new_etag = resp.getheader("ETag")
+        assert new_etag
+        assert tmp_md.read_text() == new_body
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
