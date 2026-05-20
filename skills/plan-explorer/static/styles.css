@@ -55,3 +55,8 @@ aside { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .meta { display: flex; gap: 14px; align-items: center;
         margin-top: 8px; color: var(--muted); font-size: 13px; }
 body.doc-mode #meta { display: none; }
+input.task-cb { width: 16px; height: 16px; cursor: pointer; }
+#toast { position: fixed; bottom: 20px; right: 20px; background: #1a1a1a;
+         color: #fff; padding: 10px 14px; border-radius: 8px; opacity: 0;
+         transition: opacity .2s; pointer-events: none; font-size: 13px; }
+#toast.show { opacity: 1; }

@@ -31,6 +31,67 @@ function renderProgressBar(phases) {
   `;
 }
 
+function attachCheckboxes() {
+  const checkboxes = document.querySelectorAll(".phase-body li > input[type='checkbox']");
+  checkboxes.forEach(cb => {
+    cb.removeAttribute("disabled");
+    cb.classList.add("task-cb");
+    cb.addEventListener("change", () => onCheckboxToggle(cb));
+  });
+}
+
+async function onCheckboxToggle(cb) {
+  const li = cb.closest("li");
+  const text = li.textContent.trim();
+  const lines = SRC.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^(\s*-\s*)\[([ xX])\]\s*(.*)$/);
+    if (!m) continue;
+    if (m[3].trim() === text || stripMd(m[3]) === text) {
+      const newMark = cb.checked ? "x" : " ";
+      lines[i] = `${m[1]}[${newMark}] ${m[3]}`;
+      const newSrc = lines.join("\n");
+      const ok = await savePlan(newSrc);
+      if (ok) {
+        SRC = newSrc;
+        const { phases } = parsePhases(SRC);
+        renderPhases(phases);
+        renderSidebar(phases);
+        renderProgressBar(phases);
+        attachCheckboxes();
+        attachCollapse();
+        attachScrollSpy();
+      }
+      return;
+    }
+  }
+}
+
+function stripMd(s) {
+  return s.replace(/[*_`]/g, "").trim();
+}
+
+async function savePlan(newSrc) {
+  const headers = { "Content-Type": "text/markdown; charset=utf-8" };
+  if (ETAG) headers["If-Match"] = ETAG;
+  const r = await fetch(`/plan?t=${TOKEN}`, { method: "PUT", body: newSrc, headers });
+  if (r.status === 412) { showConflict(); return false; }
+  if (!r.ok) { toast(`save failed: ${r.status}`); return false; }
+  ETAG = r.headers.get("ETag");
+  return true;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function showConflict() {
+  // upgraded with a real modal in Task 21
+  toast("conflict — disk changed under you");
+}
+
 function parsePhases(src) {
   // Split source into: prelude (everything before first H2) + array of phases
   // Each phase: { title, level: 2, raw, body, tokens }
@@ -136,6 +197,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     renderProgressBar(phases);
     attachScrollSpy();
     attachCollapse();
+    attachCheckboxes();
   } catch (e) {
     document.getElementById("title").textContent = "Failed to load";
     console.error(e);

@@ -45,3 +45,16 @@ def test_phase_badges(page_loader):
     assert page.locator(".badge.done").count() == 1
     assert page.locator(".badge.wip").count() == 1
     assert page.locator(".badge.todo").count() == 1
+
+
+def test_checkbox_toggle_saves(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\n- [ ] task one\n")
+    page.reload()
+    page.wait_for_selector("input.task-cb")
+    page.locator("input.task-cb").first.click()
+    import time as _t
+    deadline = _t.time() + 2
+    while _t.time() < deadline and "[x]" not in md.read_text():
+        _t.sleep(0.1)
+    assert "[x]" in md.read_text()
