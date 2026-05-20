@@ -239,6 +239,7 @@ function renderAll(phases) {
   runPrism();
   attachIdeLinks();
   attachEnvControls();
+  attachRiskChips();
   if (window.mermaid) {
     mermaid.initialize({ startOnLoad: false, theme: document.body.classList.contains("dark") ? "dark" : "default" });
     mermaid.run({ querySelector: ".mermaid" });
@@ -677,6 +678,91 @@ function attachEnvControls() {
   });
 }
 
+const RISK_LEVELS = ["low", "med", "high"];
+const RISK_ALIASES = { medium: "med", mid: "med", moderate: "med", lo: "low", hi: "high" };
+
+function normalizeRiskLevel(s) {
+  const v = (s || "").trim().toLowerCase();
+  if (RISK_LEVELS.includes(v)) return v;
+  return RISK_ALIASES[v] || null;
+}
+
+function parseRiskBlock(raw) {
+  const out = [];
+  let current = null;
+  for (const rawLine of raw.split("\n")) {
+    const line = rawLine.replace(/\t/g, "  ");
+    if (/^\s*-\s+title\s*:\s*/.test(line)) {
+      if (current) out.push(current);
+      current = { title: line.replace(/^\s*-\s+title\s*:\s*/, "").trim(), extras: {} };
+      continue;
+    }
+    const m = line.match(/^\s+([a-zA-Z][\w-]*)\s*:\s*(.+)$/);
+    if (!m || !current) continue;
+    const k = m[1].toLowerCase();
+    const v = m[2].trim();
+    if (k === "likelihood" || k === "impact") {
+      current[k] = normalizeRiskLevel(v);
+    } else {
+      current.extras[k] = v;
+    }
+  }
+  if (current) out.push(current);
+  return out.filter(r => r.likelihood && r.impact);
+}
+
+function severityClass(lik, imp) {
+  const score = (RISK_LEVELS.indexOf(lik) + 1) * (RISK_LEVELS.indexOf(imp) + 1);
+  if (score >= 6) return "risk-sev-high";
+  if (score >= 3) return "risk-sev-med";
+  return "risk-sev-low";
+}
+
+function renderRiskBlock(raw) {
+  const risks = parseRiskBlock(raw);
+  if (risks.length === 0) return `<pre class="block-warning">${escapeHtml(raw)}</pre>`;
+  const cells = {};
+  for (const lik of RISK_LEVELS) for (const imp of RISK_LEVELS) cells[`${lik}-${imp}`] = [];
+  risks.forEach((r, idx) => { cells[`${r.likelihood}-${r.impact}`].push({ ...r, idx }); });
+  const rowsOrder = ["high", "med", "low"];
+  const colsOrder = ["low", "med", "high"];
+  const parts = [`<div class="risk-grid">`];
+  parts.push(`<div class="risk-cell risk-axis risk-corner">likelihood ↓ / impact →</div>`);
+  for (const c of colsOrder) parts.push(`<div class="risk-cell risk-axis">${c}</div>`);
+  for (const r of rowsOrder) {
+    parts.push(`<div class="risk-cell risk-axis">${r}</div>`);
+    for (const c of colsOrder) {
+      const key = `${r}-${c}`;
+      const sev = severityClass(r, c);
+      const chips = cells[key].map(risk =>
+        `<button type="button" class="risk-chip" data-idx="${risk.idx}">${escapeHtml(risk.title)}</button>`
+      ).join("");
+      parts.push(`<div class="risk-cell ${sev}">${chips}</div>`);
+    }
+  }
+  parts.push(`</div>`);
+  parts.push(`<div class="risk-details">`);
+  risks.forEach((r, idx) => {
+    const rows = [["likelihood", r.likelihood], ["impact", r.impact], ...Object.entries(r.extras)]
+      .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`)
+      .join("");
+    parts.push(`<dialog class="risk-detail" data-idx="${idx}"><h4>${escapeHtml(r.title)}</h4><dl>${rows}</dl><form method="dialog"><button>Close</button></form></dialog>`);
+  });
+  parts.push(`</div>`);
+  return parts.join("");
+}
+
+function attachRiskChips() {
+  document.querySelectorAll(".risk-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = btn.dataset.idx;
+      const container = btn.closest(".risk-grid").parentElement;
+      const dlg = container.querySelector(`.risk-detail[data-idx="${idx}"]`);
+      if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+    });
+  });
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -703,6 +789,9 @@ function configureMarked() {
     }
     if (lang === "env") {
       return renderEnvBlock(code);
+    }
+    if (lang === "risk") {
+      return renderRiskBlock(code);
     }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;

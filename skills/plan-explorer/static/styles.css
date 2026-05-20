@@ -329,3 +329,77 @@ table.env tr:last-child td { border-bottom: none; }
   color: var(--text);
 }
 .env-actions button:hover { background: var(--hover); }
+
+.risk-grid {
+  display: grid;
+  grid-template-columns: 100px repeat(3, 1fr);
+  gap: 6px;
+  margin: 12px 0;
+}
+.risk-cell {
+  min-height: 70px;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.risk-axis {
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  min-height: auto;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.risk-axis.risk-corner { font-size: 10px; text-align: center; line-height: 1.2; }
+.risk-sev-low  { background: #d1fae5; }
+.risk-sev-med  { background: #fef3c7; }
+.risk-sev-high { background: #fee2e2; }
+body.dark .risk-sev-low  { background: #0f2417; }
+body.dark .risk-sev-med  { background: #1f1c08; }
+body.dark .risk-sev-high { background: #2a0e10; }
+.risk-chip {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  text-align: left;
+}
+.risk-chip:hover { box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+.risk-detail {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  background: var(--surface);
+  color: var(--text);
+  max-width: 480px;
+}
+.risk-detail h4 { margin: 0 0 10px; font-size: 16px; }
+.risk-detail dl {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 4px 12px;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+.risk-detail dt { color: var(--muted); font-family: "JetBrains Mono", Menlo, monospace; font-size: 12px; }
+.risk-detail dd { margin: 0; }
+.risk-detail::backdrop { background: rgba(0,0,0,.4); }
+.risk-detail form button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+}

@@ -287,3 +287,17 @@ def test_env_reveal_button(page_loader):
     plain = page.locator(".env-plain")
     assert plain.is_visible()
     assert plain.inner_text() == "hunter2"
+
+
+def test_risk_matrix_chip_placement(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n```risk\n"
+        "- title: SQL injection\n  likelihood: high\n  impact: high\n  mitigation: parameterized queries\n"
+        "- title: Stale cache\n  likelihood: low\n  impact: med\n  mitigation: TTL + manual purge\n"
+        "```\n"
+    )
+    page.reload()
+    page.wait_for_selector(".risk-grid .risk-chip")
+    assert page.locator(".risk-chip").count() == 2
+    assert page.locator(".risk-sev-high .risk-chip", has_text="SQL injection").count() == 1
