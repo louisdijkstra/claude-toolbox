@@ -67,10 +67,10 @@ textarea.editor { width: 100%; min-height: 120px; padding: 16px;
                   font-family: "JetBrains Mono", Menlo, monospace;
                   font-size: 14px; line-height: 1.55; resize: vertical;
                   box-sizing: border-box; }
+#conflict-modal[hidden] { display: none; }
 #conflict-modal { position: fixed; inset: 0; background: rgba(0,0,0,.4);
                   display: flex; align-items: center; justify-content: center;
-                  z-index: 1000; pointer-events: none; }
-#conflict-modal:not([hidden]) { pointer-events: auto; }
+                  z-index: 1000; }
 .conflict-card { background: var(--surface); border-radius: 12px;
                  padding: 24px 28px; max-width: 420px; }
 .conflict-card h3 { margin: 0 0 8px; font-size: 18px; }
