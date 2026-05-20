@@ -168,3 +168,23 @@ def test_dark_mode_persists(page_loader):
     page.reload()
     page.wait_for_load_state()
     assert page.locator("body.dark").count() == 1
+
+
+def test_offline_edit_recovery(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\nbefore\n")
+    page.reload()
+    page.wait_for_selector(".phase-body")
+    page.route("**/plan**", lambda r: r.abort())
+    page.locator(".phase-body").first.click()
+    page.locator("textarea.editor").fill("draft-unsaved\n")
+    page.locator("textarea.editor").blur()
+    page.wait_for_function(
+        "() => localStorage.getItem('plan-explorer:draft:' + location.pathname) !== null",
+        timeout=2000
+    )
+    page.unroute("**/plan**")
+    stored = page.evaluate(
+        "() => localStorage.getItem('plan-explorer:draft:' + location.pathname) || ''"
+    )
+    assert "draft-unsaved" in stored

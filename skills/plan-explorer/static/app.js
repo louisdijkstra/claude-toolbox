@@ -113,12 +113,23 @@ function stripMd(s) {
 async function savePlan(newSrc) {
   const headers = { "Content-Type": "text/markdown; charset=utf-8" };
   if (ETAG) headers["If-Match"] = ETAG;
-  const r = await fetch(`/plan?t=${TOKEN}`, { method: "PUT", body: newSrc, headers });
-  if (r.status === 412) { showConflict(); return false; }
-  if (!r.ok) { toast(`save failed: ${r.status}`); return false; }
-  ETAG = r.headers.get("ETag");
-  return true;
+  try {
+    const r = await fetch(`/plan?t=${TOKEN}`, { method: "PUT", body: newSrc, headers });
+    if (r.status === 412) { stashDraft(newSrc); showConflict(); return false; }
+    if (!r.ok) { stashDraft(newSrc); toast(`save failed: ${r.status}`); return false; }
+    ETAG = r.headers.get("ETag");
+    clearDraft();
+    return true;
+  } catch (e) {
+    stashDraft(newSrc);
+    toast("save failed, kept local draft");
+    return false;
+  }
 }
+
+function stashDraft(src) { localStorage.setItem(draftKey(), src); }
+function clearDraft() { localStorage.removeItem(draftKey()); }
+function draftKey() { return "plan-explorer:draft:" + location.pathname; }
 
 function toast(msg) {
   const t = document.getElementById("toast");
@@ -406,6 +417,23 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.PRELUDE_RAW = preludeRaw;
     const h1 = prelude.find(t => t.type === "heading" && t.depth === 1);
     document.getElementById("title").textContent = h1 ? h1.text : "Plan";
+
+    const draft = localStorage.getItem(draftKey());
+    if (draft && draft !== body) {
+      if (confirm("Unsaved draft found from a previous session. Restore it?")) {
+        SRC = draft;
+        const ok = await savePlan(draft);
+        if (ok) {
+          const fresh = await fetchPlan();
+          SRC = fresh.body; ETAG = fresh.etag;
+          const { preludeRaw, phases: freshPhases } = parsePhases(fresh.body);
+          window.PRELUDE_RAW = preludeRaw;
+          return renderAll(freshPhases);
+        }
+      } else {
+        clearDraft();
+      }
+    }
 
     const isPlan = /^\s*-\s*\[[ xX]\]/m.test(body);
     document.body.classList.add(isPlan ? "plan-mode" : "doc-mode");
