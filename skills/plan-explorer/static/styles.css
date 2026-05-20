@@ -67,3 +67,14 @@ textarea.editor { width: 100%; min-height: 120px; padding: 16px;
                   font-family: "JetBrains Mono", Menlo, monospace;
                   font-size: 14px; line-height: 1.55; resize: vertical;
                   box-sizing: border-box; }
+#conflict-modal { position: fixed; inset: 0; background: rgba(0,0,0,.4);
+                  display: flex; align-items: center; justify-content: center;
+                  z-index: 1000; pointer-events: none; }
+#conflict-modal:not([hidden]) { pointer-events: auto; }
+.conflict-card { background: var(--surface); border-radius: 12px;
+                 padding: 24px 28px; max-width: 420px; }
+.conflict-card h3 { margin: 0 0 8px; font-size: 18px; }
+.conflict-actions { display: flex; gap: 10px; margin-top: 18px; }
+.conflict-actions button { padding: 8px 16px; border-radius: 8px;
+                           border: 1px solid var(--border); background: var(--bg);
+                           color: var(--text); cursor: pointer; font-size: 14px; }

@@ -74,3 +74,15 @@ def test_edit_phase_body_saves(page_loader):
     while _t.time() < deadline and "new body content" not in md.read_text():
         _t.sleep(0.1)
     assert "new body content" in md.read_text()
+
+
+def test_conflict_modal_appears(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\nv1\n")
+    page.reload()
+    page.wait_for_selector(".phase-body")
+    md.write_text("# P\n\n## A\n\nv2-external\n")
+    page.locator(".phase-body").first.click()
+    page.locator("textarea.editor").fill("v3 from browser\n")
+    page.locator("textarea.editor").blur()
+    page.wait_for_selector("#conflict-modal:not([hidden])", timeout=3000)

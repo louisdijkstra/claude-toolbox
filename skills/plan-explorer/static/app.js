@@ -88,8 +88,37 @@ function toast(msg) {
 }
 
 function showConflict() {
-  // upgraded with a real modal in Task 21
-  toast("conflict — disk changed under you");
+  const modal = document.getElementById("conflict-modal");
+  modal.hidden = false;
+  modal.innerHTML = `
+    <div class="conflict-card">
+      <h3>File changed on disk</h3>
+      <p>Someone (or another editor) modified this file while you were editing.</p>
+      <div class="conflict-actions">
+        <button id="conflict-reload">Reload from disk</button>
+        <button id="conflict-force">Force-save mine</button>
+      </div>
+    </div>
+  `;
+  modal.querySelector("#conflict-reload").addEventListener("click", async () => {
+    modal.hidden = true;
+    const { body, etag } = await fetchPlan();
+    SRC = body; ETAG = etag;
+    const { preludeRaw, phases } = parsePhases(body);
+    window.PRELUDE_RAW = preludeRaw;
+    renderAll(phases);
+  });
+  modal.querySelector("#conflict-force").addEventListener("click", async () => {
+    modal.hidden = true;
+    const r = await fetch(`/plan?t=${TOKEN}`, {
+      method: "PUT", body: SRC,
+      headers: { "Content-Type": "text/markdown; charset=utf-8" },
+    });
+    if (r.ok) {
+      ETAG = r.headers.get("ETag");
+      toast("forced save");
+    }
+  });
 }
 
 function attachPhaseEdit(phases) {

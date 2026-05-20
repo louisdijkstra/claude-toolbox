@@ -43,6 +43,7 @@ def page_loader(tmp_md, free_port):
     pw = sync_playwright().start()
     browser = pw.chromium.launch()
     page = browser.new_page()
+    page.on("dialog", lambda d: d.accept())
     page.goto(f"http://127.0.0.1:{free_port}/?t={token}")
     yield page, tmp_md
     browser.close(); pw.stop()
