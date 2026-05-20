@@ -86,3 +86,15 @@ def test_conflict_modal_appears(page_loader):
     page.locator("textarea.editor").fill("v3 from browser\n")
     page.locator("textarea.editor").blur()
     page.wait_for_selector("#conflict-modal:not([hidden])", timeout=3000)
+
+
+def test_external_edit_propagates(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\nbefore external\n")
+    page.reload()
+    page.wait_for_selector(".phase-body")
+    md.write_text("# P\n\n## A\n\nafter external\n")
+    page.wait_for_function(
+        "() => document.querySelector('.phase-body').textContent.includes('after external')",
+        timeout=4000,
+    )

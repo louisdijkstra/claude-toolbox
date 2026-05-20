@@ -285,8 +285,38 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add(isPlan ? "plan-mode" : "doc-mode");
 
     renderAll(phases);
+    connectSSE();
   } catch (e) {
     document.getElementById("title").textContent = "Failed to load";
     console.error(e);
   }
 });
+
+let sseBackoff = 1000;
+function connectSSE() {
+  const es = new EventSource(`/events?t=${TOKEN}`);
+  es.onmessage = async (msg) => {
+    try {
+      const data = JSON.parse(msg.data);
+      if (data.type === "change" && data.etag !== ETAG) {
+        const { body, etag } = await fetchPlan();
+        if (document.querySelector(".editing")) {
+          if (!confirm("File changed on disk. Discard your edits and reload?")) return;
+        }
+        SRC = body; ETAG = etag;
+        const { preludeRaw, phases } = parsePhases(body);
+        window.PRELUDE_RAW = preludeRaw;
+        renderAll(phases);
+      } else if (data.type === "gone") {
+        toast("file removed from disk; saves disabled");
+        document.body.classList.add("file-gone");
+      }
+    } catch (e) { console.error("sse", e); }
+    sseBackoff = 1000;
+  };
+  es.onerror = () => {
+    es.close();
+    setTimeout(connectSSE, sseBackoff);
+    sseBackoff = Math.min(sseBackoff * 2, 30000);
+  };
+}
