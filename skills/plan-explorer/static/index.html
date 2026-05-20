@@ -1,2 +1,25 @@
 <!DOCTYPE html>
-<html><head><title>Plan Explorer</title></head><body>placeholder</body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plan Explorer</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/vendor/marked.min.js" defer></script>
+  <script src="/static/app.js" defer type="module"></script>
+</head>
+<body>
+  <div class="app">
+    <aside id="sidebar"></aside>
+    <main id="main">
+      <header class="header">
+        <div class="eyebrow" id="eyebrow">Implementation Plan</div>
+        <h1 id="title">Loading…</h1>
+        <div class="meta" id="meta"></div>
+      </header>
+      <section id="content"></section>
+    </main>
+  </div>
+  <div id="toast"></div>
+  <div id="conflict-modal" hidden></div>
+</body>
+</html>

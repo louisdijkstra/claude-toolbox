@@ -1,0 +1,22 @@
+/* ~/.claude/skills/plan-explorer/static/styles.css */
+:root {
+  --bg: #fbfaf7; --surface: #fff; --text: #1a1a1a; --muted: #6b6b6b;
+  --border: #ececea; --hover: #f3f2ee;
+  --done: #d1fae5; --done-fg: #047857;
+  --wip: #fef3c7; --wip-fg: #b45309;
+  --todo: #f4f4f5; --todo-fg: #71717a;
+  --accent: #4a7afe;
+}
+body.dark {
+  --bg:#1a1a1a; --surface:#232323; --text:#e8e8e8; --muted:#999;
+  --border:#333; --hover:#2a2a2a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Inter", -apple-system, sans-serif;
+       background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+aside { padding: 24px 14px; border-right: 1px solid var(--border); }
+main { padding: 56px 72px; max-width: 820px; }
+.header h1 { font-size: 40px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+.eyebrow { font-size: 12px; color: var(--muted); text-transform: uppercase;
+           letter-spacing: .08em; margin-bottom: 8px; }
