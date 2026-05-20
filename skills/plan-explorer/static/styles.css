@@ -403,3 +403,37 @@ body.dark .risk-sev-high { background: #2a0e10; }
   cursor: pointer;
   font-size: 13px;
 }
+
+.deps {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 0;
+}
+.dep {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  text-decoration: none;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--text);
+  transition: transform .1s, box-shadow .1s;
+}
+.dep:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.08); text-decoration: none; }
+.dep-name { font-weight: 600; }
+.dep-ver { color: var(--muted); font-weight: 400; }
+.dep[data-eco='npm']    { border-left-color: #cb3837; }
+.dep[data-eco='npm']    .dep-name { color: #cb3837; }
+.dep[data-eco='pypi']   { border-left-color: #3776ab; }
+.dep[data-eco='pypi']   .dep-name { color: #3776ab; }
+.dep[data-eco='crates'] { border-left-color: #c47e3a; }
+.dep[data-eco='crates'] .dep-name { color: #c47e3a; }
+.dep[data-eco='go']     { border-left-color: #00add8; }
+.dep[data-eco='go']     .dep-name { color: #00add8; }

@@ -763,6 +763,46 @@ function attachRiskChips() {
   });
 }
 
+const ECOSYSTEM_URLS = {
+  npm:    name => `https://npmjs.com/package/${name}`,
+  pypi:   name => `https://pypi.org/project/${name}/`,
+  crates: name => `https://crates.io/crates/${name}`,
+  go:     name => `https://pkg.go.dev/${name}`,
+};
+
+function parseDepsBlock(raw) {
+  const out = [];
+  let ecosystem = "pypi";
+  for (const rawLine of raw.split("\n")) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eco = line.match(/^ecosystem\s*:\s*(npm|pypi|crates|go)\s*$/i);
+    if (eco) { ecosystem = eco[1].toLowerCase(); continue; }
+    let m = line.match(/^(@[^/]+\/[A-Za-z0-9_.-]+)(?:@(\S+))?$/);
+    let forced = "npm";
+    if (!m) {
+      m = line.match(/^([A-Za-z0-9_./-]+)(?:@(\S+))?$/);
+      forced = null;
+    }
+    if (!m) continue;
+    out.push({ name: m[1], version: m[2] || "", ecosystem: forced || ecosystem });
+  }
+  return out;
+}
+
+function renderDepBadge(d) {
+  const url = ECOSYSTEM_URLS[d.ecosystem] ? ECOSYSTEM_URLS[d.ecosystem](d.name) : "#";
+  const ver = d.version ? `<span class="dep-ver">@${escapeHtml(d.version)}</span>` : "";
+  const tip = d.version ? `${d.name}@${d.version}` : d.name;
+  return `<a class="dep" data-eco="${d.ecosystem}" href="${escapeHtml(url)}" target="_blank" rel="noopener" title="${escapeHtml(tip)}"><span class="dep-name">${escapeHtml(d.name)}</span>${ver}</a>`;
+}
+
+function renderDepsBlock(raw) {
+  const deps = parseDepsBlock(raw);
+  if (deps.length === 0) return `<pre class="block-warning">${escapeHtml(raw)}</pre>`;
+  return `<div class="deps">${deps.map(renderDepBadge).join("")}</div>`;
+}
+
 function configureMarked() {
   const renderer = new marked.Renderer();
   const origBlockquote = renderer.blockquote.bind(renderer);
@@ -792,6 +832,9 @@ function configureMarked() {
     }
     if (lang === "risk") {
       return renderRiskBlock(code);
+    }
+    if (lang === "deps") {
+      return renderDepsBlock(code);
     }
     const safe = escapeHtml(code);
     return `<pre><button class="copy-btn" data-code="${encodeURIComponent(code)}">copy</button><code class="language-${lang||'plain'}">${safe}</code></pre>`;

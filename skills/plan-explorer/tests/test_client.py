@@ -301,3 +301,21 @@ def test_risk_matrix_chip_placement(page_loader):
     page.wait_for_selector(".risk-grid .risk-chip")
     assert page.locator(".risk-chip").count() == 2
     assert page.locator(".risk-sev-high .risk-chip", has_text="SQL injection").count() == 1
+
+
+def test_deps_badges_with_links(page_loader):
+    page, md = page_loader
+    md.write_text(
+        "# P\n\n## A\n\n```deps\n"
+        "ecosystem: npm\n"
+        "react@18.3.0\n"
+        "ecosystem: pypi\n"
+        "fastapi@0.110\n"
+        "```\n"
+    )
+    page.reload()
+    page.wait_for_selector(".dep")
+    npm_href = page.locator(".dep[data-eco='npm']").first.get_attribute("href")
+    pypi_href = page.locator(".dep[data-eco='pypi']").first.get_attribute("href")
+    assert npm_href == "https://npmjs.com/package/react"
+    assert pypi_href == "https://pypi.org/project/fastapi/"
