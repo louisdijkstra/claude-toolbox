@@ -28,3 +28,25 @@ def test_root_returns_200(tmp_md, free_port):
     finally:
         proc.terminate()
         proc.wait(timeout=2)
+
+
+def test_missing_token_returns_401(tmp_md, free_port):
+    token = "b" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", "/")
+        assert conn.getresponse().status == 401
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
+
+
+def test_wrong_token_returns_401(tmp_md, free_port):
+    token = "c" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=2)
+        conn.request("GET", "/?t=wrong")
+        assert conn.getresponse().status == 401
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
