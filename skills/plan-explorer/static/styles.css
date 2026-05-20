@@ -198,3 +198,11 @@ pre.diff .line.hunk {
 }
 body.dark pre.diff .line.add { background: #0f2417; color: #86efac; }
 body.dark pre.diff .line.del { background: #2a0e10; color: #fca5a5; }
+
+a.ide-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent);
+}
+a.ide-link:hover { text-decoration: none; border-bottom-style: solid; }
+a.ide-link::after { content: "↗"; font-size: 10px; margin-left: 2px; opacity: .7; }

@@ -226,3 +226,23 @@ def test_diff_block_classifies_lines(page_loader):
     assert page.locator(".diff .line.add").count() == 1
     assert page.locator(".diff .line.del").count() == 1
     assert page.locator(".diff .line.ctx").count() == 1
+
+
+def test_ide_link_wraps_path(page_loader):
+    page, md = page_loader
+    (md.parent / "scripts").mkdir(exist_ok=True)
+    (md.parent / "scripts" / "x.py").write_text("")
+    md.write_text("# P\n\n## A\n\nsee scripts/x.py:42 for details\n")
+    page.reload()
+    page.wait_for_selector("a.ide-link")
+    href = page.locator("a.ide-link").first.get_attribute("href")
+    assert href.startswith("vscode://file/")
+    assert href.endswith(":42")
+
+
+def test_ide_link_not_inside_code(page_loader):
+    page, md = page_loader
+    md.write_text("# P\n\n## A\n\nIn `scripts/x.py:1` we see ...\n")
+    page.reload()
+    page.wait_for_selector(".phase-body")
+    assert page.locator("code a.ide-link").count() == 0

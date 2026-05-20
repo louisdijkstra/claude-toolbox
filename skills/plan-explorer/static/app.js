@@ -3,6 +3,10 @@ const TOKEN = new URLSearchParams(location.search).get("t");
 let SRC = "";
 let ETAG = null;
 
+const RESOLVE_CACHE = new Map();
+const IDE_LINK_RE = /\b([a-zA-Z0-9_\-./]+\.[a-zA-Z0-9]{1,8})(?::(\d+))?\b/g;
+const IDE_LINK_SCOPE = ".phase-body p, .phase-body li, .tree-file .tree-name";
+
 function phaseStatus(phase) {
   const text = phase.body.join("");
   const total = (text.match(/^\s*-\s*\[[ xX]\]/gm) || []).length;
@@ -233,6 +237,7 @@ function renderAll(phases) {
   attachTreeToggles();
   attachAnchors();
   runPrism();
+  attachIdeLinks();
   if (window.mermaid) {
     mermaid.initialize({ startOnLoad: false, theme: document.body.classList.contains("dark") ? "dark" : "default" });
     mermaid.run({ querySelector: ".mermaid" });
@@ -422,6 +427,93 @@ function renderTreeBlock(raw) {
   }
   html += "</ul>";
   return html;
+}
+
+function editorScheme(name) {
+  switch (name) {
+    case "cursor": return "cursor://file/";
+    case "idea":   return "idea://open?file=";
+    case "none":   return "file://";
+    default:       return "vscode://file/";
+  }
+}
+
+function buildIdeHref(scheme, abs, line) {
+  const ln = line || "1";
+  if (scheme === "idea://open?file=") {
+    return `${scheme}${abs}&line=${ln}`;
+  }
+  return `${scheme}${abs}:${ln}`;
+}
+
+async function resolvePath(rel) {
+  if (RESOLVE_CACHE.has(rel)) return RESOLVE_CACHE.get(rel);
+  let abs = null;
+  try {
+    const r = await fetch(`/resolve?t=${TOKEN}&path=${encodeURIComponent(rel)}`);
+    if (r.ok) {
+      const data = await r.json();
+      abs = data.abs;
+    }
+  } catch (e) { /* network — keep null */ }
+  RESOLVE_CACHE.set(rel, abs);
+  return abs;
+}
+
+function insideExcludedAncestor(node) {
+  let el = node.parentElement;
+  while (el) {
+    const t = el.tagName;
+    if (t === "A" || t === "CODE" || t === "PRE") return true;
+    el = el.parentElement;
+  }
+  return false;
+}
+
+async function wrapMatchesInTextNode(node, scheme) {
+  const text = node.nodeValue;
+  IDE_LINK_RE.lastIndex = 0;
+  const matches = [...text.matchAll(IDE_LINK_RE)];
+  if (matches.length === 0) return;
+  const frag = document.createDocumentFragment();
+  let cursor = 0;
+  for (const m of matches) {
+    const start = m.index;
+    const end = start + m[0].length;
+    const rel = m[1];
+    const line = m[2];
+    if (start > cursor) frag.appendChild(document.createTextNode(text.slice(cursor, start)));
+    const abs = await resolvePath(rel);
+    if (abs) {
+      const a = document.createElement("a");
+      a.className = "ide-link";
+      a.href = buildIdeHref(scheme, abs, line);
+      a.textContent = m[0];
+      frag.appendChild(a);
+    } else {
+      frag.appendChild(document.createTextNode(m[0]));
+    }
+    cursor = end;
+  }
+  if (cursor < text.length) frag.appendChild(document.createTextNode(text.slice(cursor)));
+  node.parentNode.replaceChild(frag, node);
+}
+
+async function attachIdeLinks() {
+  const editor = new URLSearchParams(location.search).get("editor") || "vscode";
+  const scheme = editorScheme(editor);
+  const scope = document.querySelectorAll(IDE_LINK_SCOPE);
+  for (const el of scope) {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    for (const node of nodes) {
+      if (insideExcludedAncestor(node)) continue;
+      if (!IDE_LINK_RE.test(node.nodeValue)) continue;
+      await wrapMatchesInTextNode(node, scheme);
+    }
+  }
 }
 
 function attachTreeToggles() {
