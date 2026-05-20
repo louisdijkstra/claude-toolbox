@@ -2,6 +2,7 @@
 import http.client
 import subprocess
 import sys
+import threading
 import time
 from .conftest import SERVER
 
@@ -139,5 +140,31 @@ def test_put_size_limit_returns_413(tmp_md, free_port):
         except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected):
             # Server closes connection when body is too large
             pass
+    finally:
+        proc.terminate(); proc.wait(timeout=2)
+
+
+def test_sse_emits_on_external_change(tmp_md, free_port):
+    token = "j" * 32
+    proc = start_server(tmp_md, token, free_port)
+    try:
+        events = []
+
+        def reader():
+            conn = http.client.HTTPConnection("127.0.0.1", free_port, timeout=3)
+            conn.request("GET", f"/events?t={token}")
+            resp = conn.getresponse()
+            for _ in range(20):
+                line = resp.fp.readline().decode()
+                if line.startswith("data:"):
+                    events.append(line)
+                    return
+
+        t = threading.Thread(target=reader, daemon=True)
+        t.start()
+        time.sleep(0.4)
+        tmp_md.write_text(tmp_md.read_text() + "\nextra\n")
+        t.join(timeout=3)
+        assert any("change" in e for e in events), events
     finally:
         proc.terminate(); proc.wait(timeout=2)

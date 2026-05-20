@@ -4,6 +4,7 @@
 
 import os
 import sys
+import time
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -37,6 +38,8 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
         elif url.path == "/plan":
             self._serve_plan()
+        elif url.path == "/events":
+            self._stream_events()
         elif url.path.startswith("/static/"):
             self._serve_static(url.path[len("/static/"):])
         else:
@@ -97,6 +100,34 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def _stream_events(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "keep-alive")
+        self.end_headers()
+        path = State.plan_path
+        last_ns = path.stat().st_mtime_ns if path.exists() else 0
+        try:
+            while True:
+                time.sleep(0.5)
+                if not path.exists():
+                    self.wfile.write(b'data: {"type":"gone"}\n\n')
+                    self.wfile.flush()
+                    return
+                cur_ns = path.stat().st_mtime_ns
+                if cur_ns != last_ns and cur_ns != State.last_self_write_ns:
+                    last_ns = cur_ns
+                    etag = f'"{cur_ns}"'
+                    self.wfile.write(
+                        f'data: {{"type":"change","etag":{etag}}}\n\n'.encode()
+                    )
+                    self.wfile.flush()
+                else:
+                    last_ns = cur_ns
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     _MIME = {
         ".html": "text/html; charset=utf-8",
