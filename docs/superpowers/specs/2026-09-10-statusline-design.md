@@ -35,7 +35,7 @@ Rolling limits instead of a monthly budget:
 
 ```
 ◆ Opus 1M  ▸ my-app/libs/my-app-core  ⑂ main
-ctx ◑ 45%  5h ◔ 22% ↻2h30m  7d ◕ 61% ↻4d6h
+ctx ◑ 45%  5h ◔ 22% ↻2h30m  7d ◑ 61% ↻4d6h
 ```
 
 ### Why two lines

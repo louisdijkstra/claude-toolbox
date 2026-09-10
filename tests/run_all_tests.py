@@ -39,6 +39,9 @@ class TestRunner:
         # Test 3: Verify supporting files
         self._run_test_section("Supporting Files", self._test_supporting_files)
 
+        # Test 4: Shell libraries used by the statusline
+        self._run_test_section("Shell Libraries", self._test_shell_libraries)
+
         # Print final summary
         self._print_summary()
 
@@ -135,6 +138,29 @@ class TestRunner:
             print("STDERR:", result.stderr)
 
         return result.returncode == 0
+
+    def _test_shell_libraries(self) -> bool:
+        """Test the POSIX shell libraries the statusline sources."""
+        print("Running shell library tests...")
+
+        hooks_tests = sorted((self.tests_dir / 'hooks').glob('*_test.sh'))
+        if not hooks_tests:
+            print("❌ No shell tests found in tests/hooks/")
+            return False
+
+        passed = True
+        for script in hooks_tests:
+            result = subprocess.run(
+                ['sh', str(script)],
+                capture_output=True,
+                text=True
+            )
+            print(result.stdout)
+            if result.stderr:
+                print("STDERR:", result.stderr)
+            passed = passed and result.returncode == 0
+
+        return passed
 
     def _print_summary(self):
         """Print final test summary."""
