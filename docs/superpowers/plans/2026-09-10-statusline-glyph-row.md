@@ -1,6 +1,6 @@
 # Statusline Glyph Row Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Replace the statusline's emoji-and-block-bar rendering with a labelled glyph row that shows where the session is running.
 
@@ -35,7 +35,7 @@
 - Consumes: nothing.
 - Produces: `meter_circle <percent>` — writes one of `○ ◔ ◑ ◕ ●` to stdout, no newline. Accepts integers, decimals (`45.7`), empty string and junk; clamps out-of-range values.
 
-- [ ] **Step 1: Write the shared assertion helper**
+- [x] **Step 1: Write the shared assertion helper**
 
 Create `tests/hooks/assert.sh`:
 
@@ -61,7 +61,7 @@ assert_done() {
 }
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `tests/hooks/meter_test.sh`:
 
@@ -98,12 +98,12 @@ assert_eq "$(meter_circle abc)"  "○" "junk is empty, not blank output"
 assert_done "meter"
 ```
 
-- [ ] **Step 3: Run it to make sure it fails**
+- [x] **Step 3: Run it to make sure it fails**
 
 Run: `sh tests/hooks/meter_test.sh`
 Expected: fails to source `hooks/scripts/lib/meter.sh` — "No such file or directory".
 
-- [ ] **Step 4: Write the minimal implementation**
+- [x] **Step 4: Write the minimal implementation**
 
 Create `hooks/scripts/lib/meter.sh`:
 
@@ -132,12 +132,12 @@ meter_circle() {
 }
 ```
 
-- [ ] **Step 5: Run the test and make sure it passes**
+- [x] **Step 5: Run the test and make sure it passes**
 
 Run: `sh tests/hooks/meter_test.sh`
 Expected: `meter: 20 assertions, 0 failed`, exit 0.
 
-- [ ] **Step 6: Wire it into the suite**
+- [x] **Step 6: Wire it into the suite**
 
 In `tests/run_all_tests.py`, add a call inside `run_all_tests` after the "Supporting Files" section:
 
@@ -173,19 +173,19 @@ And add the method after `_test_supporting_files`:
         return passed
 ```
 
-- [ ] **Step 7: Run the whole suite**
+- [x] **Step 7: Run the whole suite**
 
 Run: `python3 tests/run_all_tests.py`
 Expected: four sections, all passing, including "Shell Libraries".
 
-- [ ] **Step 8: Correct the spec example**
+- [x] **Step 8: Correct the spec example**
 
 The spec renders `7d ◕ 61%`. Nearest-quarter rounding puts 61 in the half band, because 61 is 11 from 50 and 14 from 75. In `docs/superpowers/specs/2026-09-10-statusline-design.md`, change both occurrences of `7d ◕ 61%` to `7d ◑ 61%`.
 
 Run: `grep -n "61%" docs/superpowers/specs/2026-09-10-statusline-design.md`
 Expected: every hit reads `◑ 61%`.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add hooks/scripts/lib/meter.sh tests/hooks/assert.sh tests/hooks/meter_test.sh tests/run_all_tests.py docs/superpowers/specs/2026-09-10-statusline-design.md
@@ -206,7 +206,7 @@ git commit -m "feat(statusline): add the circle meter ramp"
   - `location_shorten <path> <max>` — elides from the left as `…/`, keeping the last two segments. Returns the path unchanged when it already fits.
   - `format_location <cwd> <toplevel> <common_dir>` — the display string, without the `▸ ` prefix. `toplevel` empty means "not a repository". Reads `$HOME` to render `~`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/hooks/location_test.sh`:
 
@@ -288,12 +288,12 @@ assert_eq "$(location_shorten /a/b 40)"    "/a/b"  "shorten leaves a short path 
 assert_done "location"
 ```
 
-- [ ] **Step 2: Run it to make sure it fails**
+- [x] **Step 2: Run it to make sure it fails**
 
 Run: `sh tests/hooks/location_test.sh`
 Expected: fails to source `hooks/scripts/lib/location.sh` — "No such file or directory".
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 Create `hooks/scripts/lib/location.sh`:
 
@@ -370,19 +370,19 @@ format_location() {
 }
 ```
 
-- [ ] **Step 4: Run the test and make sure it passes**
+- [x] **Step 4: Run the test and make sure it passes**
 
 Run: `sh tests/hooks/location_test.sh`
 Expected: `location: 14 assertions, 0 failed`, exit 0.
 
 If an assertion about truncation fails, read the actual value printed under it and check the arithmetic in `_budget` rather than adjusting the expectation — the cap is a stated requirement.
 
-- [ ] **Step 5: Run the whole suite**
+- [x] **Step 5: Run the whole suite**
 
 Run: `python3 tests/run_all_tests.py`
 Expected: all four sections pass; "Shell Libraries" now runs two files.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/scripts/lib/location.sh tests/hooks/location_test.sh
@@ -401,7 +401,7 @@ git commit -m "feat(statusline): add the location formatter"
 - Consumes: `meter_circle <percent>` from Task 1, `format_location <cwd> <toplevel> <common_dir>` from Task 2.
 - Produces: the rendered statusline. Nothing else consumes it.
 
-- [ ] **Step 1: Source the libraries**
+- [x] **Step 1: Source the libraries**
 
 In `hooks/scripts/statusline.sh`, directly after the `val()` definition near the top, add:
 
@@ -412,7 +412,7 @@ _lib="$(dirname "$0")/lib"
 [ -f "$_lib/location.sh" ] && . "$_lib/location.sh"
 ```
 
-- [ ] **Step 2: Replace branch detection with one git call**
+- [x] **Step 2: Replace branch detection with one git call**
 
 Find this block:
 
@@ -454,7 +454,7 @@ if [ -n "$workspace" ]; then
 fi
 ```
 
-- [ ] **Step 3: Rebuild line 1**
+- [x] **Step 3: Rebuild line 1**
 
 Find the model label block ending in:
 
@@ -504,7 +504,7 @@ if [ -n "$branch" ]; then
 fi
 ```
 
-- [ ] **Step 4: Remove the context bar from line 1**
+- [x] **Step 4: Remove the context bar from line 1**
 
 The context window moves to line 2 as a circle. Find and delete this block:
 
@@ -518,7 +518,7 @@ fi
 
 Leave the caveman badge block that follows it untouched.
 
-- [ ] **Step 5: Rebuild line 2**
+- [x] **Step 5: Rebuild line 2**
 
 Replace the whole `line2` block — from `line2=""` down to and including the `fi` that closes the `elif [ -n "$cost" ]` branch — with:
 
@@ -568,7 +568,7 @@ elif [ -n "$cost" ]; then
 fi
 ```
 
-- [ ] **Step 6: Check it renders, in a repository**
+- [x] **Step 6: Check it renders, in a repository**
 
 ```bash
 printf '%s' '{"session_id":"T","model":{"display_name":"Opus 5","id":"claude-opus-5"},"workspace":{"current_dir":"'"$PWD"'"},"cost":{"total_cost_usd":9.99},"context_window":{"context_window_size":1000000,"used_percentage":45}}' | sh hooks/scripts/statusline.sh; echo
@@ -576,7 +576,7 @@ printf '%s' '{"session_id":"T","model":{"display_name":"Opus 5","id":"claude-opu
 
 Expected: two lines. The first reads `◆ Opus 5 (1M)  ▸ .claude ↳ statusline-location  ⑂ worktree-statusline-location`, with the branch in magenta because this is a worktree. The second reads `ctx ◑ 45%  $ ◑ <spend> / 2000 ↻<countdown>`. No `🤖`, no `🌳`, no block bars.
 
-- [ ] **Step 7: Check the rolling-limits branch**
+- [x] **Step 7: Check the rolling-limits branch**
 
 ```bash
 printf '%s' '{"session_id":"T","model":{"display_name":"Opus 5","id":"claude-opus-5"},"workspace":{"current_dir":"'"$PWD"'"},"context_window":{"context_window_size":1000000,"used_percentage":45},"rate_limits":{"five_hour":{"used_percentage":22,"resets_at":'"$(( $(date +%s) + 9000 ))"'},"seven_day":{"used_percentage":61,"resets_at":'"$(( $(date +%s) + 367200 ))"'}}}' | sh hooks/scripts/statusline.sh; echo
@@ -584,7 +584,7 @@ printf '%s' '{"session_id":"T","model":{"display_name":"Opus 5","id":"claude-opu
 
 Expected line 2: `ctx ◑ 45%  5h ◔ 22% ↻2h30m  7d ◑ 61% ↻4d6h`. Note `◑` for 61%, not `◕`.
 
-- [ ] **Step 8: Check the fallbacks**
+- [x] **Step 8: Check the fallbacks**
 
 Not a repository:
 
@@ -602,7 +602,7 @@ echo '{}' | sh hooks/scripts/statusline.sh; echo
 
 Expected: empty or near-empty output, exit 0, no error text.
 
-- [ ] **Step 9: Confirm both lines fit 80 columns**
+- [x] **Step 9: Confirm both lines fit 80 columns**
 
 ```bash
 printf '%s' '{"session_id":"T","model":{"display_name":"Opus 5","id":"claude-opus-5"},"workspace":{"current_dir":"'"$PWD"'"},"cost":{"total_cost_usd":9.99},"context_window":{"context_window_size":1000000,"used_percentage":45}}' \
@@ -613,12 +613,12 @@ printf '%s' '{"session_id":"T","model":{"display_name":"Opus 5","id":"claude-opu
 
 Expected: both counts at or under 80.
 
-- [ ] **Step 10: Run the whole suite**
+- [x] **Step 10: Run the whole suite**
 
 Run: `python3 tests/run_all_tests.py`
 Expected: all four sections pass.
 
-- [ ] **Step 11: Update the README**
+- [x] **Step 11: Update the README**
 
 In `README.md`, the hooks table row for `statusline.sh` currently reads:
 
@@ -632,7 +632,7 @@ Replace it with:
 | `statusline.sh` | StatusLine | Two-line status: model and location above, context and spend below |
 ```
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add hooks/scripts/statusline.sh README.md
@@ -650,3 +650,21 @@ git commit -m "feat(statusline): show the location and render meters as circles"
 **Type consistency.** `meter_circle` and `format_location` are named identically in their defining tasks and at both call sites. `location_shorten` takes `<path> <max>` in the library, the test and the recursive call in `format_location`. `LOCATION_MAX` is defined once.
 
 **One spec correction, deliberate.** The spec's `7d ◕ 61%` disagrees with nearest-quarter rounding. Task 1 step 8 changes the spec to `◑`, and Task 3 step 7 asserts the new value.
+
+
+## Deviations during execution
+
+Three, all recorded in the commits:
+
+1. **`hooks/scripts/lib/` was gitignored.** The Python block carried an
+   unanchored `lib/`, which swallowed the new source directory — the first
+   commit landed without `meter.sh`. Fixed by anchoring the Python artefact
+   patterns to the repo root (`/lib/`, `/lib64/`) and amending.
+
+2. **A branch cap was needed.** Task 3 step 9 expected both lines within 80
+   columns; the identity line measured 84. `branch_shorten` (cap 21, elided
+   from the left) was added to `location.sh` with its own tests, and the spec
+   updated. The plan's width estimate had omitted the model's `(1M)` suffix.
+
+3. **Dead code removed.** With the block bars gone, `make_bar` had no callers
+   and the `Y` and `R` colours no users. Both deleted rather than left behind.
