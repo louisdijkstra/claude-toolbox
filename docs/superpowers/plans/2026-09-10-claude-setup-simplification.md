@@ -789,7 +789,7 @@ It is a 273-line catalogue of skills that mostly no longer exist. Replace it wit
 
 ```bash
 cd /Users/you/.claude
-grep -rniE "dev-workflow|review-system|review-critical|reviewer-|merge-request-writer|deep-research|docs-manager|skill-create|ui-design-options|project-inception|handle-ticket|dev-flow|plan-review-system" README.md skills/README.md tests/ commands/ CLAUDE.md
+grep -rniE "dev-workflow|dev-flow|review-system|plan-review-system|review-critical|reviewer-|merge-request-writer|deep-research|docs-manager|skill-create|ui-design-options|project-inception|project-brainstorm|handle-ticket|determining-project-goals|getting-the-bigger-picture|pattern-discovery|uv-management|structuring-repository|setting-up-logging|docs-context|appstore-check|playstore-check|setup-payments|compliance-check|ai-framework" README.md skills/README.md tests/ commands/ CLAUDE.md
 ```
 
 Expected: no output.
