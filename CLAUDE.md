@@ -17,6 +17,25 @@
 - No emojis unless explicitly requested
 - No colon before tool calls
 
+## Desktop notifications
+
+After a task **you ran** finishes, notify when it took **>= 1 minute** of wall-clock time
+(build, full test suite, `execute-plan` / workflow run, deploy, migration, long agent):
+
+```bash
+node ~/.claude/scripts/notify.js "test suite green: 1247 passed"
+```
+
+- Fire it even if the user is watching. Do not try to guess whether they are at the terminal.
+- Message: what finished plus the result. One line, <= 100 chars, no markdown. `test suite green: 1247 passed`,
+  not `task done`.
+- The task only needs to be **done** — it does not need to be actionable.
+- Never notify for answers to questions, mid-run progress, sub-minute work, or twice for one task.
+- When the user asks to be notified, do it regardless of duration.
+- The script is cross-platform (macOS / Windows / Linux) and a silent no-op where it cannot notify,
+  so calling it is always safe. It never plays a sound unless `--sound done|attention|error` is passed;
+  leave that flag to the hooks in `settings.json`.
+
 ## Code
 - Self-documenting code with meaningful names
 - Small, single-purpose functions
