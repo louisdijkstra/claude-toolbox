@@ -56,7 +56,7 @@
   }
 
   .wrap {
-    max-width: 92ch;
+    max-width: 96ch;
     margin: 0 auto;
     padding: 4rem 1.5rem 6rem;
   }
@@ -75,15 +75,15 @@
   .standfirst {
     color: var(--ink-soft);
     margin: 0;
-    max-width: 72ch;
+    max-width: 74ch;
   }
 
   .standfirst + .standfirst { margin-top: 0.8rem; }
 
   /* ---- terminal surface -------------------------------------------- */
 
-  /* The 80-column marker below is measured in ch, so the panel and the
-     statuslines inside it must share one font size or the mark lands wrong. */
+  /* The 80-column marker is measured in ch, so the panel and the statuslines
+     inside it must share one font size or the mark lands in the wrong place. */
   .term {
     background: var(--paper);
     border: 1px solid var(--rule);
@@ -93,14 +93,6 @@
     font-size: 13.5px;
   }
 
-  code {
-    font: inherit;
-    color: var(--ink-soft);
-    background: var(--track);
-    padding: 0 0.4ch;
-  }
-
-  /* 80-column marker: where a standard terminal wraps. */
   .term.ruled::after {
     content: "";
     position: absolute;
@@ -117,6 +109,8 @@
     line-height: 1.75;
   }
 
+  .sl + .lede { margin-top: 0.9rem; }
+
   .caret {
     display: inline-block;
     width: 0.6ch;
@@ -132,16 +126,22 @@
     .caret { animation: none; }
   }
 
+  code {
+    font: inherit;
+    color: var(--ink-soft);
+    background: var(--track);
+    padding: 0 0.4ch;
+  }
+
   /* ---- ansi ---------------------------------------------------------- */
 
-  .b   { font-weight: 600; }
-  .d   { color: var(--dim); }
-  .c   { color: var(--cyan); }
-  .g   { color: var(--green); }
-  .y   { color: var(--yellow); }
-  .r   { color: var(--red); }
-  .m   { color: var(--magenta); }
-  .tr  { color: var(--track); }
+  .b { font-weight: 600; }
+  .d { color: var(--dim); }
+  .c { color: var(--cyan); }
+  .g { color: var(--green); }
+  .y { color: var(--yellow); }
+  .r { color: var(--red); }
+  .m { color: var(--magenta); }
 
   .inv-c, .inv-g, .inv-m, .inv-d, .inv-y {
     color: var(--paper);
@@ -182,13 +182,14 @@
   .why {
     color: var(--ink-soft);
     margin: 0 0 1rem;
-    max-width: 68ch;
+    max-width: 70ch;
   }
 
   .cost {
     margin: 0.9rem 0 0;
     color: var(--dim);
     font-size: 13px;
+    max-width: 70ch;
   }
 
   .cost b { color: var(--ink-soft); font-weight: 500; }
@@ -229,6 +230,7 @@
     gap: 1.5ch;
     align-items: baseline;
     margin-top: 2rem;
+    flex-wrap: wrap;
   }
 
   button {
@@ -243,16 +245,9 @@
 
   button:hover { color: var(--ink); border-color: var(--dim); }
 
-  button:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
+  button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-  .note {
-    color: var(--dim);
-    font-size: 12.5px;
-    margin: 0;
-  }
+  .note { color: var(--dim); font-size: 12.5px; margin: 0; }
 
   footer {
     margin-top: 3rem;
@@ -262,7 +257,15 @@
     font-size: 12.5px;
   }
 
-  footer p { margin: 0 0 0.5rem; max-width: 72ch; }
+  footer p { margin: 0 0 0.5rem; max-width: 74ch; }
+
+  dl.states {
+    margin: 1rem 0 0;
+    color: var(--ink-soft);
+    max-width: 74ch;
+  }
+  dl.states dt { color: var(--ink); font-weight: 500; margin-top: 0.6rem; }
+  dl.states dd { margin: 0 0 0 3ch; color: var(--ink-soft); }
 
   @media (max-width: 640px) {
     .index { columns: 1; }
@@ -278,13 +281,18 @@
     <h1>Statusline layouts</h1>
     <p class="standfirst">Ten ways to structure the line, each rendered at the size and colours it will actually have. The hairline on the right of every panel marks column 80, so anything crossing it wraps in a standard terminal.</p>
 
+    <p class="standfirst">Every option is shown in the three states the line has to survive: a plain repository, a worktree, and a plan with rolling limits instead of a monthly budget. The reset countdown travels with whichever meter it belongs to — the monthly budget rolls over at the start of next month, the five-hour and weekly windows on their own clocks.</p>
+
     <div class="term ruled" style="margin-top:1.75rem">
-      <p class="lede">today</p>
+      <p class="lede">today — monthly budget</p>
       <div class="sl"><span class="b c">🤖 Opus (1M)</span> <span class="d">|</span> <span class="g">main</span> <span class="d">|</span> <span class="d">▓▓▓▓▓▓▓░░░░░░░░░ 45%</span>
-<span class="g">budget: ▓▓▓▓░░░░░░</span> <span>$879.43 / $2000</span> <span class="d">↻20d11h</span><span class="caret"></span></div>
+<span class="g">budget: ▓▓▓▓░░░░░░</span> <span>$879.43 / $2000</span> <span class="d">↻20d11h</span></div>
+      <p class="lede">today — rolling limits</p>
+      <div class="sl"><span class="b c">🤖 Opus (1M)</span> <span class="d">|</span> <span class="g">main</span> <span class="d">|</span> <span class="d">▓▓▓▓▓▓▓░░░░░░░░░ 45%</span>
+<span>5h: </span><span class="g">▓▓░░░░░░░░ 22%</span> <span class="d">↻2h30m</span> <span class="d">|</span> <span>week: </span><span class="d">▓▓▓▓▓▓░░░░ 61%</span> <span class="d">↻4d6h</span><span class="caret"></span></div>
     </div>
 
-    <p class="standfirst">The model, the branch, the context window and the spend. Nothing says which of the six open sessions this is — two sessions on <span class="g">main</span> in different repositories render identically.</p>
+    <p class="standfirst">Nothing here says which of the six open sessions this is — two sessions on <span class="g">main</span> in different repositories render identically.</p>
 
     <div class="controls">
       <button id="theme" type="button" aria-pressed="false">Dark terminal</button>
@@ -312,12 +320,14 @@
       <div class="num">1</div>
       <div>
         <h2>Filled segments</h2>
-        <p class="why">Each field gets a background block, so the eye lands on boundaries instead of counting pipes. The location reads as a label, not as more text.</p>
+        <p class="why">Each field gets a background block, so the eye lands on boundaries instead of counting pipes. Resets ride inside the segment they reset.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="inv-d">my-app/libs/my-app-core</span><span class="inv-g">main</span><span class="d"> ▓▓▓▓▓▓▓░░░░░░░░░ 45%  $879 / 2000</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="inv-d">.claude 🌳 budget-ledger</span><span class="inv-m">feature-x</span><span class="d"> ▓▓▓▓▓▓▓░░░░░░░░░ 45%  $879 / 2000</span></div>
+          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="inv-d">my-app/libs/my-app-core</span><span class="inv-g">main</span><span class="d"> ctx ▓▓▓▓▓▓▓░░░░░░░░░ 45%  $879/2000 ↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="inv-d">.claude 🌳 budget-ledger</span><span class="inv-m">feature-x</span><span class="d"> ctx ▓▓▓▓▓▓▓░░░░░░░░░ 45%  $879/2000 ↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="inv-d">my-app/libs/my-app-core</span><span class="inv-g">main</span><span class="d"> ctx 45%  </span><span class="inv-g">5h 22% ↻2h30m</span><span class="inv-y">7d 61% ↻4d6h</span></div>
         </div>
         <p class="cost"><b>Cost:</b> background colours behave differently across terminal themes; a light theme needs its own foreground pairs to stay legible.</p>
       </div>
@@ -331,11 +341,13 @@
         <p class="why">Filled segments with the powerline chevron between them. The direction implies a hierarchy: model, then place, then state.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="c">▶</span><span class="inv-d">my-app/libs/my-app-core</span><span class="d">▶</span><span class="inv-g">main</span><span class="g">▶</span><span class="d"> 45%  $879</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="c">▶</span><span class="inv-d">.claude 🌳 budget-ledger</span><span class="d">▶</span><span class="inv-m">feature-x</span><span class="m">▶</span><span class="d"> 45%  $879</span></div>
+          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="c">▶</span><span class="inv-d">my-app/libs/my-app-core</span><span class="d">▶</span><span class="inv-g">main</span><span class="g">▶</span><span class="d"> 45%  $879 ↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="c">▶</span><span class="inv-d">.claude 🌳 budget-ledger</span><span class="d">▶</span><span class="inv-m">feature-x</span><span class="m">▶</span><span class="d"> 45%  $879 ↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="inv-c b">Opus 1M</span><span class="c">▶</span><span class="inv-d">my-app/libs/my-app-core</span><span class="d">▶</span><span class="inv-g">main</span><span class="g">▶</span><span class="d"> 45%  5h 22% ↻2h30m  7d 61% ↻4d6h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> needs a Nerd Font in every terminal you use, or the chevrons render as tofu. The glyphs above are drawn as escapes because this page has no Nerd Font either.</p>
+        <p class="cost"><b>Cost:</b> needs a Nerd Font in every terminal you use, or the chevrons render as tofu. Drawn here as <code>▶</code> because this page has no Nerd Font either.</p>
       </div>
     </section>
 
@@ -344,14 +356,16 @@
       <div class="num">3</div>
       <div>
         <h2>Hairline</h2>
-        <p class="why">No icons, no bars. Thin dividers, one colour for what changes, grey for everything else. The line stops competing with the output above it.</p>
+        <p class="why">No icons, no bars. Thin dividers, one colour for what changes, grey for everything else. Resets are written as plain remaining time.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="b">Opus 1M</span><span class="d"> │ </span>my-app/libs/my-app-core<span class="d"> │ </span><span class="g">main</span><span class="d"> │ ctx 45% │ $879 of $2000</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="b">Opus 1M</span><span class="d"> │ </span>.claude 🌳 budget-ledger<span class="d"> │ </span><span class="m">feature-x</span><span class="d"> │ ctx 45% │ $879 of $2000</span></div>
+          <div class="sl"><span class="b">Opus 1M</span><span class="d"> │ </span>my-app/libs/my-app-core<span class="d"> │ </span><span class="g">main</span><span class="d"> │ ctx 45% │ $879 of $2000, 20d left</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="b">Opus 1M</span><span class="d"> │ </span>.claude 🌳 budget-ledger<span class="d"> │ </span><span class="m">feature-x</span><span class="d"> │ ctx 45% │ $879 of $2000, 20d left</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="b">Opus 1M</span><span class="d"> │ </span>my-app/libs/my-app-core<span class="d"> │ </span><span class="g">main</span><span class="d"> │ ctx 45% │ 5h 22%, 2h30m left │ 7d 61%, 4d6h left</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> no bars means no peripheral read — you have to actually parse the number to know you are at 90%.</p>
+        <p class="cost"><b>Cost:</b> no bars means no peripheral read — you have to parse the number to know you are at 90%.</p>
       </div>
     </section>
 
@@ -360,16 +374,20 @@
       <div class="num">4</div>
       <div>
         <h2>Two tiers, aligned</h2>
-        <p class="why">Identity on the first line, resources on the second, with the second line's fields aligned to fixed columns so the numbers sit still as they change.</p>
+        <p class="why">Identity on the first line, resources on the second, with the second line's fields on fixed columns so the numbers sit still as they change. Each meter carries its own reset.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
           <div class="sl"><span class="b c">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>
-<span class="d">ctx   </span><span class="d">▓▓▓▓▓▓▓░░░░░░░░░</span> <span class="d"> 45%</span>   <span class="d">spend </span><span class="g">▓▓▓▓░░░░░░</span> <span> 44%</span>  <span class="d">$1120 left</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
+<span class="d">ctx    ▓▓▓▓▓▓▓░░░░░░░░░  45%</span>   <span class="d">spend  </span><span class="g">▓▓▓▓░░░░░░</span><span>  44%</span>  <span class="d">$1120 left  ↻20d11h</span></div>
+          <p class="lede">worktree</p>
           <div class="sl"><span class="b c">Opus 1M</span>  .claude 🌳 budget-ledger  <span class="m">feature-x</span>
-<span class="d">ctx   </span><span class="d">▓▓▓▓▓▓▓░░░░░░░░░</span> <span class="d"> 45%</span>   <span class="d">spend </span><span class="g">▓▓▓▓░░░░░░</span> <span> 44%</span>  <span class="d">$1120 left</span></div>
+<span class="d">ctx    ▓▓▓▓▓▓▓░░░░░░░░░  45%</span>   <span class="d">spend  </span><span class="g">▓▓▓▓░░░░░░</span><span>  44%</span>  <span class="d">$1120 left  ↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="b c">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>
+<span class="d">ctx    ▓▓▓▓▓▓▓░░░░░░░░░  45%</span>   <span class="d">5h     </span><span class="g">▓▓░░░░░░░░</span><span>  22%</span>  <span class="d">↻2h30m</span>
+<span class="d">                            </span>   <span class="d">week   ▓▓▓▓▓▓░░░░  61%</span>  <span class="d">↻4d6h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> two lines of terminal height, permanently. Closest to today's layout, so the least to get used to.</p>
+        <p class="cost"><b>Cost:</b> two lines permanently, three on a rolling plan. Closest to today's layout, so the least to get used to.</p>
       </div>
     </section>
 
@@ -381,11 +399,13 @@
         <p class="why">Identity anchored left, meters flushed right. Where a field starts tells you what kind of thing it is, before you read it.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="b c">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span><span class="d">                    45% ctx   $879 / 2000</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="b c">Opus 1M</span>  .claude 🌳 budget-ledger  <span class="m">feature-x</span><span class="d">          45% ctx   $879 / 2000</span></div>
+          <div class="sl"><span class="b c">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span><span class="d">            45% ctx   $879/2000 ↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="b c">Opus 1M</span>  .claude 🌳 budget-ledger  <span class="m">feature-x</span><span class="d">  45% ctx   $879/2000 ↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="b c">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span><span class="d">   45% ctx  5h 22% ↻2h30m  7d 61% ↻4d6h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> the hook payload carries no terminal width, so the padding has to be guessed from <code>tput cols</code> — an extra subprocess per render, and it drifts when the pane is resized mid-session.</p>
+        <p class="cost"><b>Cost:</b> the hook payload carries no terminal width, so the padding has to come from <code>tput cols</code> — an extra subprocess per render, and it drifts when the pane is resized mid-session.</p>
       </div>
     </section>
 
@@ -394,14 +414,16 @@
       <div class="num">6</div>
       <div>
         <h2>Glyph row</h2>
-        <p class="why">Every label replaced by one glyph. The shortest line that still carries all five fields, and it leaves room for long paths.</p>
+        <p class="why">Every label replaced by one glyph, resets included. The shortest line that still carries all the fields, which leaves room for long paths.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◷ 45%</span>  <span class="g">◍ $879</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude 🌳 budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">◷ 45%</span>  <span class="g">◍ $879</span></div>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◷ 45%</span>  <span class="g">◍ $879</span> <span class="d">↻20d</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude 🌳 budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">◷ 45%</span>  <span class="g">◍ $879</span> <span class="d">↻20d</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◷ 45%</span>  <span class="g">◔ 22% ↻2h30m</span>  <span class="d">◑ 61% ↻4d6h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> the glyphs need learning, and they carry no meaning to anyone reading over your shoulder.</p>
+        <p class="cost"><b>Cost:</b> the glyphs need learning, and the two window glyphs (<code>◔</code> five-hour, <code>◑</code> weekly) are the weakest of them — nothing about the shape says which window it is.</p>
       </div>
     </section>
 
@@ -410,14 +432,16 @@
       <div class="num">7</div>
       <div>
         <h2>Braille meters</h2>
-        <p class="why">The block bars shrink to braille cells, four times denser per character. Both meters fit inside the space one bar takes today.</p>
+        <p class="why">The block bars shrink to braille cells, four times denser per character. On a rolling plan all three meters and both resets still fit on one line.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">·</span> <span class="d">ctx ⣿⣿⣿⣀⣀ 45%</span> <span class="d">·</span> <span class="g">$ ⣿⣿⣀⣀⣀ 44%</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> .claude 🌳 budget-ledger <span class="d">·</span> <span class="m">feature-x</span> <span class="d">·</span> <span class="d">ctx ⣿⣿⣿⣀⣀ 45%</span> <span class="d">·</span> <span class="g">$ ⣿⣿⣀⣀⣀ 44%</span></div>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">·</span> <span class="d">ctx ⣿⣿⣿⣀⣀ 45%</span> <span class="d">·</span> <span class="g">$ ⣿⣿⣀⣀⣀ 44%</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> .claude 🌳 budget-ledger <span class="d">·</span> <span class="m">feature-x</span> <span class="d">·</span> <span class="d">ctx ⣿⣿⣿⣀⣀ 45%</span> <span class="d">·</span> <span class="g">$ ⣿⣿⣀⣀⣀ 44%</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">·</span> <span class="d">ctx ⣿⣿⣿⣀⣀ 45%</span> <span class="d">·</span> <span class="g">5h ⣿⣀⣀⣀⣀ 22% ↻2h30m</span> <span class="d">·</span> <span class="d">7d ⣿⣿⣿⣄⣀ 61% ↻4d6h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> braille renders at different weights across fonts, and can look like damage rather than data in some terminals.</p>
+        <p class="cost"><b>Cost:</b> braille renders at different weights across fonts, and can read as damage rather than data in some terminals.</p>
       </div>
     </section>
 
@@ -426,14 +450,18 @@
       <div class="num">8</div>
       <div>
         <h2>Numbers only</h2>
-        <p class="why">Drop the meters entirely and keep the figures. Colour carries the warning instead of length, so the line stays the same width at 5% and at 95%.</p>
+        <p class="why">Drop the meters and keep the figures. Colour carries the warning instead of length, so the line stays the same width at 5% and at 95%.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="b">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">ctx</span> <span>45%</span>  <span class="d">spend</span> <span>$879</span><span class="d">/2000</span></div>
-          <p class="lede" style="margin-top:.9rem">at the limit</p>
-          <div class="sl"><span class="b">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">ctx</span> <span class="r b">94%</span>  <span class="d">spend</span> <span class="y">$1780</span><span class="d">/2000</span></div>
+          <div class="sl"><span class="b">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">ctx</span> <span>45%</span>  <span class="d">spend</span> <span>$879</span><span class="d">/2000 ↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="b">Opus 1M</span>  .claude 🌳 budget-ledger  <span class="m">feature-x</span>  <span class="d">ctx</span> <span>45%</span>  <span class="d">spend</span> <span>$879</span><span class="d">/2000 ↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="b">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">ctx</span> <span>45%</span>  <span class="d">5h</span> <span>22%</span> <span class="d">↻2h30m</span>  <span class="d">7d</span> <span>61%</span> <span class="d">↻4d6h</span></div>
+          <p class="lede">at the limit</p>
+          <div class="sl"><span class="b">Opus 1M</span>  my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">ctx</span> <span class="r b">94%</span>  <span class="d">5h</span> <span class="r b">96%</span> <span class="y">↻18m</span>  <span class="d">7d</span> <span class="y">78%</span> <span class="d">↻2d1h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> a jump from 45% to 62% is invisible until you read it; the bar made that motion obvious without attention.</p>
+        <p class="cost"><b>Cost:</b> a jump from 45% to 62% is invisible until you read it; a bar makes that motion obvious without attention. Works best on a rolling plan, where the countdown matters more than the fill.</p>
       </div>
     </section>
 
@@ -445,11 +473,13 @@
         <p class="why">The tmux convention: each field in brackets, no colour needed to separate them. Reads correctly even piped somewhere that strips ANSI.</p>
         <div class="term ruled">
           <p class="lede">repo</p>
-          <div class="sl"><span class="d">[</span><span class="b">Opus 1M</span><span class="d">]</span> <span class="d">[</span>my-app/libs/my-app-core<span class="d">]</span> <span class="d">[</span><span class="g">main</span><span class="d">]</span> <span class="d">[ctx 45%]</span> <span class="d">[$879]</span></div>
-          <p class="lede" style="margin-top:.9rem">worktree</p>
-          <div class="sl"><span class="d">[</span><span class="b">Opus 1M</span><span class="d">]</span> <span class="d">[</span>.claude 🌳 budget-ledger<span class="d">]</span> <span class="d">[</span><span class="m">feature-x</span><span class="d">]</span> <span class="d">[ctx 45%]</span> <span class="d">[$879]</span></div>
+          <div class="sl"><span class="d">[</span><span class="b">Opus 1M</span><span class="d">]</span> <span class="d">[</span>my-app/libs/my-app-core<span class="d">]</span> <span class="d">[</span><span class="g">main</span><span class="d">]</span> <span class="d">[ctx 45%]</span> <span class="d">[$879 ↻20d11h]</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="d">[</span><span class="b">Opus 1M</span><span class="d">]</span> <span class="d">[</span>.claude 🌳 budget-ledger<span class="d">]</span> <span class="d">[</span><span class="m">feature-x</span><span class="d">]</span> <span class="d">[ctx 45%]</span> <span class="d">[$879 ↻20d11h]</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="d">[</span><span class="b">Opus 1M</span><span class="d">]</span> <span class="d">[</span>my-app/libs/my-app-core<span class="d">]</span> <span class="d">[</span><span class="g">main</span><span class="d">]</span> <span class="d">[ctx 45%]</span> <span class="d">[5h 22% ↻2h30m]</span> <span class="d">[7d 61% ↻4d6h]</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> ten brackets of pure punctuation, and it looks like every other tmux bar.</p>
+        <p class="cost"><b>Cost:</b> twelve brackets of pure punctuation on a rolling plan, and it looks like every other tmux bar.</p>
       </div>
     </section>
 
@@ -458,24 +488,38 @@
       <div class="num">10</div>
       <div>
         <h2>Quiet until it matters</h2>
-        <p class="why">One line that shows only identity while everything is fine. A meter appears when the context window passes 60% or spend passes 75%, and disappears again. The line earns its width instead of holding it.</p>
+        <p class="why">One line showing only identity while everything is fine. A meter and its countdown appear when that meter passes its threshold, and disappear again. The line earns its width instead of holding it.</p>
         <div class="term ruled">
-          <p class="lede">normal</p>
+          <p class="lede">repo, nothing under pressure</p>
           <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">· 45%</span></div>
-          <p class="lede" style="margin-top:.9rem">context filling up</p>
+          <p class="lede">worktree, nothing under pressure</p>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> .claude 🌳 budget-ledger <span class="d">·</span> <span class="m">feature-x</span> <span class="d">· 45%</span></div>
+          <p class="lede">context filling up</p>
           <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">·</span> <span class="y">ctx ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78%</span></div>
-          <p class="lede" style="margin-top:.9rem">both under pressure</p>
-          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">·</span> <span class="r">ctx ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94%</span> <span class="y">$1780 / 2000</span></div>
+          <p class="lede">budget past three quarters</p>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">· 45% ·</span> <span class="y">$1780 / 2000 ↻20d11h</span></div>
+          <p class="lede">rolling limits, five-hour window nearly spent</p>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">· 45% ·</span> <span class="r">5h ▓▓▓▓▓▓▓▓▓░ 91% ↻1h10m</span></div>
+          <p class="lede">rolling limits, both windows tight</p>
+          <div class="sl"><span class="b c">Opus 1M</span> <span class="d">·</span> my-app/libs/my-app-core <span class="d">·</span> <span class="g">main</span> <span class="d">·</span> <span class="r">5h ▓▓▓▓▓▓▓▓▓░ 91% ↻1h10m</span> <span class="y">7d 82% ↻2d1h</span></div>
         </div>
-        <p class="cost"><b>Cost:</b> the line changes shape as you work, so its fields are not always in the same place. Warnings are only useful if the thresholds are right.</p>
+        <p class="cost"><b>Cost:</b> the line changes shape as you work, so its fields are not always in the same place, and the countdown you might want to check is hidden exactly when there is no pressure. Warnings are only useful if the thresholds are right.</p>
       </div>
     </section>
 
   </main>
 
   <footer>
-    <p>Every option keeps the same five fields: model and context size, location, branch, context window, spend. What changes is structure, density and how much attention the line asks for.</p>
-    <p>Constraints they all share: the hook gets no terminal width, emoji occupy two columns and align unreliably, and anything past column 80 wraps.</p>
+    <p>Every option carries the same fields: model and context size, location, branch, context window, and either the monthly budget or the two rolling windows. What changes is structure, density and how much attention the line asks for.</p>
+
+    <dl class="states">
+      <dt>Monthly budget</dt>
+      <dd>Spend against the cap, resetting at the start of next month — shown here as <code>↻20d11h</code>.</dd>
+      <dt>Rolling limits</dt>
+      <dd>A five-hour window and a weekly one, each with its own countdown. Both are live at once, so two resets share the line.</dd>
+    </dl>
+
+    <p style="margin-top:1.5rem">Constraints they all share: the hook gets no terminal width, emoji occupy two columns and align unreliably, and anything past column 80 wraps.</p>
   </footer>
 
 </div>
