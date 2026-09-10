@@ -157,16 +157,23 @@ if [ -n "$five_h" ]; then
     fi
   fi
 elif [ -n "$cost" ]; then
-  # Enterprise: track monthly spend across all sessions
+  # Enterprise: month-to-date spend across every session, live ones included.
+  # budget.js merges the per-session cost files with the transcript ledger and
+  # keys on session id, so nothing is counted twice and nothing is dropped when
+  # a session ends without its hook firing. The cost file for this session was
+  # written further up, so the total already includes the current turn.
+  CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
   BUDGET=2000
-  this_month=$(date +%Y-%m)
-  BUDGET_FILE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/budget.json"
-  hist_cost=0
-  if [ -f "$BUDGET_FILE" ] && [ ! -L "$BUDGET_FILE" ]; then
-    hist_cost=$(jq -r --arg m "$this_month" '.[$m] // 0' "$BUDGET_FILE" 2>/dev/null || echo 0)
+  total_cost=""
+  budget_out=$(node "$CLAUDE_HOME/scripts/budget.js" --statusline 2>/dev/null)
+  if [ -n "$budget_out" ]; then
+    total_cost=${budget_out% *}
+    BUDGET=${budget_out#* }
   fi
-  # hist_cost = completed sessions this month; cost = current session
-  total_cost=$(echo "$hist_cost $cost" | awk '{printf "%.4f", $1 + $2}')
+  # Never lose the statusline to an accounting failure: fall back to this session.
+  case "$total_cost" in
+    ''|*[!0-9.]*) total_cost=$(echo "$cost" | awk '{printf "%.4f", $1}') ;;
+  esac
   remaining=$(echo "$total_cost $BUDGET" | awk '{printf "%.2f", $2 - $1}')
   total_pct=$(echo "$total_cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
   budget_bar=$(make_bar "$total_pct" 10)

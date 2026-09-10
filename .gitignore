@@ -8,6 +8,7 @@ sessions/
 auto_resume/
 .session_costs/
 budget.json
+budget-ledger.json
 rate_limits.json
 .claudechic.yaml
 .caveman-active

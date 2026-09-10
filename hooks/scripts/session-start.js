@@ -13,7 +13,8 @@ const { execSync } = require('child_process');
 
 // Get project root from environment or current directory
 const projectRoot = process.env.PWD || process.cwd();
-const claudeDir = path.join(process.env.HOME, '.claude');
+// Must match statusline.sh and session-end.js, which also honour CLAUDE_CONFIG_DIR.
+const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(process.env.HOME, '.claude');
 const sessionsDir = path.join(claudeDir, 'sessions');
 const projectClaudeDir = path.join(projectRoot, '.claude');
 
@@ -104,6 +105,13 @@ if (hasProjectClaude) {
 if (latestSession) {
   context.push(`  Last Session: ${latestSession.file}`);
 }
+
+// Refresh the spend ledger. Cheap after the first run (unchanged transcripts are
+// skipped), and it means the month total is right even for sessions that ended
+// without their SessionEnd hook firing.
+try {
+  require('../../scripts/budget.js').reconcile(claudeDir);
+} catch (_) {}
 
 // Output context summary to stderr (visible to user)
 console.error(context.join('\n'));

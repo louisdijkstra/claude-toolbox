@@ -29,34 +29,37 @@ const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
 const date = now.toISOString().slice(0, 10);
 const sessionFile = path.join(sessionsDir, `${date}-${timestamp.slice(11)}.md`);
 
-// Accumulate Enterprise session cost into monthly budget file
-// Stop hook has no cost field — read cost saved by statusline hook
-let sessionCost = 0;
-let payload = {};
+// Fold this session's cost into the ledger. reconcile() is keyed by session id
+// and idempotent, so running it here is safe even though the statusline has
+// already recorded the same session, and skipping it (hook never fires, machine
+// crashes) only delays the entry rather than losing it.
 try {
-  payload = JSON.parse(fs.readFileSync(0, 'utf8'));
-} catch (_) {}
-try {
-  // Match the key statusline.sh wrote: payload first, env var as fallback.
-  const sessionId = payload.session_id || process.env.CLAUDE_CODE_SESSION_ID || 'current';
-  const costFile = path.join(claudeDir, '.session_costs', sessionId);
-  const costStr = fs.readFileSync(costFile, 'utf8').trim();
-  sessionCost = parseFloat(costStr) || 0;
-  fs.unlinkSync(costFile);
+  fs.readFileSync(0, 'utf8'); // consume the hook payload so the writer never blocks
 } catch (_) {}
 
-if (sessionCost > 0) {
-  const budgetFile = path.join(claudeDir, 'budget.json');
-  const thisMonth = now.toISOString().slice(0, 7); // YYYY-MM
-  let budget = {};
-  try { budget = JSON.parse(fs.readFileSync(budgetFile, 'utf8')); } catch (err) {}
-  budget[thisMonth] = (budget[thisMonth] || 0) + sessionCost;
-  try {
-    fs.writeFileSync(budgetFile, JSON.stringify(budget, null, 2));
-  } catch (err) {
-    console.error(`[Hook] Error saving budget: ${err.message}`);
-  }
+try {
+  const { reconcile } = require('../../scripts/budget.js');
+  reconcile(claudeDir);
+} catch (err) {
+  console.error(`[Hook] Error updating budget ledger: ${err.message}`);
 }
+
+// The cost files stay on disk — the ledger dedupes by session id, so an extra
+// copy costs nothing, while deleting one would lose the only record of a session
+// whose transcript never got a cost-state entry. Drop only the long-dead ones
+// that the ledger has definitely absorbed.
+try {
+  const { readLedger } = require('../../scripts/budget.js');
+  const known = readLedger(claudeDir).sessions || {};
+  const costsDir = path.join(claudeDir, '.session_costs');
+  const cutoff = now.getTime() - 60 * 24 * 60 * 60 * 1000;
+  for (const name of fs.readdirSync(costsDir)) {
+    const file = path.join(costsDir, name);
+    if (!known[name]) continue;
+    if (fs.statSync(file).mtimeMs > cutoff) continue;
+    fs.unlinkSync(file);
+  }
+} catch (_) {}
 
 // Get basic session info
 const sessionInfo = {

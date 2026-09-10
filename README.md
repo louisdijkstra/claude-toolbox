@@ -79,7 +79,8 @@ stack decisions.
 ├── .mcp.json             MCP server definitions (filesystem, memory, brave, package-registry)
 ├── skills/               4 reusable workflows (SKILL.md per directory)
 ├── commands/             3 slash-command shortcuts
-├── scripts/              wt.sh — git-worktree shell helper, sourced from .zshrc
+├── scripts/              wt.sh (git-worktree helper), notify.js (desktop alerts),
+│                         budget.js (month-to-date spend ledger)
 ├── hooks/scripts/        8 event-driven scripts (session start/end, statusline, blockers)
 ├── docs/                 Research reports and notes
 └── tests/                Skill-structure validation
@@ -112,7 +113,7 @@ Full descriptions in [skills/README.md](skills/README.md) and per-skill `SKILL.m
 | Script | Event | Purpose |
 |---|---|---|
 | `session-start.js` | SessionStart | Detect package manager, branch, env |
-| `session-end.js` | Stop | Persist session state |
+| `session-end.js` | SessionEnd | Persist session state, refresh the spend ledger |
 | `pre-compact.js` | PreCompact | Snapshot context before compression |
 | `suggest-compact.js` | PreToolUse (Edit\|Write) | Suggest compaction at thresholds |
 | `block-dev-without-tmux.js` | PreToolUse (dev servers) | Force long-running servers into tmux |
@@ -121,6 +122,30 @@ Full descriptions in [skills/README.md](skills/README.md) and per-skill `SKILL.m
 | `statusline.sh` | StatusLine | Two-line status with model, context, rate limits, cost |
 
 Hook config lives in `settings.json` under `hooks.*`.
+
+### Monthly spend
+
+The statusline's budget bar is month-to-date spend across **every** session, not
+just the current one. `scripts/budget.js` keeps a ledger in `budget-ledger.json`
+keyed by session id, merged from two independent sources:
+
+- **live** — `.session_costs/<session_id>`, rewritten by the statusline on every
+  render, so sessions that are still running are included;
+- **transcript** — the `cost-state` record in `projects/<slug>/<session_id>.jsonl`,
+  written when a session ends, carrying the exact `startTime`.
+
+Keying on session id makes the merge idempotent: a source can be re-read any
+number of times without double counting, and a session is only missing if
+neither source ever saw it. Where the two overlap they agree exactly.
+
+```bash
+node ~/.claude/scripts/budget.js --report          # per-session breakdown + remaining
+node ~/.claude/scripts/budget.js --report 2026-08  # any month
+node ~/.claude/scripts/budget.js --reconcile       # force a rescan
+```
+
+Set the limit with `CLAUDE_MONTHLY_BUDGET` (default 2000). Months predating the
+ledger are carried over from the old `budget.json` as opaque totals.
 
 ## MCP Servers
 
