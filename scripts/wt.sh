@@ -479,5 +479,7 @@ if [[ -n "$ZSH_VERSION" ]]; then
             esac
         fi
     }
-    compdef _wt_completion wt
+    if (( $+functions[compdef] )); then
+        compdef _wt_completion wt
+    fi
 fi
