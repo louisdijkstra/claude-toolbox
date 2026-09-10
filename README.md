@@ -8,7 +8,7 @@ Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) �
 ![license](https://img.shields.io/github/license/louisdijkstra/claude-toolbox)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.x-blue)
 
-**Contents:** 3 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations
+**Contents:** 4 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations
 
 ---
 
@@ -77,7 +77,7 @@ stack decisions.
 ├── CLAUDE.md             Global development philosophy + conventions
 ├── settings.json         Permissions, hooks, statusline, MCP enablement
 ├── .mcp.json             MCP server definitions (filesystem, memory, brave, package-registry)
-├── skills/               3 reusable workflows (SKILL.md per directory)
+├── skills/               4 reusable workflows (SKILL.md per directory)
 ├── commands/             3 slash-command shortcuts
 ├── scripts/              wt.sh — git-worktree shell helper, sourced from .zshrc
 ├── hooks/scripts/        8 event-driven scripts (session start/end, statusline, blockers)
