@@ -27,8 +27,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      # jq parses the statusline payload; PyYAML parses SKILL.md frontmatter.
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Install PyYAML
+        run: python3 -m pip install --disable-pip-version-check pyyaml
 
       # Six sections: skill structure, SKILL.md validity, supporting files,
       # the statusline's shell libraries, the Node scripts, and the scan for
