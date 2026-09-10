@@ -8,7 +8,13 @@ fixtures and worked examples copied from real paths.
 
 The terms below are assembled from split literals on purpose: the file has to
 name what it searches for, and writing them whole would mean this guard is
-itself a leak. Add new terms the same way.
+itself a leak.
+
+Split *inside* each term, not at its edges. A history rewrite that replaces
+these strings will happily rewrite this file too, so an entry whose fragments
+still spell a whole forbidden word gets silently corrupted into a pattern that
+matches nothing — which is exactly what happened the first time. Every fragment
+below is short enough to be meaningless on its own, including in this sentence.
 """
 
 import subprocess
@@ -21,9 +27,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FORBIDDEN = [
     ("ki" + "ra", "my-app"),
     ("KI" + "RA", "My App"),
-    ("/Users/" + "you", "/Users/you"),
-    ("CV" + "S-planning", "2026-planning"),
-    ("Pre" + "sales", "2026-planning"),
+    ("/Users/" + "dij" + "ksl", "/Users/you"),
+    ("CV" + "S-Pres" + "ales", "2026-planning"),
+    ("Pres" + "ales", "2026-planning"),
     ("One" + "Drive", "Sync"),
     ("Cloud" + "Storage", "Sync"),
 ]
