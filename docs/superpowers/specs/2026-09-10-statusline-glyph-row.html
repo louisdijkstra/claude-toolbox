@@ -143,6 +143,12 @@
   th { color: var(--dim); font-weight: 500; font-size: 12.5px; }
 
   td.glyph { font-size: 1.2rem; color: var(--magenta); width: 4ch; }
+
+  tr.chosen td { background: var(--track); }
+  tr.chosen td.name { font-weight: 600; }
+
+  /* Uncoloured meters: fill alone carries the value. */
+  .circ { color: var(--ink); }
   td.name { color: var(--ink); width: 22ch; }
   td.read { color: var(--ink-soft); }
 
@@ -206,7 +212,7 @@
     </thead>
     <tbody>
       <tr><td class="glyph">⧉</td><td class="name">stacked squares</td><td class="read">A linked copy of the same thing. Closest to what a worktree is, and distinct from every branch glyph.</td></tr>
-      <tr><td class="glyph">↳</td><td class="name">corner arrow</td><td class="read">Derived from the thing on its left. Reads naturally as <code>my-app ↳ feature-x</code>, and needs no legend.</td></tr>
+      <tr class="chosen"><td class="glyph">↳</td><td class="name">corner arrow — chosen</td><td class="read">Derived from the thing on its left. Reads naturally as <code>my-app ↳ feature-x</code>, and needs no legend.</td></tr>
       <tr><td class="glyph">⎇</td><td class="name">alternate</td><td class="read">The standard branch symbol. Precise for people who know it, invisible to everyone else, and it says branch when we mean worktree.</td></tr>
       <tr><td class="glyph">⋔</td><td class="name">pitchfork</td><td class="read">A split into parallel paths. Suggestive, but easily mistaken for a merge or a fork.</td></tr>
       <tr><td class="glyph">»</td><td class="name">guillemet</td><td class="read">Plain descent. No git meaning at all, which makes it quiet — and ambiguous with a path separator.</td></tr>
@@ -329,6 +335,73 @@
           <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">◑ 45%</span>  <span class="g">◔ 22% ↻2h30m</span>  <span class="y">◕ 61% ↻4d6h</span></div>
         </div>
         <p class="cost"><b>Cost:</b> the branch is only identifiable by colour, so it disappears in a monochrome terminal or a piped log.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <h2 class="sec">Three more, to the brief</h2>
+  <p class="standfirst">Circles kept, colour taken off them, <code>↳</code> throughout, and the cap always beside the spend so <code>$879</code> is never shown without <code>$2000</code>. The three differ in how a reader knows which meter is which, now that colour cannot tell them.</p>
+
+  <main>
+
+    <!-- G -->
+    <section class="opt" id="vg">
+      <div class="num">G</div>
+      <div>
+        <h3>Labels do it</h3>
+        <p class="why">Two characters in front of every meter. The most direct answer: nothing is inferred, the line just says what each figure is.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx</span> <span class="circ">◑</span> <span class="d">45%</span>  <span class="d">$</span> <span class="circ">◑</span> <span>879 / 2000</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">↳</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">ctx</span> <span class="circ">◑</span> <span class="d">45%</span>  <span class="d">$</span> <span class="circ">◑</span> <span>879 / 2000</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx</span> <span class="circ">◑</span> <span class="d">45%</span>  <span class="d">5h</span> <span class="circ">◔</span> <span>22%</span> <span class="d">↻2h30m</span>  <span class="d">7d</span> <span class="circ">◕</span> <span>61%</span> <span class="d">↻4d6h</span></div>
+          <p class="lede">at the limit — fill alone, no colour</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx</span> <span class="circ">●</span> <span class="d">94%</span>  <span class="d">$</span> <span class="circ">◕</span> <span>1780 / 2000</span> <span class="d">↻20d11h</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> the longest of the three, and the labels are exactly what a glyph row set out to remove. Nothing about it can be misread.</p>
+      </div>
+    </section>
+
+    <!-- H -->
+    <section class="opt" id="vh">
+      <div class="num">H</div>
+      <div>
+        <h3>Position does it</h3>
+        <p class="why">No labels. The meters always appear in the same order — context, then money or windows — and the four-cell strip gives enough resolution that the percentage can go. The spend keeps its figures because money is not a percentage.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="circ">●●○○</span>  <span class="circ">●◕○○</span> <span>$879 / 2000</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">↳</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="circ">●●○○</span>  <span class="circ">●◕○○</span> <span>$879 / 2000</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="circ">●●○○</span>  <span class="circ">◕○○○</span> <span class="d">↻2h30m</span>  <span class="circ">●●◑○</span> <span class="d">↻4d6h</span></div>
+          <p class="lede">the ramp, at four cells</p>
+          <div class="sl"><span class="d">○○○○ 0   ◑○○○ 12   ●○○○ 25   ●◑○○ 37   ●●○○ 50   ●●◑○ 62   ●●●○ 75   ●●●● 100</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> on a rolling plan the two windows are told apart only by their countdowns — <code>↻2h30m</code> is the five-hour one because it is short. True, but it asks the reader to work it out.</p>
+      </div>
+    </section>
+
+    <!-- I -->
+    <section class="opt" id="vi">
+      <div class="num">I</div>
+      <div>
+        <h3>The values do it</h3>
+        <p class="why">No labels and no colour anywhere — the whole line is one ink. Each value carries its own unit, so <code>45%</code> is the context window, <code>$879 / 2000</code> is money, and a countdown marks a window. Legible piped, logged, or on a monochrome terminal.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl">◆ Opus 1M  ▸ my-app/libs/my-app-core  ⑂ main  ◑ 45%  ◑ $879 / 2000  ↻20d11h</div>
+          <p class="lede">worktree</p>
+          <div class="sl">◆ Opus 1M  ▸ .claude ↳ budget-ledger  ⑂ feature-x  ◑ 45%  ◑ $879 / 2000  ↻20d11h</div>
+          <p class="lede">rolling limits</p>
+          <div class="sl">◆ Opus 1M  ▸ my-app/libs/my-app-core  ⑂ main  ◑ 45%  ◔ 22% ↻2h30m  ◕ 61% ↻4d6h</div>
+          <p class="lede">at the limit</p>
+          <div class="sl">◆ Opus 1M  ▸ my-app/libs/my-app-core  ⑂ main  ● 94%  ◕ $1780 / 2000  ↻20d11h</div>
+        </div>
+        <p class="cost"><b>Cost:</b> giving up colour costs the branch its green and the worktree its magenta, so <code>↳</code> and <code>⑂</code> carry that distinction alone. Nothing shouts when you cross 90% — the fill goes solid and that is all.</p>
       </div>
     </section>
 
