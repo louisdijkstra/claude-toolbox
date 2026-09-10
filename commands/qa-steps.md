@@ -91,6 +91,3 @@ QA steps must be:
 - Use with `/review` to validate test coverage
 - Reference in merge request descriptions
 
-## Related Skills
-
-- **dev-flow** - Part of integration stage

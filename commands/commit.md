@@ -158,6 +158,3 @@ Commit messages should:
 - Use `/humanize` if message sounds too formal
 - Part of `/flow` integration stage
 
-## Related Skills
-
-- **dev-flow** - Part of integration workflow

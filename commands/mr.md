@@ -103,6 +103,3 @@ MR descriptions must be:
 - Use `/humanize` on AI-generated text before MR
 - Reference in actual merge request
 
-## Related Skills
-
-- **dev-flow** - Part of integration stage
