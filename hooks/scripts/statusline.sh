@@ -64,10 +64,11 @@ countdown() {
 }
 
 # Persist current session cost for Stop hook (which has no cost data)
+# Keyed per session id — concurrent sessions/background jobs must not share one file
 if [ -n "$cost" ]; then
   COSTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.session_costs"
   mkdir -p "$COSTS_DIR" 2>/dev/null
-  echo "$cost" > "$COSTS_DIR/current" 2>/dev/null
+  echo "$cost" > "$COSTS_DIR/${CLAUDE_CODE_SESSION_ID:-current}" 2>/dev/null
 fi
 
 # Persist rate limits for the dashboard
@@ -155,7 +156,7 @@ if [ -n "$five_h" ]; then
   fi
 elif [ -n "$cost" ]; then
   # Enterprise: track monthly spend across all sessions
-  BUDGET=100
+  BUDGET=2000
   this_month=$(date +%Y-%m)
   BUDGET_FILE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/budget.json"
   hist_cost=0

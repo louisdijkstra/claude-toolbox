@@ -34,7 +34,8 @@ try {
   fs.readFileSync(0, 'utf8'); // consume stdin
 } catch (_) {}
 try {
-  const costFile = path.join(claudeDir, '.session_costs', 'current');
+  const sessionId = process.env.CLAUDE_CODE_SESSION_ID || 'current';
+  const costFile = path.join(claudeDir, '.session_costs', sessionId);
   const costStr = fs.readFileSync(costFile, 'utf8').trim();
   sessionCost = parseFloat(costStr) || 0;
   fs.unlinkSync(costFile);
