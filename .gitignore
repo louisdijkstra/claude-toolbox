@@ -102,6 +102,9 @@ wheels/
 *.egg
 MANIFEST
 
+# Worktrees created by the native EnterWorktree tool
+.claude/
+
 # OS-specific
 .DS_Store
 Thumbs.db
