@@ -1,6 +1,18 @@
 # Claude Toolbox
 
-Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) — skills, hooks, slash commands, and MCP wiring. The process layer (TDD, review, planning) comes from the superpowers plugin, not this repo.
+Know what your Claude Code sessions are doing, and what they cost.
+
+```
+◆ Opus (1M)  ▸ my-app ↳ feature-x  ⑂ main
+ctx ◑ 45%  $ ◑ 879 / 2000 ↻20d11h
+```
+
+Which repository this session is in, which worktree, how full the context
+window is, and month-to-date spend across **every** session — not just this one.
+
+A complete, working `~/.claude`: statusline, spend ledger, hooks, skills, slash
+commands and MCP wiring. The process layer — planning, TDD, code review — comes
+from the [superpowers](#superpowers) plugin, not from here.
 
 ![stars](https://img.shields.io/github/stars/louisdijkstra/claude-toolbox?style=flat)
 ![forks](https://img.shields.io/github/forks/louisdijkstra/claude-toolbox?style=flat)
@@ -8,228 +20,177 @@ Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) �
 ![license](https://img.shields.io/github/license/louisdijkstra/claude-toolbox)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.x-blue)
 
-**Contents:** 4 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations
-
 ---
 
-## Quick Start
+## Install
 
-Three install paths.
+**Fresh** — no existing config:
 
-**Fresh install** (no existing config):
 ```bash
 git clone https://github.com/louisdijkstra/claude-toolbox.git ~/.claude
 ```
 
-**Replace existing config** (back up first):
+**Replacing** an existing config — back it up first:
+
 ```bash
 mv ~/.claude ~/.claude.backup
 git clone https://github.com/louisdijkstra/claude-toolbox.git ~/.claude
 ```
 
-**Cherry-pick** — copy individual skills/commands into your existing config:
+**Cherry-pick** a single piece into a config you already have:
+
 ```bash
-git clone https://github.com/louisdijkstra/claude-toolbox.git /tmp/claude
-cp -r /tmp/claude/skills/<skill-name> ~/.claude/skills/
+git clone https://github.com/louisdijkstra/claude-toolbox.git /tmp/toolbox
+cp -r /tmp/toolbox/skills/<name> ~/.claude/skills/
 ```
 
-Then restart Claude Code.
+Then restart Claude Code. Install [superpowers](#superpowers) too — this config
+assumes it.
 
-## Compatibility
+## What's inside
 
-- **Claude Code 2.x** — required. Config uses the v2 skills/agents/commands layout and v2 hook schema in `settings.json`. Verified on 2.1.x.
-- **POSIX shell** — `statusline.sh` runs under `/bin/sh`; works on bash and zsh.
-- **Node 18+** — for hook scripts. They use only `fs`, `path`, `child_process`, `process.env` — older Node likely works but is untested.
-- **macOS** — `Notification` and `Stop` hooks call `afplay` for sound. On Linux/WSL these calls fail silently; everything else is OS-agnostic.
-- **Python** — not required by the config itself. A few skills ship illustrative `.py` example scripts.
+```
+~/.claude/
+├── CLAUDE.md          Development philosophy and conventions, loaded every session
+├── settings.json      Permissions, hooks, statusline, MCP enablement
+├── .mcp.json          MCP servers: filesystem, memory, brave-search, package-registry
+├── skills/            4 skills          → skills/README.md
+├── commands/          3 slash commands  → /commit, /mr, /qa-steps
+├── hooks/             8 event hooks and the statusline → hooks/README.md
+├── scripts/           budget.js, notify.js, wt.sh      → scripts/README.md
+├── docs/              Specs, implementation plans, research notes
+└── tests/             Skill structure, shell libraries, privacy guard
+```
 
-Hooks reference `$HOME` and `${CLAUDE_CONFIG_DIR}` so the config is portable across machines.
+| Area | One line | Detail |
+|---|---|---|
+| **Skills** | Knowledge graphs, plan browsing, test bootstrapping, Langfuse tracing | [skills/README.md](skills/README.md) |
+| **Hooks** | Session context, compaction, guardrails, and the statusline | [hooks/README.md](hooks/README.md) |
+| **Scripts** | Spend ledger, desktop notifications, worktree helper | [scripts/README.md](scripts/README.md) |
+| **Commands** | `/commit`, `/mr`, `/qa-steps` | `commands/` |
+
+Run `python3 tests/run_all_tests.py` to check an install: five sections covering
+skill structure, the statusline's shell libraries, and a scan for private names.
+
+## What your sessions cost
+
+The statusline's spend figure is month-to-date across every session, live ones
+included. That is harder than it sounds, and the obvious approach gets it wrong.
+
+Claude Code tells a session what *it* has cost, not what the month has cost. The
+naive fix — add each session's total to a running file when it ends — loses
+every session that ends any other way, and shows nothing for sessions still
+running. Here that undercounted a month by 52×.
+
+`scripts/budget.js` keeps a ledger keyed by session id, merged from two
+independent sources:
+
+- **live** — `.session_costs/<session_id>`, rewritten by the statusline on every
+  render, so sessions still running are counted;
+- **transcript** — the `cost-state` record in `projects/<slug>/<session_id>.jsonl`,
+  written when a session ends, carrying its exact start time.
+
+Keying on session id makes the merge idempotent: either source can be re-read
+any number of times without double counting, and a session is missing only if
+neither source ever saw it. Where the two overlap, they agree to the cent.
+
+```bash
+node ~/.claude/scripts/budget.js --report          # per-session breakdown and what is left
+node ~/.claude/scripts/budget.js --report 2026-08  # any month
+node ~/.claude/scripts/budget.js --reconcile       # force a rescan
+```
+
+Set the cap with `CLAUDE_MONTHLY_BUDGET`; it defaults to 2000. On a plan with
+rolling limits, the statusline shows the five-hour and weekly windows instead,
+each with its own countdown.
+
+Months that predate the ledger are carried over from the old running total and
+reported frozen at the figure recorded then. That number already includes those
+sessions, so the ledger does not re-add the ones it later recovers.
 
 ## Superpowers
 
-The process layer — brainstorming, writing and executing plans, TDD, systematic debugging,
-code review, finishing a branch — is not in this repo. It comes from the **superpowers**
-plugin, which this config assumes is installed.
-
-- Marketplace: https://github.com/obra/superpowers-marketplace
-- Plugin source: https://github.com/obra/superpowers
-
-Install from inside Claude Code:
+Brainstorming, writing and executing plans, TDD, systematic debugging, code
+review, finishing a branch: none of that is here. It comes from the
+**superpowers** plugin, which this config assumes is installed.
 
 ```
 /plugin marketplace add obra/superpowers-marketplace
 /plugin install superpowers@superpowers-marketplace
 ```
 
-Skills it provides: `brainstorming`, `writing-plans`, `executing-plans`,
-`subagent-driven-development`, `test-driven-development`, `systematic-debugging`,
-`requesting-code-review`, `receiving-code-review`, `using-git-worktrees`,
-`finishing-a-development-branch`, `verification-before-completion`, `writing-skills`,
-`dispatching-parallel-agents`, `using-superpowers`.
+- Marketplace: https://github.com/obra/superpowers-marketplace
+- Plugin source: https://github.com/obra/superpowers
 
-This repo holds only what superpowers does not cover: project-specific tooling and
-stack decisions.
+This repository holds only what superpowers does not cover: observability,
+project setup, and stack decisions.
 
-## Repository Layout
+**Implementing a feature**, end to end:
 
 ```
-~/.claude/
-├── CLAUDE.md             Global development philosophy + conventions
-├── settings.json         Permissions, hooks, statusline, MCP enablement
-├── .mcp.json             MCP server definitions (filesystem, memory, brave, package-registry)
-├── skills/               4 reusable workflows (SKILL.md per directory)
-├── commands/             3 slash-command shortcuts
-├── scripts/              wt.sh (git-worktree helper), notify.js (desktop alerts),
-│                         budget.js (month-to-date spend ledger)
-├── hooks/scripts/        8 event-driven scripts (session start/end, statusline, blockers)
-├── docs/                 Research reports and notes
-└── tests/                Skill-structure validation
+brainstorming            explore intent and design, then write a spec
+writing-plans            turn the spec into bite-sized steps
+test-driven-development  red, green, refactor
+/commit  /mr             conventional commit, then a merge request description
 ```
 
-Subdirectories carry their own README/SKILL.md with deeper docs.
+**Fixing a bug:** `systematic-debugging` to find it, `test-driven-development`
+to write the failing test before the fix.
 
-## Skills
+## Compatibility
 
-Run via the Skill tool, or invoke a slash command alias.
+- **Claude Code 2.x** — required. Uses the v2 skills/commands layout and the v2
+  hook schema. Verified on 2.1.x.
+- **POSIX shell** — the statusline and its libraries run under `/bin/sh`.
+- **Node 18+** — for the hook scripts, `budget.js` and `notify.js`. They use
+  only `fs`, `path`, `child_process` and `process.env`.
+- **macOS, Windows, Linux** — `notify.js` handles all three and degrades to a
+  silent no-op where it cannot notify. Nothing else is OS-specific.
+- **Python 3** — for the test suite only, not for the config itself.
+- **git 2.31+** — the statusline's location field uses
+  `rev-parse --path-format`; older git falls back rather than failing.
 
-| Skill | Purpose |
-|---|---|
-| `plan-explorer` | Open a markdown plan or spec in a browser UI; edits round-trip to disk |
-| `setup-testing` | Bootstrap Python/React test infrastructure (Testcontainers, Playwright, MSW) |
-| `setup-langfuse-tracing` | Instrument LLM calls with Langfuse v4 tracing |
+Hooks reference `$HOME` and `${CLAUDE_CONFIG_DIR}`, so the config is portable
+across machines.
 
-Full descriptions in [skills/README.md](skills/README.md) and per-skill `SKILL.md`.
-
-## Slash Commands
-
-| Command | Purpose |
-|---|---|
-| `/commit` | Commit message for staged changes |
-| `/mr` | Merge request description |
-| `/qa-steps` | QA test steps for the current branch |
-
-## Hooks
-
-| Script | Event | Purpose |
-|---|---|---|
-| `session-start.js` | SessionStart | Detect package manager, branch, env |
-| `session-end.js` | SessionEnd | Persist session state, refresh the spend ledger |
-| `pre-compact.js` | PreCompact | Snapshot context before compression |
-| `suggest-compact.js` | PreToolUse (Edit\|Write) | Suggest compaction at thresholds |
-| `block-dev-without-tmux.js` | PreToolUse (dev servers) | Force long-running servers into tmux |
-| `block-random-md.js` | PreToolUse (Write \*.md) | Prevent stray markdown file creation |
-| `log-pr-url.js` | PostToolUse (gh pr create) | Capture PR URL |
-| `statusline.sh` | StatusLine | Two-line status: model and location above, context and spend below |
-
-Hook config lives in `settings.json` under `hooks.*`.
-
-### Monthly spend
-
-The statusline's budget bar is month-to-date spend across **every** session, not
-just the current one. `scripts/budget.js` keeps a ledger in `budget-ledger.json`
-keyed by session id, merged from two independent sources:
-
-- **live** — `.session_costs/<session_id>`, rewritten by the statusline on every
-  render, so sessions that are still running are included;
-- **transcript** — the `cost-state` record in `projects/<slug>/<session_id>.jsonl`,
-  written when a session ends, carrying the exact `startTime`.
-
-Keying on session id makes the merge idempotent: a source can be re-read any
-number of times without double counting, and a session is only missing if
-neither source ever saw it. Where the two overlap they agree exactly.
-
-```bash
-node ~/.claude/scripts/budget.js --report          # per-session breakdown + remaining
-node ~/.claude/scripts/budget.js --report 2026-08  # any month
-node ~/.claude/scripts/budget.js --reconcile       # force a rescan
-```
-
-Set the limit with `CLAUDE_MONTHLY_BUDGET` (default 2000).
-
-Months predating the ledger are carried over from the old `budget.json` and
-reported frozen at the figure recorded then — that number already includes those
-sessions, so the ledger does not re-add the ones it later recovers. Only months
-the ledger owns are summed per session.
-
-## MCP Servers
-
-Defined in `.mcp.json`, enabled in `settings.json` under `enabledMcpjsonServers`.
-
-| Server | Purpose | Auto-approved tools |
-|---|---|---|
-| `package-registry` | npm / PyPI / Cargo / NuGet / Go lookups | `search`, `get_package_info` |
-| `brave-search` | Web search | `brave_web_search` |
-| `filesystem` | `${HOME}/.claude` filesystem access | `read_file`, `list_directory`, `get_file_info` |
-| `memory` | Persistent observations | `create_memory`, `read_memory`, `search_memories` |
-
-Add API-key-required servers (GitHub, Sentry, Atlassian, etc.) per project in `.claude/settings.json`.
-
-## Workflow Examples
-
-These use skills from the superpowers plugin (see [Superpowers](#superpowers)), plus the
-slash commands in this repo.
-
-**Implement a feature:**
-```
-brainstorming                        → explore intent, requirements, design
-writing-plans                        → step-by-step plan
-test-driven-development              → red → green → refactor
-requesting-code-review               → review before commit
-/commit                               → conventional commit message
-/mr                                    → merge request description
-```
-
-**Fix a bug:**
-```
-systematic-debugging                 → structured hypothesis testing
-test-driven-development              → write failing test that reproduces, then fix
-requesting-code-review
-```
-
-**Start a new project:**
-```
-brainstorming                        → goals, architecture, structure
-writing-plans                        → step-by-step plan
-executing-plans                      → work the plan with review checkpoints
-```
-
-## Configuration Highlights
+## Configuration
 
 `settings.json` ships:
-- `defaultMode: auto` — auto-approve `Read`, `Grep`, `Glob`, `WebSearch`, `WebFetch`
-- `bashSafePatterns` — read-only git/ls/cat/etc auto-approved
-- `bashDangerousPatterns` — block `rm -rf`, `git push --force`, `sudo`, `chmod 777`, `curl|sh`
-- `protectedBranches` — `main`, `master`, `production`
+
+- `defaultMode: auto` — `Read`, `Grep`, `Glob`, `WebSearch`, `WebFetch`
+  auto-approved
+- `bashSafePatterns` — read-only git, `ls`, `cat` and friends auto-approved
+- `bashDangerousPatterns` — blocks `rm -rf`, `git push --force`, `sudo`,
+  `chmod 777`, `curl | sh`
+- `protectedBranches` — `master`, `production`
 - `MAX_THINKING_TOKENS=10000`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50`
 - Subagent model: `haiku`
 
-Override per-project in `<project>/.claude/settings.json`.
+Override per project in `<project>/.claude/settings.json`. Machine-local
+overrides go in `settings.local.json`, which is gitignored.
 
-## Customization
+To make it yours: edit `CLAUDE.md` for conventions, `settings.json` for
+permissions and hooks, `.mcp.json` for MCP servers. Add a skill by writing
+`skills/<name>/SKILL.md`, a command with `commands/<name>.md`.
 
-- **CLAUDE.md** — global philosophy / conventions; edit to your style
-- **settings.json** — permissions, hooks, MCP enablement
-- **`.mcp.json`** — MCP server definitions
-- **skills/<name>/SKILL.md** — write your own skill (see superpowers' `writing-skills`)
-- **commands/<name>.md** — alias a skill or define inline behavior
+MCP servers needing API keys — GitHub, Sentry, Atlassian — belong in a project's
+own `.claude/settings.json`, not here.
 
-Local-only overrides go in `settings.local.json` (gitignored).
+## Philosophy
 
-## Development Philosophy
+Full conventions in `CLAUDE.md`. The headlines:
 
-See `CLAUDE.md` for full conventions. Headlines:
-- Clarity over cleverness
+- Clarity over cleverness; no premature abstraction
 - Replace, don't deprecate
 - Default to TDD
-- Validate at boundaries; never commit secrets
+- Validate at boundaries, never commit secrets
 - Conventional commits, atomic, no AI attribution
 
 ## Contributing
 
-Issues and PRs welcome. Keep changes:
-- Project-agnostic (no leak of private project names)
-- Documented in the relevant subdirectory README
-- Validated via `tests/` where applicable
+Issues and pull requests welcome. Keep changes project-agnostic — no private
+project names, which `tests/privacy_test.py` enforces — documented in the
+relevant subdirectory README, and covered by `tests/` where applicable.
 
 ## License
 
@@ -237,7 +198,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## Related
 
-- [Claude Code](https://claude.com/code) — the CLI
+- [Claude Code](https://claude.com/code) — the CLI this configures
 - [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
+- [superpowers-marketplace](https://github.com/obra/superpowers-marketplace) — the process layer
 - [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) — community marketplace
-- [superpowers-marketplace](https://github.com/obra/superpowers-marketplace) — the process-layer plugin this config assumes is installed
