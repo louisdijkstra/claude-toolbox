@@ -270,7 +270,7 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 4: Update CLAUDE.md — retarget TDD line, add the .env worktree rule
 
 **Files:**
-- Modify: `CLAUDE.md:53` (TDD skill pointers), and the Git section (new worktree rule)
+- Modify: `CLAUDE.md:39` (TDD skill pointers), and the end of the `## Git` section (new worktree rule)
 - Test: grep assertions
 
 **Interfaces:**
@@ -279,9 +279,11 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 
 `CLAUDE.md` currently has unstaged modifications unrelated to this work. Stage only `CLAUDE.md` in this task's commit, and read the file before editing so those edits are preserved.
 
+`CLAUDE.md` was edited by the user after this plan was written. Locate both edit sites by content, not by line number.
+
 - [ ] **Step 1: Retarget the TDD line**
 
-Replace line 53, which currently reads:
+Replace the line in the `## Testing` section (currently line 39) which reads:
 
 ```markdown
 - Use `setup-testing` skill to bootstrap test infrastructure; use `tdd` / `dev-workflow-tdd` for day-to-day TDD cycles
@@ -295,7 +297,7 @@ with:
 
 - [ ] **Step 2: Add the .env worktree rule**
 
-In the `## Git` section, immediately before the `### Merging finished work to main (explicit authorization)` subsection, insert:
+Append to the end of the `## Git` section — after the last bullet (`- No cost estimates; careful with time estimates`) and before the `## Testing` heading — insert:
 
 ```markdown
 ### Worktrees
@@ -666,5 +668,146 @@ git log --oneline main..HEAD
 ```
 
 Expected: 7 or 8 commits, a large negative line count, and no changes to `hooks/`, `settings.json`, or `plugins/`.
+
+Do not merge yet — Task 9 must land first.
+
+---
+
+### Task 9: Update the READMEs and repair the repo test suite
+
+**Files:**
+- Modify: `README.md` (227 lines)
+- Modify: `skills/README.md` (273 lines)
+- Modify: `tests/run_all_tests.py:84-89`
+- Test: `python3 tests/run_all_tests.py`
+
+**Interfaces:**
+- Consumes: the final state produced by Tasks 1-8
+- Produces: documentation matching reality, and a passing repo test suite.
+
+Both READMEs describe the pre-cleanup repo and are now wrong in almost every count. `tests/run_all_tests.py` hardcodes a `critical_skills` list naming four skills, three of which no longer exist.
+
+- [ ] **Step 1: Fix the repo test suite first, and watch it fail**
+
+`tests/run_all_tests.py:84-89` currently reads:
+
+```python
+        # Check for critical skills
+        critical_skills = [
+            'dev-flow',
+            'getting-the-bigger-picture',
+            'review-system',
+            'plan-review-system'
+        ]
+```
+
+All four are gone (`dev-flow` and `plan-review-system` never existed under those directory names at all — they were frontmatter names). Run the suite first to see it fail:
+
+```bash
+cd /Users/you/.claude && python3 tests/run_all_tests.py 2>&1 | tail -15
+```
+
+Expected: a failure reporting missing critical skills.
+
+Replace the list with the four skills that actually remain:
+
+```python
+        # Check for critical skills
+        critical_skills = [
+            'plan-explorer',
+            'graphify',
+            'setup-testing',
+            'setup-langfuse-tracing'
+        ]
+```
+
+- [ ] **Step 2: Verify the suite passes**
+
+```bash
+cd /Users/you/.claude && python3 tests/run_all_tests.py 2>&1 | tail -15
+```
+
+Expected: all checks pass. If `validate_skill_md.py` or `verify_structure.py` flags one of the four kept skills, fix the skill's frontmatter — the name must match its directory.
+
+- [ ] **Step 3: Rewrite README.md**
+
+Corrections required, with exact new values:
+
+- Line 3 summary and line 11 contents line: the repo is no longer "skills, agents, hooks, slash commands ... built around a TDD + multi-tier-review workflow". It is now **4 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations**. Verify the hook count with `ls -1 hooks/scripts | wc -l` before writing it.
+- `## Repository Layout` (lines 55-57): `skills/` is 4 skills, `commands/` is 3 commands, the `agents/` line is deleted entirely. Add a line for `scripts/` — `wt.sh`, the git-worktree shell helper.
+- `## Skills` table: replace the category table with one row per remaining skill — `plan-explorer`, `graphify`, `setup-testing`, `setup-langfuse-tracing` — each with a one-line purpose.
+- `## Slash Commands` table: keep only `commit`, `mr`, `qa-steps`. Remove the "Maps to" column if every remaining command is self-contained.
+- `## Agents` section: delete it.
+- `## Workflow Examples`: rewrite any example that invokes a deleted skill or agent. Examples must use superpowers skills instead.
+
+- [ ] **Step 4: Add the superpowers pointer to README.md**
+
+The single most important thing a reader needs to know is that the process layer lives in a plugin, not this repo. Add a `## Superpowers` section immediately after `## Compatibility`, before `## Repository Layout`:
+
+```markdown
+## Superpowers
+
+The process layer — brainstorming, writing and executing plans, TDD, systematic debugging,
+code review, finishing a branch — is not in this repo. It comes from the **superpowers**
+plugin, which this config assumes is installed.
+
+- Marketplace: https://github.com/obra/superpowers-marketplace
+- Plugin source: https://github.com/obra/superpowers
+
+Install from inside Claude Code:
+
+```
+/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace
+```
+
+Skills it provides: `brainstorming`, `writing-plans`, `executing-plans`,
+`subagent-driven-development`, `test-driven-development`, `systematic-debugging`,
+`requesting-code-review`, `receiving-code-review`, `using-git-worktrees`,
+`finishing-a-development-branch`, `verification-before-completion`, `writing-skills`,
+`dispatching-parallel-agents`, `using-superpowers`.
+
+This repo holds only what superpowers does not cover: project-specific tooling and
+stack decisions.
+```
+
+Before writing the two URLs, verify them:
+
+```bash
+cat /Users/you/.claude/plugins/known_marketplaces.json 2>/dev/null | grep -iA3 superpowers
+```
+
+Use whatever source URL that file records. If it disagrees with the URLs above, the file wins.
+
+Also add a `## Related` entry pointing at the same marketplace, next to the existing entries.
+
+- [ ] **Step 5: Rewrite skills/README.md**
+
+It is a 273-line catalogue of skills that mostly no longer exist. Replace it with a short index covering only the four kept skills: name, one-line purpose, and when it fires. Target under 60 lines. Add a closing line pointing at the root README's `## Superpowers` section for everything process-related.
+
+- [ ] **Step 6: Verify no stale references survive**
+
+```bash
+cd /Users/you/.claude
+grep -rniE "dev-workflow|review-system|review-critical|reviewer-|merge-request-writer|deep-research|docs-manager|skill-create|ui-design-options|project-inception|handle-ticket|dev-flow|plan-review-system" README.md skills/README.md tests/ commands/ CLAUDE.md
+```
+
+Expected: no output.
+
+```bash
+grep -c "superpowers" /Users/you/.claude/README.md
+```
+
+Expected: 3 or more matches.
+
+- [ ] **Step 7: Commit**
+
+```bash
+cd /Users/you/.claude
+git add README.md skills/README.md tests/run_all_tests.py
+git commit -q -m "docs(readme): match post-cleanup layout, document superpowers dependency
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
+```
 
 Then hand off to `superpowers:finishing-a-development-branch` to merge into `main`.
