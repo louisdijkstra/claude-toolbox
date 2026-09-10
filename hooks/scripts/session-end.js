@@ -12,7 +12,9 @@ const path = require('path');
 
 // Get project root from environment or current directory
 const projectRoot = process.env.PWD || process.cwd();
-const claudeDir = path.join(process.env.HOME, '.claude');
+// Must match statusline.sh, which also honours CLAUDE_CONFIG_DIR — otherwise the
+// two hooks disagree about where the session cost file lives.
+const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(process.env.HOME, '.claude');
 const sessionsDir = path.join(claudeDir, 'sessions');
 const observationsFile = path.join(claudeDir, 'observations.jsonl');
 
@@ -30,11 +32,13 @@ const sessionFile = path.join(sessionsDir, `${date}-${timestamp.slice(11)}.md`);
 // Accumulate Enterprise session cost into monthly budget file
 // Stop hook has no cost field — read cost saved by statusline hook
 let sessionCost = 0;
+let payload = {};
 try {
-  fs.readFileSync(0, 'utf8'); // consume stdin
+  payload = JSON.parse(fs.readFileSync(0, 'utf8'));
 } catch (_) {}
 try {
-  const sessionId = process.env.CLAUDE_CODE_SESSION_ID || 'current';
+  // Match the key statusline.sh wrote: payload first, env var as fallback.
+  const sessionId = payload.session_id || process.env.CLAUDE_CODE_SESSION_ID || 'current';
   const costFile = path.join(claudeDir, '.session_costs', sessionId);
   const costStr = fs.readFileSync(costFile, 'utf8').trim();
   sessionCost = parseFloat(costStr) || 0;

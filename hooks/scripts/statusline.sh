@@ -15,6 +15,7 @@ seven_d=$(val '.rate_limits.seven_day.used_percentage')
 reset_5h=$(val '.rate_limits.five_hour.resets_at')
 reset_7d=$(val '.rate_limits.seven_day.resets_at')
 cost=$(val '.cost.total_cost_usd')
+session_id=$(val '.session_id')
 
 # ANSI colors
 C="\033[36m"   # cyan
@@ -63,12 +64,13 @@ countdown() {
   fi
 }
 
-# Persist current session cost for Stop hook (which has no cost data)
-# Keyed per session id — concurrent sessions/background jobs must not share one file
+# Persist current session cost for SessionEnd hook (which has no cost data)
+# Keyed per session id — concurrent sessions/background jobs must not share one file.
+# The payload's session_id is always present; the env var is not, so it is only a fallback.
 if [ -n "$cost" ]; then
   COSTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.session_costs"
   mkdir -p "$COSTS_DIR" 2>/dev/null
-  echo "$cost" > "$COSTS_DIR/${CLAUDE_CODE_SESSION_ID:-current}" 2>/dev/null
+  echo "$cost" > "$COSTS_DIR/${session_id:-${CLAUDE_CODE_SESSION_ID:-current}}" 2>/dev/null
 fi
 
 # Persist rate limits for the dashboard
