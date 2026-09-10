@@ -146,7 +146,8 @@ def validate_all_skills(skills_dir: Path) -> Dict[str, Tuple[bool, List[str], Li
 
 def main():
     """Main entry point."""
-    skills_dir = Path.home() / '.claude' / 'skills'
+    # The repository this file lives in, not whatever is installed at ~/.claude.
+    skills_dir = Path(__file__).resolve().parent.parent.parent / 'skills'
 
     print("🔍 Validating SKILL.md files...")
     print(f"📁 Skills directory: {skills_dir}\n")

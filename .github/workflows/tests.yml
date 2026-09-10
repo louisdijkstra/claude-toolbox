@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The privacy guard walks git history's tracked files; a shallow
+          # checkout is enough for that, but fetch tags so nothing surprises us.
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # Six sections: skill structure, SKILL.md validity, supporting files,
+      # the statusline's shell libraries, the Node scripts, and the scan for
+      # private names. The last one is why this workflow exists — the guard
+      # only protects a public repository if something runs it.
+      - name: Run the suite
+        run: python3 tests/run_all_tests.py
+
+      - name: Render the statusline
+        run: |
+          printf '%s' '{"session_id":"ci","model":{"display_name":"Opus 5","id":"claude-opus-5"},"workspace":{"current_dir":"'"$PWD"'"},"context_window":{"context_window_size":1000000,"used_percentage":45},"rate_limits":{"five_hour":{"used_percentage":22},"seven_day":{"used_percentage":61}}}' \
+            | sh hooks/scripts/statusline.sh
+          echo
+
+      - name: Check the shell is POSIX-clean
+        run: |
+          for f in hooks/scripts/statusline.sh hooks/scripts/lib/*.sh tests/hooks/*.sh; do
+            sh -n "$f" || exit 1
+          done
+          echo "all shell files parse"

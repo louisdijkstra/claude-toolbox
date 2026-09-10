@@ -14,6 +14,7 @@ A complete, working `~/.claude`: statusline, spend ledger, hooks, skills, slash
 commands and MCP wiring. The process layer — planning, TDD, code review — comes
 from the [superpowers](#superpowers) plugin, not from here.
 
+[![tests](https://github.com/louisdijkstra/claude-toolbox/actions/workflows/tests.yml/badge.svg)](https://github.com/louisdijkstra/claude-toolbox/actions/workflows/tests.yml)
 ![stars](https://img.shields.io/github/stars/louisdijkstra/claude-toolbox?style=flat)
 ![forks](https://img.shields.io/github/forks/louisdijkstra/claude-toolbox?style=flat)
 ![last commit](https://img.shields.io/github/last-commit/louisdijkstra/claude-toolbox)
@@ -69,8 +70,10 @@ assumes it.
 | **Scripts** | Spend ledger, desktop notifications, worktree helper | [scripts/README.md](scripts/README.md) |
 | **Commands** | `/commit`, `/mr`, `/qa-steps` | `commands/` |
 
-Run `python3 tests/run_all_tests.py` to check an install: five sections covering
-skill structure, the statusline's shell libraries, and a scan for private names.
+Run `python3 tests/run_all_tests.py` to check a clone: six sections covering
+skill structure, `SKILL.md` validity, supporting files, the statusline's shell
+libraries, the Node scripts, and a scan for private names. The same suite runs
+in CI on every push and pull request.
 
 ## What your sessions cost
 

@@ -15,7 +15,10 @@ class TestRunner:
 
     def __init__(self):
         self.tests_dir = Path(__file__).parent
-        self.skills_dir = Path.home() / '.claude' / 'skills'
+        # Test the repository this file lives in, not whatever is installed at
+        # ~/.claude. In a worktree those differ, and in CI the install is absent.
+        self.repo_root = self.tests_dir.parent
+        self.skills_dir = self.repo_root / 'skills'
         self.results: Dict[str, bool] = {}
 
     def run_all_tests(self) -> bool:
@@ -42,7 +45,10 @@ class TestRunner:
         # Test 4: Shell libraries used by the statusline
         self._run_test_section("Shell Libraries", self._test_shell_libraries)
 
-        # Test 5: No private names in tracked files
+        # Test 5: JavaScript libraries in scripts/
+        self._run_test_section("JavaScript Libraries", self._test_javascript_libraries)
+
+        # Test 6: No private names in tracked files
         self._run_test_section("Privacy", self._test_privacy)
 
         # Print final summary
@@ -164,6 +170,27 @@ class TestRunner:
             passed = passed and result.returncode == 0
 
         return passed
+
+    def _test_javascript_libraries(self) -> bool:
+        """Test the Node scripts: the spend ledger and the notifier."""
+        print("Running JavaScript library tests...")
+
+        suites = sorted((self.repo_root / 'scripts').glob('*.test.js'))
+        if not suites:
+            print("❌ No JavaScript tests found in scripts/")
+            return False
+
+        result = subprocess.run(
+            ['node', '--test', *[str(s) for s in suites]],
+            capture_output=True,
+            text=True
+        )
+
+        print(result.stdout)
+        if result.stderr:
+            print("STDERR:", result.stderr)
+
+        return result.returncode == 0
 
     def _test_privacy(self) -> bool:
         """This repository is public: no private names in tracked files."""
