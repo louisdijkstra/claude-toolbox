@@ -1,58 +1,11 @@
 ---
 name: setup-testing
-description: Set up the complete testing infrastructure for a project — pytest markers, Testcontainers for real databases, LLM call mocking (VCR or AWS Bedrock stub), FastAPI test client, Playwright for E2E, and MSW for frontend. Run once per project to bootstrap test foundations.
+description: Bootstrap Python/React test infrastructure — pytest markers, Testcontainers fixtures for PostgreSQL/Qdrant/Redis, LLM mocking via VCR or a Bedrock stub, Playwright, MSW. Use when a repo has no conftest.py with Testcontainers fixtures, or no Playwright config.
 ---
 
 # Setup Testing Infrastructure
 
-## Purpose
-Bootstrap a complete, layered testing setup for a project. Generates configuration and fixture boilerplate so the team can write tests immediately without fighting infrastructure. Covers all three layers: unit, integration, and E2E.
-
-## When to Use This Skill
-
-Use when:
-- Starting a new project with no test infrastructure
-- Migrating from mocked-DB tests to real Testcontainers
-- Adding integration or E2E tests to an existing codebase
-- Need a consistent test structure across a monorepo workspace
-
-**Do NOT use for:**
-- Writing the actual tests (use `tdd` or `dev-workflow-tdd`)
-- Projects already using a different test framework (Vitest, unittest) — adapt rather than replace
-- Simple scripts with no I/O (just use `pytest` directly)
-
-**If uncertain:** Run this skill if the project has no `conftest.py` with Testcontainers fixtures, or no Playwright config.
-
----
-
-## Step 1: Discover Project Stack
-
-Read these files before generating anything:
-
-```
-pyproject.toml (or setup.py)     → Python dependencies, async framework
-package.json                      → Frontend framework, test tooling
-.env.example or README            → External services (Postgres, Bedrock, Qdrant, Redis)
-```
-
-**Determine:**
-
-| Question | Where to check | Implication |
-|---|---|---|
-| Python async (FastAPI)? | `pyproject.toml` dependencies | Need `pytest-asyncio` + async fixtures |
-| PostgreSQL? | deps / env vars | Add Testcontainers `PostgresContainer` |
-| pgvector? | deps / env vars | Use `pgvector/pgvector:pg16` image instead |
-| Qdrant? | deps / env vars | Add Testcontainers `QdrantContainer` |
-| Redis? | deps / env vars | Add Testcontainers `RedisContainer` |
-| HTTP LLM (OpenAI / Anthropic direct)? | deps | Use `pytest-recording` (VCR) |
-| AWS Bedrock? | deps (boto3/botocore) | Use custom boto3 Converse stub |
-| React frontend? | `package.json` | Add Playwright + MSW |
-| TypeScript? | `tsconfig.json` | Use TypeScript Playwright config |
-
-If a service is unclear, ask:
-> "I see boto3 in your dependencies — are you calling AWS Bedrock directly for LLM calls, or using an HTTP-based API like OpenAI?"
-
----
+Detect the stack from `pyproject.toml`, `package.json`, and `docker-compose.yml`, then apply only the matching sections below.
 
 ## Step 2: Install Dependencies
 
@@ -81,8 +34,6 @@ npm install --save-dev @playwright/test msw
 npx playwright install --with-deps chromium
 ```
 
----
-
 ## Step 3: Configure pytest
 
 Add to `pyproject.toml` (or create `pytest.ini`):
@@ -98,7 +49,7 @@ markers = [
 testpaths = ["tests"]
 ```
 
-**Directory layout to create:**
+Directory layout to create:
 
 ```
 tests/
@@ -110,8 +61,6 @@ tests/
 └── e2e/                 ← only if frontend exists
     └── conftest.py
 ```
-
----
 
 ## Step 4: Root conftest.py
 
@@ -139,7 +88,7 @@ async def client():
         yield ac
 ```
 
-### PostgreSQL (add if PostgreSQL detected)
+**If PostgreSQL is detected:**
 
 ```python
 from testcontainers.postgres import PostgresContainer
@@ -199,7 +148,7 @@ async with engine.begin() as conn:
     await conn.run_sync(lambda c: command.upgrade(alembic_cfg, "head"))
 ```
 
-### Qdrant (add if Qdrant detected)
+**If Qdrant is detected:**
 
 ```python
 from testcontainers.core.container import DockerContainer
@@ -220,7 +169,7 @@ def qdrant_url(qdrant):
     return f"http://{host}:{port}"
 ```
 
-### Redis (add if Redis detected)
+**If Redis is detected:**
 
 ```python
 from testcontainers.redis import RedisContainer
@@ -237,8 +186,6 @@ def redis():
 def redis_url(redis):
     return redis.get_connection_url()
 ```
-
----
 
 ## Step 5: LLM Call Mocking
 
@@ -328,8 +275,6 @@ def test_s3_upload(mock_bedrock):
     ...
 ```
 
----
-
 ## Step 6: Override FastAPI Dependencies in Tests
 
 When the app uses dependency injection (e.g., `Depends(get_db)`), override in tests:
@@ -354,11 +299,9 @@ async def client(db):
     app.dependency_overrides.clear()
 ```
 
----
-
 ## Step 7: Playwright (if React frontend)
 
-Create `playwright.config.ts` at the repo root:
+`playwright.config.ts` at the repo root:
 
 ```typescript
 import { defineConfig, devices } from "@playwright/test";
@@ -386,27 +329,9 @@ export default defineConfig({
 });
 ```
 
-Create `tests/e2e/example.spec.ts` to verify the setup:
-
-```typescript
-import { test, expect } from "@playwright/test";
-
-test("home page loads", async ({ page }) => {
-  await page.goto("/");
-  await expect(page).toHaveTitle(/.+/);
-});
-```
-
-**Best practices to document for the team:**
-- Always use `data-testid` attributes — never CSS classes or text content
-- Each test sets up its own state
-- Mock third-party API calls with `page.route()` to avoid real network calls in E2E
-
----
-
 ## Step 8: MSW (if React frontend)
 
-Create `src/mocks/handlers.ts`:
+`src/mocks/handlers.ts`:
 
 ```typescript
 import { http, HttpResponse } from "msw";
@@ -418,7 +343,7 @@ export const handlers = [
 ];
 ```
 
-Create `src/mocks/server.ts` (for Jest/Node):
+`src/mocks/server.ts` (for Jest/Node):
 
 ```typescript
 import { setupServer } from "msw/node";
@@ -427,7 +352,7 @@ import { handlers } from "./handlers";
 export const server = setupServer(...handlers);
 ```
 
-Add to `src/setupTests.ts` (Jest setup file):
+`src/setupTests.ts` (Jest setup file):
 
 ```typescript
 import { server } from "./mocks/server";
@@ -436,8 +361,6 @@ beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
 afterEach(() => server.resetHandlers());  // prevent state leaks between tests
 afterAll(() => server.close());
 ```
-
----
 
 ## Step 9: CI Configuration
 
@@ -476,53 +399,3 @@ test-e2e:
         name: playwright-report
         path: playwright-report/
 ```
-
----
-
-## Verification Checklist
-
-After setup, verify:
-
-- [ ] `pytest -m unit` runs with no Docker required
-- [ ] `pytest -m integration` starts containers automatically and cleans up after
-- [ ] VCR cassettes exist in `tests/cassettes/` (or Bedrock stub is in conftest)
-- [ ] Each integration test leaves the DB empty (check `autouse` truncation fixture)
-- [ ] `npx playwright test` runs the home page smoke test (if frontend)
-- [ ] MSW server wraps all Jest tests (if frontend)
-- [ ] No secrets in committed cassette YAML files
-
----
-
-## Anti-Patterns to Avoid
-
-- **Using SQLite for PostgreSQL tests**: Misses JSONB, pgvector, arrays, constraint behavior
-- **Module-scoped or session-scoped test data**: One test's writes corrupt another — always truncate per test
-- **docker-compose up in CI**: Hard lifecycle to manage; Testcontainers handles it automatically
-- **E2E tests for every feature**: Belongs in the integration layer; keep E2E to 3–8 critical user flows
-- **`waitForTimeout()` in Playwright**: Causes flaky tests — use `expect(locator).toBeVisible()` instead
-- **Committing secrets in VCR cassettes**: Always set `filter_headers` before recording
-- **Not resetting MSW handlers in `afterEach`**: State leaks cause order-dependent frontend test failures
-- **Session-scoped `client` fixture in integration tests**: Dependency overrides persist — use function-scoped `client`
-
----
-
-## Integration with Other Skills
-
-- **`tdd` / `dev-workflow-tdd`**: Run this skill first to set up infrastructure; then use `tdd` to write tests feature by feature
-- **`setup-uv`**: Install pytest and testcontainers via `uv add --dev`
-- **`setup-langfuse-tracing`**: Disable Langfuse tracing in tests via `LANGFUSE_TRACING_ENABLED=false` env var in pytest config
-- **`dev-workflow-patterns`**: Discover existing test patterns before setting up new infrastructure
-- **`research-deep`**: Validate specific testing choices against current standards
-
----
-
-## References
-
-- [testcontainers-python — GitHub](https://github.com/testcontainers/testcontainers-python)
-- [Testcontainers pgvector Module](https://testcontainers.com/modules/pgvector/)
-- [pytest-recording — GitHub](https://github.com/kiwicom/pytest-recording)
-- [Unit Testing Amazon Bedrock — Medium](https://medium.com/@peterjdavis/unit-testing-amazon-bedrock-in-python-3b5558fb7c9a)
-- [Playwright E2E Guide](https://playwright.dev/docs/intro)
-- [MSW — Mock Service Worker](https://mswjs.io/docs/)
-- [FastAPI Testing — Official Docs](https://fastapi.tiangolo.com/advanced/testing-database/)
-- Research: `docs/research/2026-02-17-testing-best-practices-databases-docker-llm.md`
