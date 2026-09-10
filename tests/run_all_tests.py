@@ -78,7 +78,6 @@ class TestRunner:
         # Check for critical skills
         critical_skills = [
             'plan-explorer',
-            'graphify',
             'setup-testing',
             'setup-langfuse-tracing'
         ]
@@ -114,17 +113,7 @@ class TestRunner:
         if result.stderr:
             print("STDERR:", result.stderr)
 
-        # validate_skill_md.py still enforces a legacy section template
-        # (Purpose / When Invoked / Process) that predates the current,
-        # deliberately trimmed skill set. Real problems — bad frontmatter,
-        # a name that doesn't match its directory, a missing description —
-        # still fail this test. A missing legacy section alone does not.
-        real_errors = [
-            line for line in result.stdout.splitlines()
-            if "❌ ERROR:" in line and "Missing required section:" not in line
-        ]
-
-        return result.returncode == 0 or not real_errors
+        return result.returncode == 0
 
     def _test_supporting_files(self) -> bool:
         """Test supporting files verification."""

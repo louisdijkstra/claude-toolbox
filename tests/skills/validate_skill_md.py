@@ -14,21 +14,6 @@ import yaml
 class SkillValidator:
     """Validates SKILL.md files for correct structure and content."""
 
-    REQUIRED_SECTIONS = [
-        "Purpose",
-        "When Invoked",
-        "Process"
-    ]
-
-    OPTIONAL_SECTIONS = [
-        "Implementation",
-        "Example",
-        "Output",
-        "Best Practices",
-        "Troubleshooting",
-        "References"
-    ]
-
     def __init__(self, skill_path: Path):
         self.skill_path = skill_path
         self.skill_md = skill_path / "SKILL.md"
@@ -50,9 +35,6 @@ class SkillValidator:
 
         # Validate YAML frontmatter
         self._validate_frontmatter(content)
-
-        # Validate required sections
-        self._validate_sections(content)
 
         # Validate markdown format
         self._validate_markdown(content)
@@ -95,17 +77,6 @@ class SkillValidator:
             self.warnings.append("Description is very short (< 20 characters)")
         elif len(frontmatter['description']) > 200:
             self.warnings.append("Description is very long (> 200 characters)")
-
-    def _validate_sections(self, content: str):
-        """Validate that required sections exist."""
-        # Remove frontmatter for section checking
-        content_without_frontmatter = re.sub(r'^---\n.*?\n---\n', '', content, flags=re.DOTALL)
-
-        for section in self.REQUIRED_SECTIONS:
-            # Look for section heading (## Section)
-            pattern = rf'^##\s+{re.escape(section)}\s*$'
-            if not re.search(pattern, content_without_frontmatter, re.MULTILINE):
-                self.errors.append(f"Missing required section: {section}")
 
     def _validate_markdown(self, content: str):
         """Validate markdown formatting."""

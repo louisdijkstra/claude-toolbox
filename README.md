@@ -8,7 +8,7 @@ Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) �
 ![license](https://img.shields.io/github/license/louisdijkstra/claude-toolbox)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.x-blue)
 
-**Contents:** 4 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations
+**Contents:** 3 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations
 
 ---
 
@@ -77,7 +77,7 @@ stack decisions.
 ├── CLAUDE.md             Global development philosophy + conventions
 ├── settings.json         Permissions, hooks, statusline, MCP enablement
 ├── .mcp.json             MCP server definitions (filesystem, memory, brave, package-registry)
-├── skills/               4 reusable workflows (SKILL.md per directory)
+├── skills/               3 reusable workflows (SKILL.md per directory)
 ├── commands/             3 slash-command shortcuts
 ├── scripts/              wt.sh — git-worktree shell helper, sourced from .zshrc
 ├── hooks/scripts/        8 event-driven scripts (session start/end, statusline, blockers)
@@ -94,7 +94,6 @@ Run via the Skill tool, or invoke a slash command alias.
 | Skill | Purpose |
 |---|---|
 | `plan-explorer` | Open a markdown plan or spec in a browser UI; edits round-trip to disk |
-| `graphify` | Turn any codebase or document set into a queryable knowledge graph |
 | `setup-testing` | Bootstrap Python/React test infrastructure (Testcontainers, Playwright, MSW) |
 | `setup-langfuse-tracing` | Instrument LLM calls with Langfuse v4 tracing |
 
