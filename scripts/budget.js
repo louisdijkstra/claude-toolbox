@@ -67,15 +67,23 @@ function mergeSessions(entries) {
   return merged;
 }
 
-/** Spend recorded for one month: per-session entries plus any pre-ledger total. */
+/**
+ * Spend recorded for one month.
+ *
+ * A month carried over from the old budget.json is frozen at that figure: it was
+ * accumulated per session by the previous scheme, so any per-session entries the
+ * ledger later recovered for that month are already inside it. Only months the
+ * ledger owns are summed from their sessions.
+ */
 function monthTotal(ledger, month) {
   if (!ledger) return 0;
-  const sessions = ledger.sessions || {};
+  const legacy = Number((ledger.legacy || {})[month]) || 0;
+  if (legacy > 0) return Math.round(legacy * 1e6) / 1e6;
+
   let total = 0;
-  for (const entry of Object.values(sessions)) {
+  for (const entry of Object.values(ledger.sessions || {})) {
     if (entry && entry.month === month) total += Number(entry.cost) || 0;
   }
-  total += Number((ledger.legacy || {})[month]) || 0;
   return Math.round(total * 1e6) / 1e6;
 }
 
@@ -297,11 +305,19 @@ function report(dir, month) {
   const legacy = Number((ledger.legacy || {})[month]) || 0;
 
   const lines = [`Claude Code spend — ${month}`, ""];
-  lines.push(`  ${"session".padEnd(38)}${"source".padEnd(12)}${"USD".padStart(10)}`);
-  for (const [id, e] of rows) {
-    lines.push(`  ${id.padEnd(38)}${e.source.padEnd(12)}${e.cost.toFixed(2).padStart(10)}`);
+  if (legacy > 0) {
+    // Frozen month: the per-session entries are already inside the legacy total.
+    lines.push(`  ${"(carried over from budget.json)".padEnd(38)}${"legacy".padEnd(12)}${legacy.toFixed(2).padStart(10)}`);
+    lines.push("");
+    lines.push(`  This month predates the ledger, so it is reported as recorded at`);
+    lines.push(`  the time and cannot be recomputed. ${rows.length} session(s) were later`);
+    lines.push(`  recovered from transcripts but are already counted in that figure.`);
+  } else {
+    lines.push(`  ${"session".padEnd(38)}${"source".padEnd(12)}${"USD".padStart(10)}`);
+    for (const [id, e] of rows) {
+      lines.push(`  ${id.padEnd(38)}${e.source.padEnd(12)}${e.cost.toFixed(2).padStart(10)}`);
+    }
   }
-  if (legacy) lines.push(`  ${"(pre-ledger total)".padEnd(38)}${"legacy".padEnd(12)}${legacy.toFixed(2).padStart(10)}`);
   lines.push("");
   lines.push(`  sessions:  ${rows.length}`);
   lines.push(`  spent:     $${total.toFixed(2)}`);

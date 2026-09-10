@@ -60,9 +60,17 @@ test("monthTotal includes legacy months recorded before the ledger existed", () 
   assert.equal(monthTotal(ledger, "2026-06"), 35544.39);
 });
 
-test("legacy and per-session entries add up for the same month", () => {
+test("a legacy month is frozen: its own total wins over per-session entries", () => {
+  // The legacy figure was accumulated by the old SessionEnd hook and already
+  // contains those sessions, so adding the per-session entries as well would
+  // count them twice. Pre-ledger months cannot be recomputed, only reported.
   const ledger = { sessions: { a: { month: "2026-07", cost: 1.5 } }, legacy: { "2026-07": 10 } };
-  assert.equal(monthTotal(ledger, "2026-07"), 11.5);
+  assert.equal(monthTotal(ledger, "2026-07"), 10);
+});
+
+test("a month with a legacy entry of 0 still reports its sessions", () => {
+  const ledger = { sessions: { a: { month: "2026-07", cost: 1.5 } }, legacy: { "2026-07": 0 } };
+  assert.equal(monthTotal(ledger, "2026-07"), 1.5);
 });
 
 test("monthTotal is 0 for a month with no data", () => {

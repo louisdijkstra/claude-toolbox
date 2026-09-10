@@ -144,8 +144,12 @@ node ~/.claude/scripts/budget.js --report 2026-08  # any month
 node ~/.claude/scripts/budget.js --reconcile       # force a rescan
 ```
 
-Set the limit with `CLAUDE_MONTHLY_BUDGET` (default 2000). Months predating the
-ledger are carried over from the old `budget.json` as opaque totals.
+Set the limit with `CLAUDE_MONTHLY_BUDGET` (default 2000).
+
+Months predating the ledger are carried over from the old `budget.json` and
+reported frozen at the figure recorded then — that number already includes those
+sessions, so the ledger does not re-add the ones it later recovers. Only months
+the ledger owns are summed per session.
 
 ## MCP Servers
 
