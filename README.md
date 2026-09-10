@@ -1,6 +1,6 @@
 # Claude Toolbox
 
-Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) — skills, agents, hooks, slash commands, and MCP wiring built around a TDD + multi-tier-review workflow.
+Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) — skills, hooks, slash commands, and MCP wiring. The process layer (TDD, review, planning) comes from the superpowers plugin, not this repo.
 
 ![stars](https://img.shields.io/github/stars/louisdijkstra/claude-toolbox?style=flat)
 ![forks](https://img.shields.io/github/forks/louisdijkstra/claude-toolbox?style=flat)
@@ -8,7 +8,7 @@ Personal `~/.claude` configuration for [Claude Code](https://claude.com/code) �
 ![license](https://img.shields.io/github/license/louisdijkstra/claude-toolbox)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-2.x-blue)
 
-**Contents:** 33 skills · 16 slash commands · 13 review agents · 8 hooks · MCP integrations
+**Contents:** 4 skills · 3 slash commands · 0 agents · 8 hooks · MCP integrations
 
 ---
 
@@ -45,6 +45,31 @@ Then restart Claude Code.
 
 Hooks reference `$HOME` and `${CLAUDE_CONFIG_DIR}` so the config is portable across machines.
 
+## Superpowers
+
+The process layer — brainstorming, writing and executing plans, TDD, systematic debugging,
+code review, finishing a branch — is not in this repo. It comes from the **superpowers**
+plugin, which this config assumes is installed.
+
+- Marketplace: https://github.com/obra/superpowers-marketplace
+- Plugin source: https://github.com/obra/superpowers
+
+Install from inside Claude Code:
+
+```
+/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace
+```
+
+Skills it provides: `brainstorming`, `writing-plans`, `executing-plans`,
+`subagent-driven-development`, `test-driven-development`, `systematic-debugging`,
+`requesting-code-review`, `receiving-code-review`, `using-git-worktrees`,
+`finishing-a-development-branch`, `verification-before-completion`, `writing-skills`,
+`dispatching-parallel-agents`, `using-superpowers`.
+
+This repo holds only what superpowers does not cover: project-specific tooling and
+stack decisions.
+
 ## Repository Layout
 
 ```
@@ -52,9 +77,9 @@ Hooks reference `$HOME` and `${CLAUDE_CONFIG_DIR}` so the config is portable acr
 ├── CLAUDE.md             Global development philosophy + conventions
 ├── settings.json         Permissions, hooks, statusline, MCP enablement
 ├── .mcp.json             MCP server definitions (filesystem, memory, brave, package-registry)
-├── skills/               33 reusable workflows (SKILL.md per directory)
-├── commands/             16 slash-command shortcuts → skills
-├── agents/               13 review agents (orchestrator + tier reviewers)
+├── skills/               4 reusable workflows (SKILL.md per directory)
+├── commands/             3 slash-command shortcuts
+├── scripts/              wt.sh — git-worktree shell helper, sourced from .zshrc
 ├── hooks/scripts/        8 event-driven scripts (session start/end, statusline, blockers)
 ├── docs/                 Research reports and notes
 └── tests/                Skill-structure validation
@@ -66,63 +91,22 @@ Subdirectories carry their own README/SKILL.md with deeper docs.
 
 Run via the Skill tool, or invoke a slash command alias.
 
-| Category | Skills |
+| Skill | Purpose |
 |---|---|
-| Context | `docs-bigger-picture`, `docs-context`, `dev-workflow-patterns` |
-| Planning | `project-determine-goal`, `project-inception`, `project-brainstorm`, `review-plan` |
-| Daily flow | `dev-workflow-flow`, `dev-workflow-tdd`, `dev-workflow-test-driven`, `dev-workflow-debug` |
-| Review | `review-critical`, `review-system` |
-| Tickets/docs | `project-handle-ticket`, `docs-manager` |
-| Research | `research-deep` |
-| AI frameworks | `ai-framework-select`, `ai-framework-setup-anthropic`, `ai-framework-setup-langchain`, `ai-framework-setup-pydanticai`, `ai-framework-build-langgraph` |
-| Setup | `setup-logging`, `setup-langfuse-tracing`, `setup-uv`, `setup-testing`, `setup-payments`, `setup-repository-structure` |
-| Compliance / store | `compliance-check`, `playstore-check`, `appstore-check` |
-| Tooling | `skill-create`, `worktree`, `ui-design-options` |
+| `plan-explorer` | Open a markdown plan or spec in a browser UI; edits round-trip to disk |
+| `graphify` | Turn any codebase or document set into a queryable knowledge graph |
+| `setup-testing` | Bootstrap Python/React test infrastructure (Testcontainers, Playwright, MSW) |
+| `setup-langfuse-tracing` | Instrument LLM calls with Langfuse v4 tracing |
 
 Full descriptions in [skills/README.md](skills/README.md) and per-skill `SKILL.md`.
 
 ## Slash Commands
 
-Most commands proxy to a skill of the same intent.
-
-| Command | Maps to | Purpose |
-|---|---|---|
-| `/flow` | `dev-workflow-flow` | Daily dev workflow |
-| `/tdd` | `dev-workflow-test-driven` | TDD cycle |
-| `/debug` | `dev-workflow-debug` | Systematic debugging |
-| `/review` | `review-system` | Multi-tier review |
-| `/research` | `research-deep` | 2026-standards research |
-| `/plan` | `review-plan` | Plan + validate |
-| `/inception` | `project-inception` | New project setup |
-| `/ticket` | `project-handle-ticket` | End-to-end ticket flow |
-| `/docs` | `docs-manager` | Doc maintenance |
-| `/commit` | — | Commit message for staged changes |
-| `/mr` | — | Merge request description |
-| `/qa-steps` | — | QA test steps for current branch |
-| `/humanize` | — | De-AI prior response |
-| `/checkpoint` | — | Mark workflow checkpoint |
-| `/build-fix` | — | Iterative build/type-error fix |
-| `/update-docs` | — | Sync docs with code |
-
-## Agents
-
-Multi-tier review orchestrated by `review-code`. Each tier reviewer covers one axis.
-
-| Agent | Axis |
+| Command | Purpose |
 |---|---|
-| `review-code` | Orchestrator |
-| `process-review` | Apply review findings |
-| `reviewer-security` | Security / OWASP |
-| `reviewer-performance` | Performance |
-| `reviewer-accessibility` | WCAG |
-| `reviewer-architecture` | Architecture / dependencies |
-| `reviewer-simplicity` | Simplification |
-| `reviewer-naming` | Naming quality |
-| `reviewer-comments` | Comment quality |
-| `reviewer-testing` | Test coverage |
-| `reviewer-error-type` | Error handling / types |
-| `reviewer-plan` | Plan validation |
-| `merge-request-writer` | MR description generation |
+| `/commit` | Commit message for staged changes |
+| `/mr` | Merge request description |
+| `/qa-steps` | QA test steps for the current branch |
 
 ## Hooks
 
@@ -154,28 +138,31 @@ Add API-key-required servers (GitHub, Sentry, Atlassian, etc.) per project in `.
 
 ## Workflow Examples
 
+These use skills from the superpowers plugin (see [Superpowers](#superpowers)), plus the
+slash commands in this repo.
+
 **Implement a feature:**
 ```
-/research       → validate approach against 2026 standards
-/plan           → restate requirements, risks, step-by-step
-/tdd            → red → green → refactor
-/review         → multi-tier review before commit
-/commit         → conventional commit message
-/mr             → merge request description
+brainstorming                        → explore intent, requirements, design
+writing-plans                        → step-by-step plan
+test-driven-development              → red → green → refactor
+requesting-code-review               → review before commit
+/commit                               → conventional commit message
+/mr                                    → merge request description
 ```
 
 **Fix a bug:**
 ```
-/debug          → structured hypothesis testing
-/tdd            → write failing test that reproduces
-                → fix, verify
-/review
+systematic-debugging                 → structured hypothesis testing
+test-driven-development              → write failing test that reproduces, then fix
+requesting-code-review
 ```
 
 **Start a new project:**
 ```
-/inception      → goals, architecture, structure
-/flow           → daily development cadence
+brainstorming                        → goals, architecture, structure
+writing-plans                        → step-by-step plan
+executing-plans                      → work the plan with review checkpoints
 ```
 
 ## Configuration Highlights
@@ -195,7 +182,7 @@ Override per-project in `<project>/.claude/settings.json`.
 - **CLAUDE.md** — global philosophy / conventions; edit to your style
 - **settings.json** — permissions, hooks, MCP enablement
 - **`.mcp.json`** — MCP server definitions
-- **skills/<name>/SKILL.md** — write your own skill (see `skill-create`)
+- **skills/<name>/SKILL.md** — write your own skill (see superpowers' `writing-skills`)
 - **commands/<name>.md** — alias a skill or define inline behavior
 
 Local-only overrides go in `settings.local.json` (gitignored).
@@ -225,3 +212,4 @@ MIT — see [LICENSE](LICENSE).
 - [Claude Code](https://claude.com/code) — the CLI
 - [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
 - [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) — community marketplace
+- [superpowers-marketplace](https://github.com/obra/superpowers-marketplace) — the process-layer plugin this config assumes is installed
