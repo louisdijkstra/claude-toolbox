@@ -42,7 +42,8 @@
       "^python -m (json\\.tool|py_compile|unittest)($| )",
       "^find \\./",
       "^grep -r .* \\./",
-      "^uv (sync|install|run|pip list)($| )"
+      "^uv (sync|install|run|pip list)($| )",
+      "^node ~/\\.claude/scripts/notify\\.js( |$)"
     ],
     "bashDangerousPatterns": [
       "git push --force",
@@ -62,12 +63,14 @@
       "maxConcurrentFileEdits": 10,
       "preventForcePush": true,
       "protectedBranches": [
-        "main",
         "master",
         "production"
       ],
       "requireBashConfirmation": true
-    }
+    },
+    "allow": [
+      "Bash(node ~/.claude/scripts/notify.js:*)"
+    ]
   },
   "model": "opus[1m]",
   "enabledMcpjsonServers": [
@@ -150,7 +153,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Glass.aiff &"
+            "command": "node ~/.claude/scripts/notify.js --sound attention"
           }
         ]
       },
@@ -159,7 +162,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Basso.aiff &"
+            "command": "node ~/.claude/scripts/notify.js --sound error"
           }
         ]
       }
@@ -170,16 +173,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/scripts/session-end.js"
+            "command": "node ~/.claude/scripts/notify.js --sound done"
           }
         ]
-      },
+      }
+    ],
+    "SessionEnd": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Hero.aiff &"
+            "command": "node ~/.claude/hooks/scripts/session-end.js"
           }
         ]
       }
@@ -212,9 +217,9 @@
     "command": "sh ~/.claude/hooks/scripts/statusline.sh"
   },
   "enabledPlugins": {
+    "caveman@caveman": true,
     "superpowers@superpowers-marketplace": true,
-    "frontend-design@claude-code-plugins": true,
-    "caveman@caveman": true
+    "frontend-design@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -225,11 +230,18 @@
     },
     "superpowers-marketplace": {
       "source": {
-        "source": "github",
-        "repo": "obra/superpowers-marketplace"
+        "source": "git",
+        "url": "https://github.com/obra/superpowers-marketplace.git"
+      }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/anthropics/claude-plugins-official.git"
       }
     }
   },
+  "effortLevel": "medium",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "light",

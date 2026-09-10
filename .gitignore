@@ -38,9 +38,14 @@ plugins/config.json
 plugins/cache/
 plugins/data/
 plugins/plugin-catalog-cache.json
+plugins/.last_inuse_sweep
 
 # Daemon and Runtime State
 .last-cleanup
+.last-update-result.json
+daemon-auth-cooldown
+daemon-auth-status.json
+remote-settings.json
 daemon.lock
 daemon.log
 daemon.status.json
