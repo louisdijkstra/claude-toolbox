@@ -8,7 +8,10 @@
 
 ## Communication
 - Concise, technical responses
-- Simple English, simple language: short common words, short sentences, plain phrasing (technical terms stay exact)
+- Simple English: short common words, short sentences. Technical terms stay exact.
+- Answer first, then the why. Do not restate the question or build up to the point.
+- Shape fits the answer: one line, bullets, or prose. No fixed template.
+- When there are options, name your recommendation and the reason, not just the list.
 - GitHub-flavored markdown
 - Reference code with file_path:line_number
 - No emojis unless explicitly requested
