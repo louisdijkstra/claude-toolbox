@@ -72,4 +72,14 @@ assert_eq "$(format_location '/Users/you/projects/my repo/src' \
 assert_eq "$(location_shorten /a/b/c/d 3)" "…/c/d" "shorten keeps the last two segments"
 assert_eq "$(location_shorten /a/b 40)"    "/a/b"  "shorten leaves a short path alone"
 
+# --- branch names -----------------------------------------------------------
+# A branch is identity too, but the native worktree tool produces names like
+# worktree-statusline-location, which push the identity line past 80 columns.
+assert_eq "$(branch_shorten main)" "main" "a short branch is untouched"
+assert_eq "$(branch_shorten feature/add-the-thing)" "feature/add-the-thing" \
+          "a branch at the cap is untouched"
+assert_eq "$(branch_shorten worktree-statusline-location)" "…-statusline-location" \
+          "a long branch elides from the left, keeping the distinctive tail"
+assert_eq "$(branch_shorten '')" "" "an empty branch stays empty"
+
 assert_done "location"

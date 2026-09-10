@@ -119,7 +119,7 @@ Full descriptions in [skills/README.md](skills/README.md) and per-skill `SKILL.m
 | `block-dev-without-tmux.js` | PreToolUse (dev servers) | Force long-running servers into tmux |
 | `block-random-md.js` | PreToolUse (Write \*.md) | Prevent stray markdown file creation |
 | `log-pr-url.js` | PostToolUse (gh pr create) | Capture PR URL |
-| `statusline.sh` | StatusLine | Two-line status with model, context, rate limits, cost |
+| `statusline.sh` | StatusLine | Two-line status: model and location above, context and spend below |
 
 Hook config lives in `settings.json` under `hooks.*`.
 

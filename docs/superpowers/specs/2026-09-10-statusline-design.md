@@ -56,8 +56,15 @@ extra truncation of the branch:
 
 | Line | Typical | Worst case measured |
 |---|---|---|
-| Identity | 40 | 75 — location at the 28 cap, plus a 28-character worktree branch |
+| Identity | 40 | 79 — location at its cap, plus a branch at its cap |
 | Resources | 33 | 46 — rolling limits, every meter at 100% |
+
+The branch needs a cap of its own to reach that figure. Implementation measured
+the real line at 84 columns before one was added: the native worktree tool emits
+branch names like `worktree-statusline-location`, and the model field carries a
+`(1M)` suffix that the first estimate here missed. `branch_shorten` caps a branch
+at 21 characters, eliding from the left as `…-statusline-location` — the tail is
+the distinctive part.
 
 ## Glyphs
 

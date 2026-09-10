@@ -5,6 +5,22 @@
 # git or touches the filesystem, which is what makes the rules testable.
 
 LOCATION_MAX=28
+BRANCH_MAX=21
+
+# branch_shorten <name> <max> -> name, or …tail when too long
+# A branch is identity, but the native worktree tool emits names like
+# worktree-statusline-location which push the identity line past 80 columns.
+# The tail is the distinctive part, so the head is what goes.
+branch_shorten() {
+  _name=$1
+  _max=${2:-$BRANCH_MAX}
+  if [ ${#_name} -le "$_max" ]; then
+    printf '%s' "$_name"
+    return
+  fi
+  _keep=$((_max - 1))
+  printf '…%s' "$(printf '%s' "$_name" | tail -c "$_keep")"
+}
 
 # location_shorten <path> <max> -> path, or …/second-last/last when too long
 location_shorten() {

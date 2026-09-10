@@ -3,6 +3,11 @@
 input=$(cat)
 val() { echo "$input" | jq -r "$1 // empty"; }
 
+# Guarded so a partial install still renders a line.
+_lib="$(dirname "$0")/lib"
+[ -f "$_lib/meter.sh" ] && . "$_lib/meter.sh"
+[ -f "$_lib/location.sh" ] && . "$_lib/location.sh"
+
 model=$(val '.model.display_name')
 model_id=$(val '.model.id')
 ctx_size=$(val '.context_window.context_window_size')
@@ -17,35 +22,14 @@ reset_7d=$(val '.rate_limits.seven_day.resets_at')
 cost=$(val '.cost.total_cost_usd')
 session_id=$(val '.session_id')
 
-# ANSI colors
-C="\033[36m"   # cyan
-G="\033[32m"   # green
-Y="\033[33m"   # yellow
-R="\033[31m"   # red
-M="\033[35m"   # magenta
-D="\033[2m"    # dim
+# ANSI colours. Identity only: the meters are deliberately uncoloured, so fill
+# alone carries the value and nothing depends on telling red from green.
+C="\033[36m"   # cyan — model
+G="\033[32m"   # green — branch
+M="\033[35m"   # magenta — branch in a worktree
+D="\033[2m"    # dim — labels, separators, countdowns
 B="\033[1m"    # bold
 X="\033[0m"    # reset
-
-# Progress bar: $1=percentage (0-100), $2=width (chars), $3=color scheme (green|gray|fixed_gray)
-make_bar() {
-  pct=$(printf "%.0f" "$1")
-  width=${2:-12}
-  scheme=${3:-green}
-  if [ "$scheme" = "fixed_gray" ]; then
-    col="$D"
-  elif [ "$pct" -ge 80 ]; then col="$R"
-  elif [ "$pct" -ge 60 ]; then col="$Y"
-  elif [ "$scheme" = "gray" ]; then col="$D"
-  else col="$G"
-  fi
-  filled=$((pct * width / 100))
-  empty=$((width - filled))
-  bar=""
-  i=0; while [ $i -lt $filled ]; do bar="${bar}▓"; i=$((i + 1)); done
-  i=0; while [ $i -lt $empty ]; do bar="${bar}░"; i=$((i + 1)); done
-  printf "%b" "${col}${bar} ${pct}%${X}"
-}
 
 # Countdown string from unix timestamp
 countdown() {
@@ -111,25 +95,56 @@ elif [ -n "$model" ]; then
   model_label=$(echo "$model" | sed 's/ *([^)]*context[^)]*)//;s/ *([^)]*[kKmM][^)]*)$//')
 fi
 
-line1=""
-[ -n "$model_label" ] && line1="${B}${C}🤖 ${model_label}${ctx_label}${X}"
-
-# Git branch
+# Git branch and location, resolved before the line is built.
+# One rev-parse yields the working root, the shared git directory and the
+# branch. It replaces the old `git branch --show-current`, so the render costs
+# no extra subprocess. Older git rejects --path-format and falls through to the
+# payload values, which is why nothing here is fatal.
+git_top=""
+git_common=""
 branch=""
-if [ -n "$wt_branch" ]; then branch="$wt_branch"
-elif [ -n "$workspace" ]; then branch=$(cd "$workspace" 2>/dev/null && git branch --show-current 2>/dev/null)
-fi
-if [ -n "$branch" ]; then
-  if [ -n "$worktree" ]; then git_info="${M}🌳 ${branch}${X}"
-  else git_info="${G}${branch}${X}"
+if [ -n "$workspace" ]; then
+  git_out=$(git -C "$workspace" rev-parse --path-format=absolute \
+              --show-toplevel --git-common-dir --abbrev-ref HEAD 2>/dev/null)
+  if [ -n "$git_out" ]; then
+    git_top=$(printf '%s\n' "$git_out" | sed -n '1p')
+    git_common=$(printf '%s\n' "$git_out" | sed -n '2p')
+    branch=$(printf '%s\n' "$git_out" | sed -n '3p')
   fi
-  [ -n "$line1" ] && line1="$line1 ${D}|${X} $git_info" || line1="$git_info"
+fi
+[ -z "$branch" ] && branch="$wt_branch"
+
+location=""
+if [ -n "$workspace" ]; then
+  if command -v format_location > /dev/null 2>&1; then
+    location=$(format_location "$workspace" "$git_top" "$git_common")
+  else
+    location=$(basename "$workspace")
+  fi
 fi
 
-# Context window progress bar
-if [ -n "$used" ]; then
-  ctx_bar=$(make_bar "$used" 16 fixed_gray)
-  [ -n "$line1" ] && line1="$line1 ${D}|${X} $ctx_bar" || line1="$ctx_bar"
+line1=""
+[ -n "$model_label" ] && line1="${B}${C}◆ ${model_label}${ctx_label}${X}"
+
+# Location: ▸ marks the place, ↳ inside it marks a worktree.
+if [ -n "$location" ]; then
+  loc_field="${D}▸${X} ${location}"
+  [ -n "$line1" ] && line1="$line1  $loc_field" || line1="$loc_field"
+fi
+
+# The tree moved to the location field, which is the thing that is actually a
+# worktree. The branch keeps its colour and drops the icon.
+if [ -n "$branch" ]; then
+  in_worktree=""
+  [ -n "$worktree" ] && in_worktree=yes
+  [ -n "$git_top" ] && [ -n "$git_common" ] && \
+    [ "$git_top" != "${git_common%/.git}" ] && in_worktree=yes
+  branch_label=$branch
+  command -v branch_shorten > /dev/null 2>&1 && branch_label=$(branch_shorten "$branch")
+  if [ -n "$in_worktree" ]; then git_info="${M}⑂ ${branch_label}${X}"
+  else git_info="${G}⑂ ${branch_label}${X}"
+  fi
+  [ -n "$line1" ] && line1="$line1  $git_info" || line1="$git_info"
 fi
 
 # Caveman badge (appended after context bar)
@@ -142,19 +157,25 @@ fi
 # Enterprise account: rate_limits absent, cost present → show budget bar
 
 line2=""
+
+# Context window, always first.
+if [ -n "$used" ]; then
+  ctx_pct=$(printf "%.0f" "$used" 2>/dev/null || echo 0)
+  line2="${D}ctx${X} $(meter_circle "$ctx_pct") ${ctx_pct}%"
+fi
+
 if [ -n "$five_h" ]; then
-  # Max: rate limit windows
-  five_bar=$(make_bar "$five_h" 10)
-  line2="5h: ${five_bar}"
-  if [ -n "$reset_5h" ]; then
-    line2="$line2 ${D}↻$(countdown "$reset_5h")${X}"
-  fi
+  # Rolling windows: each meter carries its own countdown.
+  five_pct=$(printf "%.0f" "$five_h" 2>/dev/null || echo 0)
+  five_field="${D}5h${X} $(meter_circle "$five_pct") ${five_pct}%"
+  [ -n "$reset_5h" ] && five_field="$five_field ${D}↻$(countdown "$reset_5h")${X}"
+  [ -n "$line2" ] && line2="$line2  $five_field" || line2="$five_field"
+
   if [ -n "$seven_d" ]; then
-    seven_bar=$(make_bar "$seven_d" 10 gray)
-    line2="$line2 ${D}|${X} week: ${seven_bar}"
-    if [ -n "$reset_7d" ]; then
-      line2="$line2 ${D}↻$(countdown "$reset_7d")${X}"
-    fi
+    seven_pct=$(printf "%.0f" "$seven_d" 2>/dev/null || echo 0)
+    seven_field="${D}7d${X} $(meter_circle "$seven_pct") ${seven_pct}%"
+    [ -n "$reset_7d" ] && seven_field="$seven_field ${D}↻$(countdown "$reset_7d")${X}"
+    line2="$line2  $seven_field"
   fi
 elif [ -n "$cost" ]; then
   # Enterprise: month-to-date spend across every session, live ones included.
@@ -174,14 +195,13 @@ elif [ -n "$cost" ]; then
   case "$total_cost" in
     ''|*[!0-9.]*) total_cost=$(echo "$cost" | awk '{printf "%.4f", $1}') ;;
   esac
-  remaining=$(echo "$total_cost $BUDGET" | awk '{printf "%.2f", $2 - $1}')
-  total_pct=$(echo "$total_cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
-  budget_bar=$(make_bar "$total_pct" 10)
-  total_fmt=$(printf '$%.2f' "$total_cost")
+  spend_pct=$(echo "$total_cost $BUDGET" | awk '{printf "%.0f", $1 / $2 * 100}')
+  spent_fmt=$(printf '%.0f' "$total_cost")
+  # The cap is never omitted: the figure is meaningless without it.
+  spend_field="${D}\$${X} $(meter_circle "$spend_pct") ${spent_fmt} / ${BUDGET}"
   next_reset_ts=$(date -v+1m -v1d -v0H -v0M -v0S +%s 2>/dev/null)
-  reset_str=""
-  [ -n "$next_reset_ts" ] && reset_str=" ${D}↻$(countdown "$next_reset_ts")${X}"
-  line2="budget: ${budget_bar} ${total_fmt} / \$${BUDGET}${reset_str}"
+  [ -n "$next_reset_ts" ] && spend_field="$spend_field ${D}↻$(countdown "$next_reset_ts")${X}"
+  [ -n "$line2" ] && line2="$line2  $spend_field" || line2="$spend_field"
 fi
 
 # Output
