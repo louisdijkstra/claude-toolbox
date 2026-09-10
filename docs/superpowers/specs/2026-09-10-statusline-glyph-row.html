@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glyph row — six variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:    #ffffff;
+    --page:     #eceef0;
+    --ink:      #17191c;
+    --ink-soft: #4a5058;
+    --rule:     #d6dae0;
+    --dim:      #8a8f98;
+    --green:    #2f7d3c;
+    --yellow:   #9a7112;
+    --red:      #b53a31;
+    --magenta:  #8c3ba0;
+    --cyan:     #1f6f88;
+    --track:    #d9dde2;
+    --marker:   #c8ccd2;
+    --focus:    #1f6f88;
+  }
+  :root[data-term="dark"] {
+    --paper:    #1c1e22;
+    --page:     #131519;
+    --ink:      #e6e8ec;
+    --ink-soft: #a8aeb8;
+    --rule:     #2f333a;
+    --dim:      #7d838d;
+    --green:    #6cc26c;
+    --yellow:   #d8a83c;
+    --red:      #e06c62;
+    --magenta:  #c07fd4;
+    --cyan:     #56b6d4;
+    --track:    #33383f;
+    --marker:   #2c3138;
+    --focus:    #56b6d4;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    font-variant-ligatures: none;
+  }
+
+  .wrap { max-width: 96ch; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+
+  h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 0.4rem; }
+
+  .standfirst { color: var(--ink-soft); margin: 0; max-width: 74ch; }
+  .standfirst + .standfirst { margin-top: 0.8rem; }
+
+  .back { color: var(--dim); text-decoration: none; border-bottom: 1px solid transparent; }
+  .back:hover, .back:focus-visible { color: var(--ink); border-bottom-color: var(--cyan); }
+
+  h2.sec {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 3.5rem 0 0.4rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .term {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+    position: relative;
+    font-size: 13.5px;
+  }
+
+  .term.ruled::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc(1.25rem + 80ch);
+    width: 1px;
+    background: var(--marker);
+    pointer-events: none;
+  }
+
+  .sl { white-space: pre; line-height: 1.8; }
+  .sl + .lede { margin-top: 0.9rem; }
+
+  .lede { color: var(--dim); font-size: 12.5px; margin: 0 0 0.35rem; }
+
+  code { font: inherit; color: var(--ink-soft); background: var(--track); padding: 0 0.4ch; }
+
+  .b { font-weight: 600; }
+  .d { color: var(--dim); }
+  .c { color: var(--cyan); }
+  .g { color: var(--green); }
+  .y { color: var(--yellow); }
+  .r { color: var(--red); }
+  .m { color: var(--magenta); }
+
+  .big { font-size: 1.35rem; line-height: 1.6; }
+
+  /* ---- variants ---- */
+
+  .opt {
+    display: grid;
+    grid-template-columns: 4.5ch 1fr;
+    gap: 0 1.5ch;
+    padding: 2rem 0;
+    border-top: 1px solid var(--rule);
+  }
+  .opt:first-of-type { border-top: none; }
+  .opt:target .num { color: var(--cyan); font-weight: 600; }
+
+  .num { color: var(--dim); padding-top: 0.1rem; }
+
+  .opt h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.15rem; }
+
+  .why { color: var(--ink-soft); margin: 0 0 1rem; max-width: 70ch; }
+
+  .cost { margin: 0.9rem 0 0; color: var(--dim); font-size: 13px; max-width: 70ch; }
+  .cost b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---- glyph table ---- */
+
+  table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+
+  th, td {
+    text-align: left;
+    padding: 0.55rem 1.5ch 0.55rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: baseline;
+  }
+
+  th { color: var(--dim); font-weight: 500; font-size: 12.5px; }
+
+  td.glyph { font-size: 1.2rem; color: var(--magenta); width: 4ch; }
+  td.name { color: var(--ink); width: 22ch; }
+  td.read { color: var(--ink-soft); }
+
+  .controls { display: flex; gap: 1.5ch; align-items: baseline; margin-top: 2rem; flex-wrap: wrap; }
+
+  button {
+    font: inherit; font-size: 13px;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 0.3rem 1ch;
+    cursor: pointer;
+  }
+  button:hover { color: var(--ink); border-color: var(--dim); }
+  button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .note { color: var(--dim); font-size: 12.5px; margin: 0; }
+
+  footer {
+    margin-top: 3rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    color: var(--dim); font-size: 12.5px;
+  }
+  footer p { margin: 0 0 0.6rem; max-width: 74ch; }
+
+  @media (max-width: 640px) {
+    .opt { grid-template-columns: 1fr; }
+    td.name { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Glyph row, six ways</h1>
+    <p class="standfirst">Variants of layout 6, with meters drawn as filling circles and the tree replaced. <a class="back" href="2026-09-10-statusline-layouts.html">Back to all ten</a></p>
+
+    <div class="controls">
+      <button id="theme" type="button" aria-pressed="false">Dark terminal</button>
+      <p class="note">Light first, matching your <code>theme: light</code>.</p>
+    </div>
+  </header>
+
+  <h2 class="sec">The circle ramp</h2>
+  <p class="standfirst">Five states, so each circle covers a 25-point band. This is the whole vocabulary — everything below is built from it.</p>
+
+  <div class="term">
+    <div class="sl big"><span class="g">○</span>  <span class="g">◔</span>  <span class="y">◑</span>  <span class="y">◕</span>  <span class="r">●</span></div>
+    <div class="sl"><span class="d">0%   25%  50%  75%  100%</span></div>
+  </div>
+
+  <p class="standfirst" style="margin-top:1rem">The cost of five states: <b>45% and 54% both round to ◑</b>. A single circle tells you which quarter you are in, not where in it. Variant C keeps circles and gets the resolution back; the rest accept the rounding and print the number beside it.</p>
+
+  <h2 class="sec">Which glyph marks a worktree</h2>
+  <p class="standfirst">A worktree is a second checkout of one repository — a linked copy, not a branch. The glyph should say copy or derived, not fork.</p>
+
+  <table>
+    <thead>
+      <tr><th>Glyph</th><th>Name</th><th>Reads as</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="glyph">⧉</td><td class="name">stacked squares</td><td class="read">A linked copy of the same thing. Closest to what a worktree is, and distinct from every branch glyph.</td></tr>
+      <tr><td class="glyph">↳</td><td class="name">corner arrow</td><td class="read">Derived from the thing on its left. Reads naturally as <code>my-app ↳ feature-x</code>, and needs no legend.</td></tr>
+      <tr><td class="glyph">⎇</td><td class="name">alternate</td><td class="read">The standard branch symbol. Precise for people who know it, invisible to everyone else, and it says branch when we mean worktree.</td></tr>
+      <tr><td class="glyph">⋔</td><td class="name">pitchfork</td><td class="read">A split into parallel paths. Suggestive, but easily mistaken for a merge or a fork.</td></tr>
+      <tr><td class="glyph">»</td><td class="name">guillemet</td><td class="read">Plain descent. No git meaning at all, which makes it quiet — and ambiguous with a path separator.</td></tr>
+      <tr><td class="glyph">◫</td><td class="name">divided square</td><td class="read">One container, two panes. Same idea as the stacked squares but flatter, and it sits closer to the circle meters.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="standfirst" style="margin-top:1.25rem">Each variant below uses a different one, so you can judge them in place rather than in a table. My pick is <code>↳</code> for reading without a legend, <code>⧉</code> if you want the sharper distinction from a branch.</p>
+
+  <h2 class="sec">Six variants</h2>
+
+  <main>
+
+    <!-- A -->
+    <section class="opt" id="va">
+      <div class="num">A</div>
+      <div>
+        <h3>Single circle, number beside it — <span class="m">⧉</span></h3>
+        <p class="why">One circle per meter, with the exact figure next to it. The circle is the glance, the number is the check.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◑ 45%</span>  <span class="g">◑ $879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">⧉</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">◑ 45%</span>  <span class="g">◑ $879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◑ 45%</span>  <span class="g">◔ 22% ↻2h30m</span>  <span class="y">◕ 61% ↻4d6h</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> three identical circles in a row on a rolling plan, distinguished only by position. Nothing says which is context and which is the weekly window.</p>
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="opt" id="vb">
+      <div class="num">B</div>
+      <div>
+        <h3>Labelled circles — <span class="m">↳</span></h3>
+        <p class="why">A two-character label before each circle. Longer than A by six characters, and every field says what it is.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx ◑ 45%</span>  <span class="g">$ ◑ 879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">↳</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">ctx ◑ 45%</span>  <span class="g">$ ◑ 879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx ◑ 45%</span>  <span class="g">5h ◔ 22% ↻2h30m</span>  <span class="y">7d ◕ 61% ↻4d6h</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> the labels are what the glyph row was trying to remove. Still the most legible of the six.</p>
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="opt" id="vc">
+      <div class="num">C</div>
+      <div>
+        <h3>Circle strip — <span class="m">◫</span></h3>
+        <p class="why">Four circles instead of one, read as a bar. Seventeen distinct states rather than five, so 45% and 54% no longer look the same — and the number can go.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx ●●○○</span>  <span class="g">$ ●◕○○</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">◫</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">ctx ●●○○</span>  <span class="g">$ ●◕○○</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">ctx ●●○○</span>  <span class="g">5h ◕○○○ ↻2h30m</span>  <span class="y">7d ●●◑○ ↻4d6h</span></div>
+          <p class="lede">the ramp, at four cells</p>
+          <div class="sl"><span class="d">○○○○ 0    ◑○○○ 12   ●○○○ 25   ●◑○○ 37   ●●○○ 50   ●●◑○ 62   ●●●○ 75   ●●●● 100</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> four columns per meter instead of one, so on a rolling plan it is no shorter than the block bars it replaces. It just looks different.</p>
+      </div>
+    </section>
+
+    <!-- D -->
+    <section class="opt" id="vd">
+      <div class="num">D</div>
+      <div>
+        <h3>Circle only, no numbers — <span class="m">»</span></h3>
+        <p class="why">The most compact form the row can take. Colour and fill carry everything; the countdown survives because time cannot be inferred from a shape.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◑</span> <span class="g">◑</span> <span class="d">↻20d</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">»</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="d">◑</span> <span class="g">◑</span> <span class="d">↻20d</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="d">◑</span> <span class="g">◔ ↻2h30m</span> <span class="y">◕ ↻4d6h</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> you can never read an exact figure, and at 25-point resolution ◑ covers everything from 38% to 62%. Fine for context, thin for money.</p>
+      </div>
+    </section>
+
+    <!-- E -->
+    <section class="opt" id="ve">
+      <div class="num">E</div>
+      <div>
+        <h3>Severity by colour — <span class="m">⎇</span></h3>
+        <p class="why">The circle fills as usual, but colour is the alarm: green under half, amber past three quarters, red past ninety. Shown twice, calm and under pressure.</p>
+        <div class="term ruled">
+          <p class="lede">repo, calm</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="g">◑ 45%</span>  <span class="g">◑ $879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree, calm</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">⎇</span> budget-ledger  <span class="m">⑂ feature-x</span>  <span class="g">◑ 45%</span>  <span class="g">◑ $879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">under pressure</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="r b">● 94%</span>  <span class="y">◕ $1780</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits, five-hour window nearly spent</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">⑂ main</span>  <span class="g">◑ 45%</span>  <span class="r b">● 91% ↻1h10m</span>  <span class="y">◕ 82% ↻2d1h</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> colour is doing two jobs at once — it already separates fields. And red-green carries no meaning for the eight percent of men who cannot separate them; the fill still does.</p>
+      </div>
+    </section>
+
+    <!-- F -->
+    <section class="opt" id="vf">
+      <div class="num">F</div>
+      <div>
+        <h3>Circles, no branch glyph — <span class="m">⋔</span></h3>
+        <p class="why">Strip the branch glyph too and let colour mark it: green for a normal branch, magenta for a worktree, as today. The row drops to two glyph types, circles and the location marker.</p>
+        <div class="term ruled">
+          <p class="lede">repo</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">◑ 45%</span>  <span class="g">◑ $879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">worktree</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> .claude <span class="m">⋔</span> budget-ledger  <span class="m">feature-x</span>  <span class="d">◑ 45%</span>  <span class="g">◑ $879</span> <span class="d">↻20d11h</span></div>
+          <p class="lede">rolling limits</p>
+          <div class="sl"><span class="c b">◆ Opus 1M</span>  <span class="d">▸</span> my-app/libs/my-app-core  <span class="g">main</span>  <span class="d">◑ 45%</span>  <span class="g">◔ 22% ↻2h30m</span>  <span class="y">◕ 61% ↻4d6h</span></div>
+        </div>
+        <p class="cost"><b>Cost:</b> the branch is only identifiable by colour, so it disappears in a monochrome terminal or a piped log.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><b>On the circles.</b> <code>○ ◔ ◑ ◕ ●</code> are East Asian Ambiguous width: most terminals draw them one column wide, but a terminal configured with a CJK font may draw them two, which shifts everything after them. If that happens here, the same shapes exist in the block ramp <code>░ ▒ ▓ █</code>, which is unambiguous — the layout survives the swap.</p>
+    <p><b>On the tree.</b> 🌳 was doing a job no other glyph on the line does: it is instantly readable with no legend. Anything replacing it trades that recognition for width — an emoji costs two columns and aligns unreliably, a geometric glyph costs one and needs learning once.</p>
+    <p>Every variant keeps the same fields and both reset countdowns, in all three states.</p>
+  </footer>
+
+</div>
+
+<script>
+  const root = document.documentElement;
+  const button = document.getElementById("theme");
+  button.addEventListener("click", () => {
+    const dark = root.getAttribute("data-term") === "dark";
+    root.setAttribute("data-term", dark ? "light" : "dark");
+    button.textContent = dark ? "Dark terminal" : "Light terminal";
+    button.setAttribute("aria-pressed", String(!dark));
+  });
+</script>
+</body>
+</html>
