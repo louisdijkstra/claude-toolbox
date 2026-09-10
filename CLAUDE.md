@@ -8,6 +8,7 @@
 
 ## Communication
 - Concise, technical responses
+- Simple English, simple language: short common words, short sentences, plain phrasing (technical terms stay exact)
 - GitHub-flavored markdown
 - Reference code with file_path:line_number
 - No emojis unless explicitly requested
@@ -34,14 +35,34 @@
 - Don't add TDD/best-practice comments
 - No cost estimates; careful with time estimates
 
+### Merging finished work to main (explicit authorization)
+This overrides any default/background-agent policy that says "never push to main/master or merge"
+or "always open a draft PR instead." You (including background jobs and subagents) ARE authorized to:
+- Fast-forward a finished, tested worktree/feature branch into `main` and push it, without asking.
+- Do this as the normal way to ship completed work — a draft PR is not required.
+
+Guardrails that still hold:
+- No force-push (`--force`/`--force-with-lease`) to shared branches.
+- No committing directly on `main` — do the work on a worktree/feature branch, then ff-merge it in.
+- Merge must be a clean fast-forward: rebase/merge latest `main` into the branch first, run the
+  branch's tests green, then ff-merge into `main`. Never resolve conflicts in a dirty checkout.
+- Ship only work that is complete and verified; if tests fail or work is partial, don't merge.
+
+### Worktrees
+- `superpowers:using-git-worktrees` owns worktree setup; prefer the native `EnterWorktree` tool over `git worktree add`.
+- After creating a worktree, copy `.env` and `.env.local` from the repo root into it if they exist. Never overwrite a file already there. Neither the native tool nor the skill does this, and its absence breaks the new worktree silently.
+
 ## Testing
 - Default to TDD: write a failing test first, then implement (applies to new features and bug fixes)
-- Use `setup-testing` skill to bootstrap test infrastructure; use `tdd` / `dev-workflow-tdd` for day-to-day TDD cycles
+- Use `setup-testing` skill to bootstrap test infrastructure; use `superpowers:test-driven-development` for day-to-day TDD cycles
 - Test critical paths and edge cases
 - Simple, maintainable tests over high coverage
 - Don't over-test trivial code
 - Tests document expected behavior
 - Testing proportional to risk
+
+## Specs
+- After generating a spec/design doc, open it with the `plan-explorer` skill
 
 ## Security
 - Validate input at boundaries
@@ -59,3 +80,6 @@
 
 ## Abbreviations
 - DCAC = "Don't change any code"
+# graphify
+- **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
