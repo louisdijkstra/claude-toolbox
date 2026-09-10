@@ -42,6 +42,9 @@ class TestRunner:
         # Test 4: Shell libraries used by the statusline
         self._run_test_section("Shell Libraries", self._test_shell_libraries)
 
+        # Test 5: No private names in tracked files
+        self._run_test_section("Privacy", self._test_privacy)
+
         # Print final summary
         self._print_summary()
 
@@ -161,6 +164,27 @@ class TestRunner:
             passed = passed and result.returncode == 0
 
         return passed
+
+    def _test_privacy(self) -> bool:
+        """This repository is public: no private names in tracked files."""
+        print("Running privacy scan...")
+
+        guard = self.tests_dir / 'privacy_test.py'
+        if not guard.exists():
+            print(f"❌ Privacy guard not found: {guard}")
+            return False
+
+        result = subprocess.run(
+            [sys.executable, str(guard)],
+            capture_output=True,
+            text=True
+        )
+
+        print(result.stdout)
+        if result.stderr:
+            print("STDERR:", result.stderr)
+
+        return result.returncode == 0
 
     def _print_summary(self):
         """Print final test summary."""

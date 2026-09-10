@@ -13,10 +13,10 @@ assert_eq "$(format_location /Users/you/projects/my-app \
                              /Users/you/projects/my-app/.git)" \
           "my-app" "repo root is just the repo name"
 
-assert_eq "$(format_location /Users/you/projects/my-app/libs/my-app-core \
+assert_eq "$(format_location /Users/you/projects/my-app/libs/core \
                              /Users/you/projects/my-app \
                              /Users/you/projects/my-app/.git)" \
-          "my-app/libs/my-app-core" "repo subdirectory keeps its subpath"
+          "my-app/libs/core" "repo subdirectory keeps its subpath"
 
 # --- worktrees --------------------------------------------------------------
 assert_eq "$(format_location /Users/you/projects/my-app/.worktrees/feature-x \
@@ -35,13 +35,13 @@ assert_eq "$(format_location /Users/you/.claude/.claude/worktrees/budget-ledger 
           ".claude ↳ budget-ledger" "native worktree under .claude/worktrees"
 
 # --- truncation -------------------------------------------------------------
-# 28 characters exactly: kept whole.
-assert_eq "$(format_location /Users/you/projects/my-app/aaaaaaaaaaaaaaaaaaaaaaa \
+# "my-app/" plus 21 characters is exactly the 28-character cap: kept whole.
+assert_eq "$(format_location /Users/you/projects/my-app/aaaaaaaaaaaaaaaaaaaaa \
                              /Users/you/projects/my-app \
                              /Users/you/projects/my-app/.git)" \
-          "my-app/aaaaaaaaaaaaaaaaaaaaaaa" "exactly at the cap is untouched"
+          "my-app/aaaaaaaaaaaaaaaaaaaaa" "exactly at the cap is untouched"
 
-# Over the cap: the subpath elides, the repo name survives.
+# 33 characters: the subpath elides to its last two segments, the name survives.
 assert_eq "$(format_location /Users/you/projects/my-app/libs/parser/tests/fixtures \
                              /Users/you/projects/my-app \
                              /Users/you/projects/my-app/.git)" \
@@ -60,8 +60,8 @@ assert_eq "$(format_location /Users/you/Downloads '' '')" \
 assert_eq "$(format_location /Users/you '' '')" \
           "~" "home itself is a tilde"
 
-assert_eq "$(format_location /Users/you/Documents/Sync/2026-planning/Documents '' '')" \
-          "…/2026-planning/Documents" "a deep non-repo path keeps its last two segments"
+assert_eq "$(format_location /Users/you/Documents/Sync/2026-planning/notes '' '')" \
+          "…/2026-planning/notes" "a deep non-repo path keeps its last two segments"
 
 # --- awkward input ----------------------------------------------------------
 assert_eq "$(format_location '/Users/you/projects/my repo/src' \
