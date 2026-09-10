@@ -105,6 +105,4 @@ MR descriptions must be:
 
 ## Related Skills
 
-- **docs-manager** - Documentation creation
-- **review-system** - Pre-MR code review
 - **dev-flow** - Part of integration stage

@@ -161,4 +161,3 @@ Commit messages should:
 ## Related Skills
 
 - **dev-flow** - Part of integration workflow
-- **review-system** - Review before commit

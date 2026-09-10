@@ -93,6 +93,4 @@ QA steps must be:
 
 ## Related Skills
 
-- **docs-manager** - Documentation creation and maintenance
-- **review-system** - Code review before QA
 - **dev-flow** - Part of integration stage
