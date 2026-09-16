@@ -23,7 +23,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const MONTHLY_BUDGET = Number(process.env.CLAUDE_MONTHLY_BUDGET) || 2000;
+const MONTHLY_BUDGET = Number(process.env.CLAUDE_MONTHLY_BUDGET) || 4000;
 
 function claudeDir() {
   return process.env.CLAUDE_CONFIG_DIR || path.join(process.env.HOME || "", ".claude");

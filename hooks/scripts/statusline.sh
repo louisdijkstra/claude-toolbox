@@ -184,7 +184,7 @@ elif [ -n "$cost" ]; then
   # a session ends without its hook firing. The cost file for this session was
   # written further up, so the total already includes the current turn.
   CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-  BUDGET=2000
+  BUDGET=4000
   total_cost=""
   budget_out=$(node "$CLAUDE_HOME/scripts/budget.js" --statusline 2>/dev/null)
   if [ -n "$budget_out" ]; then
