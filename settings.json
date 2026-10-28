@@ -173,7 +173,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/scripts/notify.js --from-hook --sound done"
+            "command": "node ~/.claude/scripts/notify.js --sound done"
           }
         ]
       }
