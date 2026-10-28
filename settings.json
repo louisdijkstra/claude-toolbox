@@ -153,7 +153,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/scripts/notify.js --sound attention"
+            "command": "node ~/.claude/scripts/notify.js --from-hook --sticky --sound attention"
           }
         ]
       },
@@ -162,7 +162,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/scripts/notify.js --sound error"
+            "command": "node ~/.claude/scripts/notify.js --from-hook --sticky --sound error"
           }
         ]
       }
@@ -173,7 +173,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/scripts/notify.js --sound done"
+            "command": "node ~/.claude/scripts/notify.js --from-hook --sound done"
           }
         ]
       }
