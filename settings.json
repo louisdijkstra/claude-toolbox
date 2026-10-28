@@ -210,6 +210,18 @@
           }
         ]
       }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/scripts/permission-alert.js",
+            "timeout": 310
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
