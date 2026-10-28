@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const { buildCommands, parseArgs, messageFromHookPayload } = require("./notify.js");
+const { buildCommands, parseArgs, messageFromHookPayload, shouldStaySilent } = require("./notify.js");
 
 const opts = (overrides) => ({ message: "", sound: "", title: "Claude Code", subtitle: "", ...overrides });
 
@@ -146,7 +146,26 @@ test("idle prompt shows the last line of Claude's last text, without markdown", 
     assistant(text("First part.\n\n**Which do you want?**")),
     assistant(toolUse("Read", { file_path: "/x" })),
   );
-  assert.equal(messageFromHookPayload(idlePayload, log), "Which do you want?");
+  assert.equal(messageFromHookPayload(idlePayload, log), "First part. — Which do you want?");
+});
+
+test("idle prompt joins the opening sentence and the closing question", () => {
+  const log = transcript(assistant(text("Messages are cut down and tested. I checked each case live, details below.\n\n- point one\n\nWant me to commit it?")));
+  assert.equal(messageFromHookPayload(idlePayload, log), "Messages are cut down and tested. — Want me to commit it?");
+});
+
+test("idle prompt with a single line shows just that line", () => {
+  assert.equal(messageFromHookPayload(idlePayload, transcript(assistant(text("Which do you want?")))), "Which do you want?");
+});
+
+test("idle prompt clips a long headline and a long question separately", () => {
+  const log = transcript(assistant(text(`${"a".repeat(100)}\n\n${"b".repeat(100)}?`)));
+  const out = messageFromHookPayload(idlePayload, log);
+  const [headline, question] = out.split(" — ");
+  assert.equal(headline.length, 70);
+  assert.ok(headline.endsWith("…"));
+  assert.equal(question.length, 60);
+  assert.ok(question.endsWith("…"));
 });
 
 test("idle prompt keeps the original text when there is no transcript", () => {
@@ -176,4 +195,44 @@ test("permission prompt without a usable tool call keeps the original text", () 
 test("transcript lines that are not JSON are skipped", () => {
   const log = "garbage\n" + transcript(assistant(text("Done?")));
   assert.equal(messageFromHookPayload(idlePayload, log), "Done?");
+});
+
+test("idle alert stays silent when Claude's last line is not a question", () => {
+  const log = transcript(assistant(text("All done. Tests pass.")));
+  assert.equal(shouldStaySilent(idlePayload, log), true);
+});
+
+test("idle alert shows when Claude's last line ends in a question mark", () => {
+  const log = transcript(assistant(text("Done.\n\n**Want me to push?**")));
+  assert.equal(shouldStaySilent(idlePayload, log), false);
+});
+
+test("idle alert shows when the transcript is unreadable, so nothing is missed", () => {
+  assert.equal(shouldStaySilent(idlePayload, ""), false);
+});
+
+test("permission alert stays silent when the Allow/Deny alert already covers the request", () => {
+  const log = transcript(assistant(toolUse("Bash", { command: "git push origin main" })));
+  assert.equal(shouldStaySilent(permissionPayload, log, "darwin"), true);
+});
+
+test("permission alert shows for requests the Allow/Deny alert cannot show", () => {
+  const edit = transcript(assistant(toolUse("Edit", { file_path: "/a", old_string: "x", new_string: "y" })));
+  const longCommand = transcript(assistant(toolUse("Bash", { command: "x".repeat(200) })));
+  assert.equal(shouldStaySilent(permissionPayload, edit, "darwin"), false);
+  assert.equal(shouldStaySilent(permissionPayload, longCommand, "darwin"), false);
+});
+
+test("permission alert shows off macOS, where there is no Allow/Deny alert", () => {
+  const log = transcript(assistant(toolUse("Bash", { command: "ls" })));
+  assert.equal(shouldStaySilent(permissionPayload, log, "linux"), false);
+});
+
+test("other events are never silenced", () => {
+  assert.equal(shouldStaySilent(JSON.stringify({ hook_event_name: "StopFailure" }), ""), false);
+  assert.equal(shouldStaySilent("not json", ""), false);
+});
+
+test("StopFailure gets a fixed error message", () => {
+  assert.equal(messageFromHookPayload(JSON.stringify({ hook_event_name: "StopFailure" })), "Claude stopped because of an error");
 });

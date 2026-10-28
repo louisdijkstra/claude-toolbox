@@ -14,6 +14,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
+const { alertFor } = require("./permission-alert.js");
 
 const TITLE = "Claude Code";
 const BALLOON_MS = 5000;
@@ -87,14 +88,32 @@ function lastAssistantBlock(entries, type) {
   return null;
 }
 
-/** The last line is usually the question Claude is asking, so that is the one worth showing. */
-function lastLineOfText(entries) {
+const MAX_HEADLINE = 70;
+const MAX_QUESTION = 60;
+
+const clipTo = (value, max) => (value.length > max ? `${value.slice(0, max - 1).trimEnd()}…` : value);
+
+/** Non-empty lines of Claude's last text, with markdown marks stripped. */
+function textLines(entries) {
   const block = lastAssistantBlock(entries, "text");
-  const lines = String(block?.text || "")
+  return String(block?.text || "")
     .split("\n")
     .map((line) => line.replace(/[*_`#>]/g, "").replace(/^\s*(?:[-•]|\d+\.)\s*/, "").trim())
     .filter(Boolean);
-  return lines.at(-1) || "";
+}
+
+/** The last line is usually the question Claude is asking. */
+function lastLineOfText(entries) {
+  return textLines(entries).at(-1) || "";
+}
+
+/** Opening sentence for context plus the closing line, so "Want me to commit it?" says what about. */
+function headlineAndQuestion(entries) {
+  const lines = textLines(entries);
+  if (lines.length === 0) return "";
+  if (lines.length === 1) return lines[0];
+  const firstSentence = lines[0].split(/(?<=[.!:])\s/)[0];
+  return `${clipTo(firstSentence, MAX_HEADLINE)} — ${clipTo(lines.at(-1), MAX_QUESTION)}`;
 }
 
 function describeToolUse(entries) {
@@ -115,15 +134,44 @@ function messageFromHookPayload(raw, transcriptText = "") {
     const payload = JSON.parse(raw);
     const original = payload.message ? String(payload.message) : "";
     if (payload.hook_event_name === "Stop" && !original) return "Finished, waiting for you";
+    if (payload.hook_event_name === "StopFailure") return "Claude stopped because of an error";
     const entries = transcriptEntries(transcriptText);
-    const isIdle = payload.notification_type === "idle_prompt" || /waiting for your input/i.test(original);
-    const isPermission = payload.notification_type === "permission_prompt" || /needs your permission/i.test(original);
-    const detailed = isIdle ? lastLineOfText(entries) : isPermission ? describeToolUse(entries) : "";
+    const detailed = isIdlePrompt(payload) ? headlineAndQuestion(entries) : isPermissionPrompt(payload) ? describeToolUse(entries) : "";
     return clip(detailed || original);
   } catch {
     // Malformed payload: fall through to no banner rather than failing the hook.
   }
   return "";
+}
+
+const isIdlePrompt = (payload) =>
+  payload.notification_type === "idle_prompt" || /waiting for your input/i.test(String(payload.message || ""));
+const isPermissionPrompt = (payload) =>
+  payload.notification_type === "permission_prompt" || /needs your permission/i.test(String(payload.message || ""));
+
+/**
+ * True when the alert would only repeat something the user already knows, so it
+ * should not be shown at all (not even the sound). Unsure means shown: a missed
+ * alert costs more than an extra one.
+ */
+function shouldStaySilent(raw, transcriptText = "", platform = process.platform) {
+  try {
+    const payload = JSON.parse(raw);
+    const entries = transcriptEntries(transcriptText);
+    if (isIdlePrompt(payload)) {
+      // A plain "I'm done" is already covered by the sound on every finished turn.
+      const lastLine = lastLineOfText(entries);
+      return Boolean(lastLine) && !lastLine.endsWith("?");
+    }
+    if (isPermissionPrompt(payload)) {
+      // On macOS the Allow/Deny alert already covers a request it can show buttons for.
+      const block = lastAssistantBlock(entries, "tool_use");
+      return platform === "darwin" && Boolean(block) && alertFor({ tool_name: block.name, tool_input: block.input }) !== null;
+    }
+  } catch {
+    // Unreadable payload: show rather than miss.
+  }
+  return false;
 }
 
 function transcriptPathFrom(raw) {
@@ -338,7 +386,9 @@ async function main() {
   if (!opts.icon && fs.existsSync(ICON_PATH)) opts.icon = ICON_PATH;
   if (opts.fromHook && !opts.message) {
     const raw = await readStdin();
-    opts.message = messageFromHookPayload(raw, readTranscriptTail(transcriptPathFrom(raw)));
+    const transcriptText = readTranscriptTail(transcriptPathFrom(raw));
+    if (shouldStaySilent(raw, transcriptText)) return;
+    opts.message = messageFromHookPayload(raw, transcriptText);
   }
   if (!opts.subtitle && opts.message) opts.subtitle = `project ${projectName()}`;
 
@@ -366,4 +416,4 @@ if (require.main === module) {
   );
 }
 
-module.exports = { buildCommands, parseArgs, messageFromHookPayload, SOUNDS };
+module.exports = { buildCommands, parseArgs, messageFromHookPayload, shouldStaySilent, SOUNDS };

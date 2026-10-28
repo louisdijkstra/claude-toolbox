@@ -65,6 +65,10 @@ notices stay normal short banners.
 
 If the helper is missing or fails, you get the plain banner, then nothing. It never breaks a hook.
 
+With `--from-hook` it also stays silent when the alert would only repeat something you know:
+an idle alert whose last message is not a question, and a permission alert for a request that
+`permission-alert.js` already shows buttons for. A `StopFailure` hook shows "Claude stopped because of an error".
+
 If you see nothing: turn off Focus / Do Not Disturb first. A Focus mode holds back all
 notifications. The icon (`notify-icon.png`) shows on Windows and Linux only.
 
