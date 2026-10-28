@@ -222,6 +222,16 @@
           }
         ]
       }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/scripts/notify.js --from-hook --sound error"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
