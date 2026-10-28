@@ -6,6 +6,7 @@ Three standalone tools. Two are called by hooks, one is sourced by your shell.
 |---|---|---|
 | `budget.js` | statusline, session hooks | Month-to-date spend across every session |
 | `notify.js` | `Notification` and `Stop` hooks, and you | Desktop notification and sound |
+| `permission-alert.js` | `PermissionRequest` hook | Allow / Deny buttons in an alert |
 | `wt.sh` | your `.zshrc` | Git worktree helper |
 
 ## budget.js
@@ -68,6 +69,21 @@ If you see nothing: turn off Focus / Do Not Disturb first. A Focus mode holds ba
 notifications. The icon (`notify-icon.png`) shows on Windows and Linux only.
 
 Tests: `node --test scripts/notify.test.js`.
+
+## permission-alert.js
+
+A `PermissionRequest` hook. When Claude Code is about to ask for permission, a top-right alert shows
+"Allow Bash? <command>" with two buttons. **Allow** lets it run. **Deny** (the close button) refuses it,
+and Claude carries on with another approach. Needs macOS and `alerter`, like the sticky alerts.
+
+It decides nothing, so the normal terminal question appears, when:
+- you do not click within 5 minutes
+- you answer in the terminal first (the alert closes itself)
+- the request is not fully visible in one short line: Edit, Write, MCP tools, multi-line commands,
+  commands over 140 characters, or a Bash call that turns the sandbox off
+- anything goes wrong (no `alerter`, bad input)
+
+Deny rules in your settings still win over Allow. Tests: `node --test scripts/permission-alert.test.js`.
 
 ## wt.sh
 
