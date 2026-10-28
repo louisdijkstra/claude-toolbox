@@ -133,3 +133,47 @@ test("parseArgs reads --sticky and defaults icon to empty", () => {
   assert.equal(parseArgs([]).sticky, false);
   assert.equal(parseArgs([]).icon, "");
 });
+
+const transcript = (...entries) => entries.map((e) => JSON.stringify(e)).join("\n");
+const assistant = (...blocks) => ({ type: "assistant", message: { content: blocks } });
+const text = (value) => ({ type: "text", text: value });
+const toolUse = (name, input) => ({ type: "tool_use", name, input });
+const idlePayload = JSON.stringify({ hook_event_name: "Notification", notification_type: "idle_prompt", message: "Claude is waiting for your input" });
+const permissionPayload = JSON.stringify({ hook_event_name: "Notification", notification_type: "permission_prompt", message: "Claude needs your permission to use Bash" });
+
+test("idle prompt shows the last line of Claude's last text, without markdown", () => {
+  const log = transcript(
+    assistant(text("First part.\n\n**Which do you want?**")),
+    assistant(toolUse("Read", { file_path: "/x" })),
+  );
+  assert.equal(messageFromHookPayload(idlePayload, log), "Which do you want?");
+});
+
+test("idle prompt keeps the original text when there is no transcript", () => {
+  assert.equal(messageFromHookPayload(idlePayload, ""), "Claude is waiting for your input");
+});
+
+test("idle prompt cuts long text with an ellipsis", () => {
+  const out = messageFromHookPayload(idlePayload, transcript(assistant(text("a".repeat(300)))));
+  assert.equal(out.length, 140);
+  assert.ok(out.endsWith("…"));
+});
+
+test("permission prompt names the tool and the command", () => {
+  const log = transcript(assistant(toolUse("Bash", { command: "git push origin main" })));
+  assert.equal(messageFromHookPayload(permissionPayload, log), "Allow Bash? git push origin main");
+});
+
+test("permission prompt for an edit shows the file path", () => {
+  const log = transcript(assistant(toolUse("Edit", { file_path: "/a/b.js", old_string: "x" })));
+  assert.equal(messageFromHookPayload(permissionPayload, log), "Allow Edit? /a/b.js");
+});
+
+test("permission prompt without a usable tool call keeps the original text", () => {
+  assert.equal(messageFromHookPayload(permissionPayload, transcript(assistant(text("hi")))), "Claude needs your permission to use Bash");
+});
+
+test("transcript lines that are not JSON are skipped", () => {
+  const log = "garbage\n" + transcript(assistant(text("Done?")));
+  assert.equal(messageFromHookPayload(idlePayload, log), "Done?");
+});

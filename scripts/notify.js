@@ -61,16 +61,95 @@ function parseArgs(argv) {
   return opts;
 }
 
-/** Banner text for a hook's stdin JSON. Notification carries its own message; Stop has none. */
-function messageFromHookPayload(raw) {
+const MAX_BODY = 140;
+// A transcript can be many MB; the last assistant turn is always near the end.
+const TRANSCRIPT_TAIL_BYTES = 256 * 1024;
+
+const clip = (value) => (value.length > MAX_BODY ? `${value.slice(0, MAX_BODY - 1).trimEnd()}…` : value);
+
+function transcriptEntries(transcriptText) {
+  return transcriptText.split("\n").flatMap((line) => {
+    try {
+      return [JSON.parse(line)];
+    } catch {
+      return []; // a partial first line from the tail read, or noise
+    }
+  });
+}
+
+/** Most recent content block of one type in an assistant entry, or null. */
+function lastAssistantBlock(entries, type) {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    if (entries[i].type !== "assistant") continue;
+    const blocks = Array.isArray(entries[i].message?.content) ? entries[i].message.content : [];
+    for (let j = blocks.length - 1; j >= 0; j--) if (blocks[j].type === type) return blocks[j];
+  }
+  return null;
+}
+
+/** The last line is usually the question Claude is asking, so that is the one worth showing. */
+function lastLineOfText(entries) {
+  const block = lastAssistantBlock(entries, "text");
+  const lines = String(block?.text || "")
+    .split("\n")
+    .map((line) => line.replace(/[*_`#>]/g, "").replace(/^\s*(?:[-•]|\d+\.)\s*/, "").trim())
+    .filter(Boolean);
+  return lines.at(-1) || "";
+}
+
+function describeToolUse(entries) {
+  const block = lastAssistantBlock(entries, "tool_use");
+  const input = block?.input || {};
+  const detail = input.command || input.file_path || input.url || input.pattern || "";
+  const firstLine = String(detail).split("\n")[0].trim();
+  return firstLine ? `Allow ${block.name}? ${firstLine}` : "";
+}
+
+/**
+ * Banner text for a hook's stdin JSON. The hook's own message is generic
+ * ("Claude is waiting for your input"), so the transcript supplies the content.
+ * Any gap falls back to the hook's message, then to nothing.
+ */
+function messageFromHookPayload(raw, transcriptText = "") {
   try {
     const payload = JSON.parse(raw);
-    if (payload.message) return String(payload.message);
-    if (payload.hook_event_name === "Stop") return "Finished, waiting for you";
+    const original = payload.message ? String(payload.message) : "";
+    if (payload.hook_event_name === "Stop" && !original) return "Finished, waiting for you";
+    const entries = transcriptEntries(transcriptText);
+    const isIdle = payload.notification_type === "idle_prompt" || /waiting for your input/i.test(original);
+    const isPermission = payload.notification_type === "permission_prompt" || /needs your permission/i.test(original);
+    const detailed = isIdle ? lastLineOfText(entries) : isPermission ? describeToolUse(entries) : "";
+    return clip(detailed || original);
   } catch {
     // Malformed payload: fall through to no banner rather than failing the hook.
   }
   return "";
+}
+
+function transcriptPathFrom(raw) {
+  try {
+    return String(JSON.parse(raw).transcript_path || "");
+  } catch {
+    return "";
+  }
+}
+
+function readTranscriptTail(file) {
+  if (!file) return "";
+  try {
+    const fd = fs.openSync(file, "r");
+    try {
+      const { size } = fs.fstatSync(fd);
+      const length = Math.min(size, TRANSCRIPT_TAIL_BYTES);
+      const buffer = Buffer.alloc(length);
+      fs.readSync(fd, buffer, 0, length, size - length);
+      return buffer.toString("utf8");
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch {
+    return "";
+  }
 }
 
 function readStdin() {
@@ -257,8 +336,11 @@ function run({ bin, args }, { awaitExit = true } = {}) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (!opts.icon && fs.existsSync(ICON_PATH)) opts.icon = ICON_PATH;
-  if (opts.fromHook && !opts.message) opts.message = messageFromHookPayload(await readStdin());
-  if (!opts.subtitle && opts.message) opts.subtitle = projectName();
+  if (opts.fromHook && !opts.message) {
+    const raw = await readStdin();
+    opts.message = messageFromHookPayload(raw, readTranscriptTail(transcriptPathFrom(raw)));
+  }
+  if (!opts.subtitle && opts.message) opts.subtitle = `project ${projectName()}`;
 
   const platform = process.env.NOTIFY_PLATFORM || process.platform;
   const commands = buildCommands(opts, platform);
