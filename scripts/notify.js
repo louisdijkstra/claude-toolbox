@@ -11,10 +11,16 @@
  * banner is acceptable; failing a hook or a turn is not.
  */
 
+const fs = require("node:fs");
+const path = require("node:path");
 const { spawn } = require("node:child_process");
 
 const TITLE = "Claude Code";
 const BALLOON_MS = 5000;
+// Own drawing, rendered from notify-icon.svg. Optional: notifications work without it.
+const ICON_PATH = path.join(__dirname, "notify-icon.png");
+// Windows reminder toasts need a registered AppUserModelID; PowerShell's own is.
+const POWERSHELL_APP_ID = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\\WindowsPowerShell\\v1.0\\powershell.exe";
 const SPAWN_TIMEOUT_MS = 5000;
 // Long enough for a spawn to fail with ENOENT, short enough that a hook does
 // not wait for playback. Sounds are fire-and-forget; only launch failure matters.
@@ -40,7 +46,7 @@ const SOUNDS = {
 };
 
 function parseArgs(argv) {
-  const opts = { message: "", sound: "", title: TITLE, subtitle: "", dryRun: false };
+  const opts = { message: "", sound: "", title: TITLE, subtitle: "", dryRun: false, fromHook: false, sticky: false, icon: "" };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--sound") opts.sound = argv[++i] || "";
@@ -48,9 +54,33 @@ function parseArgs(argv) {
     else if (arg === "--title") opts.title = argv[++i] || TITLE;
     else if (arg === "--subtitle") opts.subtitle = argv[++i] || "";
     else if (arg === "--dry-run") opts.dryRun = true;
+    else if (arg === "--from-hook") opts.fromHook = true;
+    else if (arg === "--sticky") opts.sticky = true;
     else if (!arg.startsWith("--") && !opts.message) opts.message = arg;
   }
   return opts;
+}
+
+/** Banner text for a hook's stdin JSON. Notification carries its own message; Stop has none. */
+function messageFromHookPayload(raw) {
+  try {
+    const payload = JSON.parse(raw);
+    if (payload.message) return String(payload.message);
+    if (payload.hook_event_name === "Stop") return "Finished, waiting for you";
+  } catch {
+    // Malformed payload: fall through to no banner rather than failing the hook.
+  }
+  return "";
+}
+
+function readStdin() {
+  return new Promise((resolve) => {
+    let data = "";
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk) => (data += chunk));
+    process.stdin.on("end", () => resolve(data));
+    process.stdin.on("error", () => resolve(""));
+  });
 }
 
 /** Basename of cwd, so parallel sessions are distinguishable in the banner. */
@@ -76,7 +106,7 @@ function encodePowerShell(script) {
 }
 
 function powerShellBalloon({ title, message }) {
-  const literal = (value) => `'${String(value).replace(/'/g, "''")}'`;
+  const literal = psLiteral;
   // NotifyIcon ships with .NET on every Win10/11 host, unlike BurntToast.
   const script = [
     "Add-Type -AssemblyName System.Windows.Forms",
@@ -104,12 +134,66 @@ function powerShellSound(file) {
   };
 }
 
+const psLiteral = (value) => `'${String(value).replace(/'/g, "''")}'`;
+
+const xmlEscape = (value) =>
+  String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/** Reminder toasts stay until clicked; Windows requires them to have a button. */
+function powerShellToast({ title, message, icon }) {
+  const image = icon ? `<image placement="appLogoOverride" src="file:///${icon.replace(/\\/g, "/")}"/>` : "";
+  const xml =
+    `<toast scenario="reminder"><visual><binding template="ToastGeneric">${image}` +
+    `<text>${xmlEscape(title)}</text><text>${xmlEscape(message)}</text></binding></visual>` +
+    `<actions><action content="Seen" arguments="dismiss" activationType="system"/></actions></toast>`;
+  const script = [
+    "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null",
+    "[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null",
+    "$doc = New-Object Windows.Data.Xml.Dom.XmlDocument",
+    `$doc.LoadXml(${psLiteral(xml)})`,
+    "$toast = [Windows.UI.Notifications.ToastNotification]::new($doc)",
+    `[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(${psLiteral(POWERSHELL_APP_ID)}).Show($toast)`,
+  ].join("; ");
+  return {
+    kind: "banner",
+    bin: "powershell",
+    args: ["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-EncodedCommand", encodePowerShell(script)],
+  };
+}
+
+/** Banners that stay until the user clicks Seen. Tried before the plain banner. */
+function stickyBanners(opts, platform) {
+  if (platform === "darwin") {
+    const args = ["--title", opts.title, "--message", opts.message];
+    if (opts.subtitle) args.push("--subtitle", opts.subtitle);
+    args.push("--actions", "Seen", "--close-label", "Dismiss");
+    // No icon: macOS takes it from the sending app and ignores --app-icon / --content-image.
+    // alerter blocks until the click, so it must outlive this process.
+    return [{ kind: "banner", bin: "alerter", args, detach: true }];
+  }
+  if (platform === "win32") {
+    const message = opts.subtitle ? `${opts.subtitle}: ${opts.message}` : opts.message;
+    return [powerShellToast({ title: opts.title, message, icon: opts.icon })];
+  }
+  if (platform === "linux") {
+    const title = opts.subtitle ? `${opts.title} — ${opts.subtitle}` : opts.title;
+    const base = ["-u", "critical", "-t", "0", ...(opts.icon ? ["-i", opts.icon] : [])];
+    return [
+      { kind: "banner", bin: "notify-send", args: [...base, "--action=seen=Seen", "--wait", title, opts.message], detach: true },
+      // Older libnotify has no --wait/--action; keep it critical so it still stays.
+      { kind: "banner", bin: "notify-send", args: [...base, title, opts.message] },
+    ];
+  }
+  return [];
+}
+
 /** Every command this run should attempt, in order. Pure — the unit under test. */
 function buildCommands(opts, platform) {
   const commands = [];
   const soundFile = opts.sound ? (SOUNDS[platform] || {})[opts.sound] : "";
 
   if (opts.message) {
+    if (opts.sticky) commands.push(...stickyBanners(opts, platform));
     if (platform === "darwin") {
       const parts = [`display notification "${escapeAppleScript(opts.message)}"`, `with title "${escapeAppleScript(opts.title)}"`];
       if (opts.subtitle) parts.push(`subtitle "${escapeAppleScript(opts.subtitle)}"`);
@@ -119,7 +203,8 @@ function buildCommands(opts, platform) {
       commands.push(powerShellBalloon({ title: opts.title, message }));
     } else if (platform === "linux") {
       const title = opts.subtitle ? `${opts.title} — ${opts.subtitle}` : opts.title;
-      commands.push({ kind: "banner", bin: "notify-send", args: [title, opts.message] });
+      const icon = opts.icon ? ["-i", opts.icon] : [];
+      commands.push({ kind: "banner", bin: "notify-send", args: [...icon, title, opts.message] });
     }
   }
 
@@ -171,6 +256,8 @@ function run({ bin, args }, { awaitExit = true } = {}) {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
+  if (!opts.icon && fs.existsSync(ICON_PATH)) opts.icon = ICON_PATH;
+  if (opts.fromHook && !opts.message) opts.message = messageFromHookPayload(await readStdin());
   if (!opts.subtitle && opts.message) opts.subtitle = projectName();
 
   const platform = process.env.NOTIFY_PLATFORM || process.platform;
@@ -185,7 +272,7 @@ async function main() {
   // alternatives (linux has several sound players), so the first success wins.
   for (const kind of ["banner", "sound"]) {
     for (const command of commands.filter((c) => c.kind === kind)) {
-      if (await run(command, { awaitExit: kind === "banner" })) break;
+      if (await run(command, { awaitExit: kind === "banner" && !command.detach })) break;
     }
   }
 }
@@ -197,4 +284,4 @@ if (require.main === module) {
   );
 }
 
-module.exports = { buildCommands, parseArgs, SOUNDS };
+module.exports = { buildCommands, parseArgs, messageFromHookPayload, SOUNDS };
